@@ -12,7 +12,9 @@ import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
 import HomeScreen from '../screens/HomeScreen';
 import NotifsScreen from '../screens/NotifsScreen';
-import { BottomTabParamList, HomeParamList, NotifsParamList } from '../types';
+import CalendarScreen from '../screens/CalendarScreen';
+import SettingsScreen from '../screens/SettingsScreen';
+import { BottomTabParamList, HomeParamList, NotifsParamList, CalendarParamList, SettingsParamList } from '../types';
 
 const BottomTab = createBottomTabNavigator<BottomTabParamList>();
 
@@ -37,6 +39,20 @@ export default function BottomTabNavigator() {
           tabBarIcon: ({ color }) => <TabBarIcon name="ios-code" color={color} />,
         }}
       />
+      <BottomTab.Screen
+        name="Calendar"
+        component={CalendarNavigator}
+        options={{
+          tabBarIcon: ({ color }) => <TabBarIcon name="ios-code" color={color} />,
+        }}
+      />
+      <BottomTab.Screen
+        name="Settings"
+        component={SettingsNavigator}
+        options={{
+          tabBarIcon: ({ color }) => <TabBarIcon name="ios-code" color={color} />,
+        }}
+      />
     </BottomTab.Navigator>
   );
 }
@@ -57,6 +73,7 @@ function HomeNavigator() {
       <HomeStack.Screen
         name="HomeScreen"
         component={HomeScreen}
+        options={{ headerTitle: 'Home' }}
       />
     </HomeStack.Navigator>
   );
@@ -73,5 +90,33 @@ function NotifsNavigator() {
         options={{ headerTitle: 'Notifications' }}
       />
     </NotifsStack.Navigator>
+  );
+}
+
+const CalendarStack = createStackNavigator<CalendarParamList>();
+
+function CalendarNavigator() {
+  return (
+    <CalendarStack.Navigator>
+      <CalendarStack.Screen
+        name="CalendarScreen"
+        component={CalendarScreen}
+        options={{ headerTitle: 'Calendar' }}
+      />
+    </CalendarStack.Navigator>
+  );
+}
+
+const SettingsStack = createStackNavigator<SettingsParamList>();
+
+function SettingsNavigator() {
+  return (
+    <SettingsStack.Navigator>
+      <SettingsStack.Screen
+        name="SettingsScreen"
+        component={SettingsScreen}
+        options={{ headerTitle: 'Settings' }}
+      />
+    </SettingsStack.Navigator>
   );
 }
