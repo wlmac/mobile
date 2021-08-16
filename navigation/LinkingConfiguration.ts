@@ -22,6 +22,16 @@ export default {
               NotifsScreen: 'two',
             },
           },
+          Calendar: {
+            screens: {
+              CalendarScreen: 'three',
+            },
+          },
+          Settings: {
+            screens: {
+              SettingsScreen: 'four',
+            },
+          },
         },
       },
       NotFound: '*',
