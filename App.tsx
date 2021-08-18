@@ -8,26 +8,30 @@ import useCachedResources from './hooks/useCachedResources';
 import useColorScheme from './hooks/useColorScheme';
 import Navigation from './navigation';
 
+import config from './config.json';
+
 export default function App() {
   const isLoadingComplete = useCachedResources();
   const colorScheme = useColorScheme();
 
-  if (!isLoadingComplete) {
-    return null;
-  } else {
-    return (
-      <SafeAreaProvider>
-        <Navigation colorScheme={colorScheme} />
-        <StatusBar />
-      </SafeAreaProvider>
-    );
-  }
+  defaultLogin().then(res => {
+    if (!isLoadingComplete) {
+      return null;
+    } else{
+      return (
+        <SafeAreaProvider>
+          <Navigation colorScheme={colorScheme} loginNeeded={!res} />
+          <StatusBar />
+        </SafeAreaProvider>
+      );
+    }
+  })
 }
 
 function defaultLogin(): Promise<boolean> {
   return new Promise((resolve, reject) => {
     AsyncStorage.getItem("@refreshtoken").then(refreshtoken => {
-      fetch('https://wlmcitech.pythonanywhere.com/', { //change to token refresh endpoint
+      fetch(`${config.server}/`, { //change to token refresh endpoint
         method: "POST",
         headers: {
           'Content-Type': 'application/json'
