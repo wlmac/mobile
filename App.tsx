@@ -17,7 +17,7 @@ export default function App() {
   defaultLogin().then(res => {
     if (!isLoadingComplete) {
       return null;
-    } else{
+    } else {
       return (
         <SafeAreaProvider>
           <Navigation colorScheme={colorScheme} loginNeeded={!res} />
@@ -31,13 +31,13 @@ export default function App() {
 function defaultLogin(): Promise<boolean> {
   return new Promise((resolve, reject) => {
     AsyncStorage.getItem("@refreshtoken").then(refreshtoken => {
-      fetch(`${config.server}/`, { //change to token refresh endpoint
+      fetch(`${config.server}/api/auth/token/refresh`, { //refresh token endpoint
         method: "POST",
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          token: refreshtoken
+          refresh: refreshtoken
         })
       }).then((response) => response.json())
         .then((json) => {
