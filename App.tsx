@@ -14,18 +14,18 @@ export default function App() {
   const isLoadingComplete = useCachedResources();
   const colorScheme = useColorScheme();
 
-  defaultLogin().then(res => {
+  //defaultLogin().then(res => {
     if (!isLoadingComplete) {
       return null;
     } else {
       return (
         <SafeAreaProvider>
-          <Navigation colorScheme={colorScheme} loginNeeded={!res} />
+          <Navigation colorScheme={colorScheme} />
           <StatusBar />
         </SafeAreaProvider>
       );
     }
-  })
+  //})
 }
 
 function defaultLogin(): Promise<boolean> {
