@@ -53,13 +53,13 @@ function defaultLogin(): Promise<boolean> {
         .then((json) => {
           if (json.accessToken) {
             AsyncStorage.setItem('@accesstoken', json.accesstoken).then(() => {
-              resolve(true);
-            }).catch(err => resolve(false));
+              resolve(false);
+            }).catch(err => resolve(true));
           }
           else {
-            resolve(false);
+            resolve(true);
           }
-        }).catch(err => resolve(false));
-    }).catch(err => resolve(false));
+        }).catch(err => resolve(true));
+    }).catch(err => resolve(true));
   })
 }
