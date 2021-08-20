@@ -15,8 +15,8 @@ export default function defaultLogin(): Promise<boolean> {
                 })
             }).then((response) => response.json())
                 .then((json) => {
-                    if (json.accessToken) {
-                        AsyncStorage.setItem('@accesstoken', json.accesstoken).then(() => {
+                    if (json.access) {
+                        AsyncStorage.setItem('@accesstoken', json.access).then(() => {
                             resolve(false);
                         }).catch(err => resolve(true));
                     }
