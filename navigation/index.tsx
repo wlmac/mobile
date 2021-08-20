@@ -14,19 +14,14 @@ import { RootStackParamList } from '../types';
 import BottomTabNavigator from './BottomTabNavigator';
 import LinkingConfiguration from './LinkingConfiguration';
 
-export default function Navigation({ colorScheme}: { colorScheme: ColorSchemeName }) {
-  /*if (loginNeeded) {
-    return LoginScreen;
-  }
-  else {*/
-    return (
-      <NavigationContainer
-        linking={LinkingConfiguration}
-        theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <RootNavigator />
-      </NavigationContainer>
-    );
-  //}
+export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
+  return (
+    <NavigationContainer
+      linking={LinkingConfiguration}
+      theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <RootNavigator />
+    </NavigationContainer>
+  );
 }
 
 // A root stack navigator is often used for displaying modals on top of all other content
