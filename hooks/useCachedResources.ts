@@ -2,9 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import * as React from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import config from '../config.json';
+import defaultLogin from '../components/defaultLogin';
 
 export default function useCachedResources() {
   const [isLoadingComplete, setLoadingComplete] = React.useState(false);
@@ -36,30 +35,4 @@ export default function useCachedResources() {
   }, []);
 
   return { isLoadingComplete, loginNeeded };
-}
-
-function defaultLogin(): Promise<boolean> {
-  return new Promise((resolve, reject) => {
-    AsyncStorage.getItem("@refreshtoken").then(refreshtoken => {
-      fetch(`${config.server}/api/auth/token/refresh`, { //refresh token endpoint
-        method: "POST",
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          refresh: refreshtoken
-        })
-      }).then((response) => response.json())
-        .then((json) => {
-          if (json.accessToken) {
-            AsyncStorage.setItem('@accesstoken', json.accesstoken).then(() => {
-              resolve(false);
-            }).catch(err => resolve(true));
-          }
-          else {
-            resolve(true);
-          }
-        }).catch(err => resolve(true));
-    }).catch(err => resolve(true));
-  })
 }
