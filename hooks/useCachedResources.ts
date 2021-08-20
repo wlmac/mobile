@@ -8,14 +8,16 @@ import config from '../config.json';
 
 export default function useCachedResources() {
   const [isLoadingComplete, setLoadingComplete] = React.useState(false);
-  let loginNeeded;
+  const [loginNeeded, setDefaultLoginDone] = React.useState(false);
 
   // Load any resources or data that we need prior to rendering the app
   React.useEffect(() => {
     async function loadResourcesAndDataAsync() {
       try {
         SplashScreen.preventAutoHideAsync();
-        loginNeeded = await defaultLogin();
+        await defaultLogin().then(res => {
+          setDefaultLoginDone(res);
+        })
         // Load fonts
         await Font.loadAsync({
           ...Ionicons.font,
@@ -33,8 +35,7 @@ export default function useCachedResources() {
     loadResourcesAndDataAsync();
   }, []);
 
-  return { isLoadingComplete, loginNeeded }; 
-  //THIS DOESNT WORK PROPERLY, loginNeeded is passed back as undefined while isLoadingComplete is passed back as true
+  return { isLoadingComplete, loginNeeded };
 }
 
 function defaultLogin(): Promise<boolean> {
