@@ -2,16 +2,20 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import * as React from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import config from '../config.json';
 
 export default function useCachedResources() {
   const [isLoadingComplete, setLoadingComplete] = React.useState(false);
+  let loginNeeded;
 
   // Load any resources or data that we need prior to rendering the app
   React.useEffect(() => {
     async function loadResourcesAndDataAsync() {
       try {
         SplashScreen.preventAutoHideAsync();
-
+        loginNeeded = await defaultLogin();
         // Load fonts
         await Font.loadAsync({
           ...Ionicons.font,
@@ -29,5 +33,32 @@ export default function useCachedResources() {
     loadResourcesAndDataAsync();
   }, []);
 
-  return isLoadingComplete;
+  return { isLoadingComplete, loginNeeded }; 
+  //THIS DOESNT WORK PROPERLY, loginNeeded is passed back as undefined while isLoadingComplete is passed back as true
+}
+
+function defaultLogin(): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    AsyncStorage.getItem("@refreshtoken").then(refreshtoken => {
+      fetch(`${config.server}/api/auth/token/refresh`, { //refresh token endpoint
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          refresh: refreshtoken
+        })
+      }).then((response) => response.json())
+        .then((json) => {
+          if (json.accessToken) {
+            AsyncStorage.setItem('@accesstoken', json.accesstoken).then(() => {
+              resolve(true);
+            }).catch(err => resolve(false));
+          }
+          else {
+            resolve(false);
+          }
+        }).catch(err => resolve(false));
+    }).catch(err => resolve(false));
+  })
 }
