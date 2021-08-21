@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { StyleSheet, TextInput, Button, ColorSchemeName } from 'react-native';
+import { StyleSheet, TextInput, Button, ColorSchemeName, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as WebBrowser from 'expo-web-browser';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -8,6 +9,7 @@ import config from '../config.json';
 import { Text, View } from '../components/Themed';
 import Navigation from '../navigation';
 import App from '../App';
+import Colors from '../constants/Colors';
 
 let state = {
   username: "",
@@ -33,6 +35,13 @@ export default function LoginScreen(colorScheme: string) {
         />
         <Button onPress={login} title="Login"></Button>
       </View>
+      <View style={styles.helpContainer}>
+        <TouchableOpacity onPress={handleHelpPress} style={styles.helpLink}>
+          <Text style={styles.helpLinkText} lightColor={Colors.light.tint}>
+            Register Here
+          </Text>
+        </TouchableOpacity>
+      </View>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
     </View>
   );
@@ -52,8 +61,25 @@ const styles = StyleSheet.create({
     marginVertical: 30,
     height: 1,
     width: '80%',
-  }
+  },
+  helpContainer: {
+    marginTop: 15,
+    marginHorizontal: 20,
+    alignItems: 'center',
+  },
+  helpLink: {
+    paddingVertical: 15,
+  },
+  helpLinkText: {
+    textAlign: 'center',
+  },
 });
+
+function handleHelpPress() {
+  WebBrowser.openBrowserAsync(
+    `${config.server}/accounts/signup/?next=/`
+  );
+}
 
 function login() {
   fetch(`${config.server}/api/auth/token`, { //refresh token endpoint
