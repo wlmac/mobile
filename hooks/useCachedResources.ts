@@ -3,15 +3,20 @@ import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import * as React from 'react';
 
+import defaultLogin from '../components/defaultLogin';
+
 export default function useCachedResources() {
   const [isLoadingComplete, setLoadingComplete] = React.useState(false);
+  const [loginNeeded, setDefaultLoginDone] = React.useState(false);
 
   // Load any resources or data that we need prior to rendering the app
   React.useEffect(() => {
     async function loadResourcesAndDataAsync() {
       try {
         SplashScreen.preventAutoHideAsync();
-
+        await defaultLogin().then(res => {
+          setDefaultLoginDone(res);
+        })
         // Load fonts
         await Font.loadAsync({
           ...Ionicons.font,
@@ -29,5 +34,5 @@ export default function useCachedResources() {
     loadResourcesAndDataAsync();
   }, []);
 
-  return isLoadingComplete;
+  return { isLoadingComplete, loginNeeded };
 }
