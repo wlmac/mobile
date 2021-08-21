@@ -17,7 +17,7 @@ export default function App() {
   } else {
     if (startupHook.loginNeeded) {
       return (
-        LoginScreen()
+        LoginScreen(colorScheme)
       );
     }
     else {
