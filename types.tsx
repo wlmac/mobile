@@ -12,6 +12,7 @@ export type BottomTabParamList = {
   Home: undefined;
   Notifs: undefined;
   Calendar: undefined;
+  Map: undefined;
   Settings: undefined;
 };
 
@@ -25,6 +26,10 @@ export type NotifsParamList = {
 
 export type CalendarParamList = {
   CalendarScreen: undefined;
+}
+
+export type MapParamList = {
+  MapScreen: undefined;
 }
 
 export type SettingsParamList = {

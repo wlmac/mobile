@@ -13,8 +13,9 @@ import useColorScheme from '../hooks/useColorScheme';
 import HomeScreen from '../screens/HomeScreen';
 import NotifsScreen from '../screens/NotifsScreen';
 import CalendarScreen from '../screens/CalendarScreen';
+import MapScreen from '../screens/MapScreen';
 import SettingsScreen from '../screens/SettingsScreen';
-import { BottomTabParamList, HomeParamList, NotifsParamList, CalendarParamList, SettingsParamList } from '../types';
+import { BottomTabParamList, HomeParamList, NotifsParamList, CalendarParamList, MapParamList, SettingsParamList } from '../types';
 
 const BottomTab = createBottomTabNavigator<BottomTabParamList>();
 
@@ -44,6 +45,13 @@ export default function BottomTabNavigator() {
         component={CalendarNavigator}
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="calendar" color={color} />,
+        }}
+      />
+      <BottomTab.Screen
+        name="Map"
+        component={MapNavigator}
+        options={{
+          tabBarIcon: ({ color }) => <TabBarIcon name="map" color={color} />,
         }}
       />
       <BottomTab.Screen
@@ -106,6 +114,21 @@ function CalendarNavigator() {
     </CalendarStack.Navigator>
   );
 }
+
+const MapStack = createStackNavigator<MapParamList>();
+
+function MapNavigator() {
+  return (
+    <MapStack.Navigator>
+      <MapStack.Screen
+        name="MapScreen"
+        component={MapScreen}
+        options={{ headerTitle: 'School Map' }}
+      />
+    </MapStack.Navigator>
+  );
+}
+
 
 const SettingsStack = createStackNavigator<SettingsParamList>();
 

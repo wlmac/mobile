@@ -27,9 +27,14 @@ export default {
               CalendarScreen: 'three',
             },
           },
+          Map: {
+            screens: {
+              MapScreen: 'four',
+            },
+          },
           Settings: {
             screens: {
-              SettingsScreen: 'four',
+              SettingsScreen: 'five',
             },
           },
         },
