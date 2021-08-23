@@ -1,14 +1,9 @@
 import * as React from 'react';
-import { StyleSheet, TextInput, Button, ColorSchemeName, TouchableOpacity } from 'react-native';
+import { StyleSheet, TextInput, Button, Linking, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as WebBrowser from 'expo-web-browser';
-import { StatusBar } from 'expo-status-bar';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import config from '../config.json';
 import { Text, View } from '../components/Themed';
-import Navigation from '../navigation';
-import App from '../App';
 import Colors from '../constants/Colors';
 
 let state = {
@@ -76,9 +71,7 @@ const styles = StyleSheet.create({
 });
 
 function handleHelpPress() {
-  WebBrowser.openBrowserAsync(
-    `${config.server}/accounts/signup/?next=/`
-  );
+  Linking.openURL(`${config.server}/accounts/signup/?next=/`).catch(err => console.error("Couldn't load page", err));
 }
 
 function login() {
