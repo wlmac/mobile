@@ -1,14 +1,12 @@
 import * as React from 'react';
 import { StyleSheet } from 'react-native';
 
-import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Overlay, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Text, View } from '../components/Themed';
 import * as Permission from 'expo-permissions'
 
 import * as Location from 'expo-location';
 import { useEffect } from 'react';
-import { useState } from 'react';
-import { useRef } from 'react';
 
 export default function MapScreen() {
   const LATITUDE_DELTA = 0.00422; 
@@ -48,10 +46,25 @@ export default function MapScreen() {
             showsCompass={true}
             showsBuildings={true}
             showsTraffic={true}
-            showsIndoors={true}>
+            showsIndoors={true}
+            >
+            <Overlay 
+              image={require('../assets/images/Level1WLMACMAP.png')}
+              style={styles.schoolMap}
+              bounds={[
+                [43.75279562211260, -79.46283144388977],
+                [43.7540913854649, -79.46043910295570]
+              ]}
+            /> 
           </MapView>
       </View>
     )
+
+    //Basic positioning
+    // [43.75285762211266, -79.46278144388977],
+    //               [43.7540213854642, -79.46070519295975]
+
+
  
     
     // <View style={styles.container}>
@@ -81,5 +94,8 @@ const styles = StyleSheet.create({
     flex: 1,
     height: "100%",
     width: '100%',
+  }, 
+  schoolMap: {
+    transform: [{ rotate: '50deg'}],
   }
 });
