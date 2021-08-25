@@ -17,11 +17,16 @@ let state = {
 
 export default function LoginScreen({ route, navigation }: { route: RouteProp<RootStackParamList, 'Login'>, navigation: StackNavigationProp<RootStackParamList, 'Login'> }) {
   const colorScheme = useColorScheme();
+  let [loginResText, updateLoginResText] = React.useState("");
   const { loginNeeded } = route.params;
   let loginPress = () => {
+    updateLoginResText("Logging in... Please wait");
     login().then(val => {
-      if (val) {
+      if (val == "success") {
         navigation.replace('Root');
+      }
+      else {
+        updateLoginResText(String(val));
       }
     }).catch(err => console.log(err));
   }
@@ -42,6 +47,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
           placeholder="Password"
           onChangeText={(value) => state.password = value}
         />
+        <Text>{loginResText}</Text>
         <Button onPress={loginPress} title="Login"></Button>
       </View>
       <View style={styles.helpContainer}>
@@ -104,27 +110,25 @@ function login() {
         if (json.access && json.refresh) {
           AsyncStorage.setItem('@accesstoken', json.access).then(() => {
             AsyncStorage.setItem('@refreshtoken', json.refresh).then(() => {
-              //redirect to home page ig
-              console.log('very nice!');
-              resolve(true);
-              //App();
+              resolve("success");
             }).catch(err => {
               console.log(err);
-              resolve(false);
+              resolve("Error occurred. Was storage permission denied?");
             });
           }).catch(err => {
             console.log(err);
-            resolve(false);
+            resolve("Error occurred. Was storage permission denied?");
           });
         }
+        else if (json.detail) {
+          resolve("Username or password incorrect");
+        }
         else {
-          //edit text to add "Wrong username or password" here
-          console.log('Not nice :((');
-          resolve(false);
+          resolve("Something went wrong. Please try again later.");
         }
       }).catch(err => {
         console.log(err);
-        resolve(false);
+        resolve("Network error. Please try again later.");
       });
   })
 }
