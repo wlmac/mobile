@@ -12,8 +12,7 @@ import { RootStackParamList } from '../types';
 
 let state = {
   username: "",
-  password: "",
-  colorScheme: ""
+  password: ""
 }
 
 export default function LoginScreen({ route, navigation }: { route: RouteProp<RootStackParamList, 'Login'>, navigation: StackNavigationProp<RootStackParamList, 'Login'> }) {
