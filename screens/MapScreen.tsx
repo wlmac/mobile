@@ -4,15 +4,10 @@ import { StyleSheet } from 'react-native';
 
 import MapView, { Overlay, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Text, View } from '../components/Themed';
-import * as Permission from 'expo-permissions'
-
 import * as Location from 'expo-location';
-import Constants from 'expo-constants';
-import { Platform } from 'react-native';
-
-
-import EditScreenInfo from '../components/EditScreenInfo';
 import { Switch } from 'react-native';
+
+
 
 export default function MapScreen() {
   const LATITUDE_DELTA = 0.00422; 
