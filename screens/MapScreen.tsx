@@ -12,6 +12,7 @@ import { Platform } from 'react-native';
 
 
 import EditScreenInfo from '../components/EditScreenInfo';
+import { Switch } from 'react-native';
 
 export default function MapScreen() {
   const LATITUDE_DELTA = 0.00422; 
@@ -25,6 +26,9 @@ export default function MapScreen() {
     var altitude: number | null = null; 
     const [errorMsg, setErrorMsg] = useState("");
 
+    const [isEnabled, setIsEnabled] = useState(false);
+    const toggleSwitch = () => setIsEnabled(isEnabled => !isEnabled);
+
 
     useEffect(() => {
       (async () => {
@@ -35,7 +39,8 @@ export default function MapScreen() {
         }else{
           let location = await Location.getCurrentPositionAsync();
           altitude = location.coords.altitude;
-          setAlti(prevState => ({ ...prevState, altitude }))
+          if(location.coords.altitude!=null && location.coords.altitude >147)setIsEnabled(true)
+          else setIsEnabled(false)
         }
       })();
     }, []);
@@ -62,8 +67,23 @@ export default function MapScreen() {
             showsTraffic={true}
             showsIndoors={true}
             >
-            {mapOverlay(location.altitude)}
+            {mapOverlay(location.altitude, isEnabled)}
           </MapView>
+          <View style={styles.row}>
+            <View>
+              <Text style={styles.text}>Floor 1</Text>
+            </View>
+            
+            <Switch
+              
+              trackColor={{ false: "#767577", true: "#81b0ff" }}
+              thumbColor={isEnabled ? "#f5dd4b" : "#f4f3f4"}
+              onValueChange={toggleSwitch}
+              value={isEnabled}
+            />
+            <Text style={styles.text}>Floor 2</Text>
+          </View>
+          
       </View>
     )
 
@@ -79,9 +99,8 @@ export default function MapScreen() {
   
 }
 
-function mapOverlay( altitude: any) {
-  console.log(altitude);
-  if((altitude>147)){
+function mapOverlay( altitude: any, isEnabled: boolean) {
+  if((isEnabled||altitude>147)){
     return (<Overlay 
       image={require('../assets/images/Level2WLMACMAP.png')}
       bounds={[
@@ -89,7 +108,7 @@ function mapOverlay( altitude: any) {
         [43.7540913854649, -79.46043910295570]
       ]}
     /> )
-  }else if(altitude<147){
+  }else if(altitude<147||!isEnabled){
     return (<Overlay 
       image={require('../assets/images/Level1WLMACMAP.png')}
       bounds={[
@@ -108,7 +127,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    flex: 1,
     fontSize: 20,
     fontWeight: 'bold',
   },
@@ -122,6 +140,18 @@ const styles = StyleSheet.create({
     height: "100%",
     width: '100%',
   }, 
+  row: {
+    flexDirection:"row", 
+    flexWrap: "wrap",
+    paddingHorizontal:8, 
+    paddingVertical:20,
+  },
+  switch: {
+    paddingHorizontal:8,
+  },
+  text: {
+    paddingHorizontal:8,
+  }
 });
 
 
