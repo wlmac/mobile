@@ -1,15 +1,22 @@
 import * as React from 'react';
-import { StyleSheet } from 'react-native';
+import { Button, StyleSheet } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { StackNavigationProp } from '@react-navigation/stack';
 
 import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
+import { BottomTabParamList } from '../types';
 
 export default function SettingsScreen() {
+  let logout = () => {
+    //go to login screen here
+    AsyncStorage.clear();
+  }
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Settings</Text>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="/screens/SettingsScreen.tsx" />
+      <Button onPress={logout} title="Logout"></Button>
     </View>
   );
 }

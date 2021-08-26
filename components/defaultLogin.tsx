@@ -4,7 +4,6 @@ import config from '../config.json';
 
 export default function defaultLogin(): Promise<boolean> {
     return new Promise((resolve, reject) => {
-        //AsyncStorage.clear(); //for testing only
         AsyncStorage.getItem("@refreshtoken").then(refreshtoken => {
             fetch(`${config.server}/api/auth/token/refresh`, { //refresh token endpoint
                 method: "POST",
