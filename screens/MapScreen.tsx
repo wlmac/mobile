@@ -8,11 +8,8 @@ import * as Location from 'expo-location';
 import { Switch } from 'react-native';
 
 
-const customFonts = {
-  Poppins: require("./assets/fonts/Poppins/Poppins-Bold")
-}
-
 export default function MapScreen() {
+
   const LATITUDE_DELTA = 0.00422; 
     const LONGITUDE_DELTA = 0.00091;
     const latitude = 43.75376776088882;
@@ -66,34 +63,22 @@ export default function MapScreen() {
             {mapOverlay(location.altitude, isEnabled)}
           </MapView>
           <View style={styles.row}>
-            <View>
-              <Text style={styles.text}>Floor 1</Text>
-            </View>
-            
+            <Text style={{color: isEnabled ?"#b7b7b7ff" : "#434343ff", fontFamily: 'poppins', paddingHorizontal:8 }}>Floor One</Text>
             <Switch
-              
-              trackColor={{ false: "#767577", true: "#81b0ff" }}
-              thumbColor={isEnabled ? "#f5dd4b" : "#f4f3f4"}
+              trackColor={{ false: "#b7b7b7ff", true: "#b7b7b7ff" }}
+              thumbColor={isEnabled ? "#434343ff" : "#434343ff"}
               onValueChange={toggleSwitch}
               value={isEnabled}
             />
-            <Text style={styles.text}>Floor 2</Text>
+            <Text style={{color: isEnabled ?"#434343ff" : "#b7b7b7ff", fontFamily: 'poppins', paddingHorizontal:8 }}>Floor Two</Text>
           </View>
           
       </View>
     )
-
-    //Basic positioning
-    // [43.75285762211266, -79.46278144388977],
-    //               [43.7540213854642, -79.46070519295975]
-    
-    // <View style={styles.container}>
-    //   <Text style={styles.title}>Map</Text>
-    //   <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-    //   <EditScreenInfo path="/screens/MapScreen.tsx" />
-    // </View>
   
 }
+
+
 
 function mapOverlay( altitude: any, isEnabled: boolean) {
   if((isEnabled||altitude>147)){
@@ -147,7 +132,7 @@ const styles = StyleSheet.create({
   },
   text: {
     paddingHorizontal:8,
-    textStyle: {fontFamily: 'Poppins'}
+    fontFamily: 'poppins',
   }
 });
 
