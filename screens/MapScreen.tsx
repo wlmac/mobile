@@ -8,6 +8,9 @@ import * as Location from 'expo-location';
 import { Switch } from 'react-native';
 
 
+const customFonts = {
+  Poppins: require("./assets/fonts/Poppins/Poppins-Bold")
+}
 
 export default function MapScreen() {
   const LATITUDE_DELTA = 0.00422; 
@@ -23,7 +26,6 @@ export default function MapScreen() {
 
     const [isEnabled, setIsEnabled] = useState(false);
     const toggleSwitch = () => setIsEnabled(isEnabled => !isEnabled);
-
 
     useEffect(() => {
       (async () => {
@@ -42,7 +44,6 @@ export default function MapScreen() {
 
     return (
       <View style={styles.container}>
-          {/* <Text style={styles.title}>{location.altitude}</Text> */}
           <MapView
             style={styles.map}
             initialRegion={{
@@ -146,6 +147,7 @@ const styles = StyleSheet.create({
   },
   text: {
     paddingHorizontal:8,
+    textStyle: {fontFamily: 'Poppins'}
   }
 });
 
