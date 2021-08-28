@@ -9,11 +9,13 @@ import { Text, View } from '../components/Themed';
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
 import { RootStackParamList } from '../types';
+import RNGestureHandlerButton from 'react-native-gesture-handler/lib/typescript/components/GestureHandlerButton';
 
 let state = {
   username: "",
   password: ""
 }
+
 
 export default function LoginScreen({ route, navigation }: { route: RouteProp<RootStackParamList, 'Login'>, navigation: StackNavigationProp<RootStackParamList, 'Login'> }) {
   const colorScheme = useColorScheme();
@@ -33,61 +35,191 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
   if (!loginNeeded) {
     navigation.replace('Root');
   }
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
-      <View>
+
+      {/* ---- PICTURE CONTAINER -----*/}
+      <View style={styles.pictureContainer}/>
+
+      {/* ---- BOTTOM CONTAINER -----*/}
+      <View style={styles.bottomContainer}>
+
+        {/* ----LOG IN-----*/}
+        <Text style={styles.logIn}>Log In</Text>
+
+        {/* ----LOG IN UNDERLINE-----*/}
+        <View style={styles.logInUnderline}/>
+
+        {/* ---- INPUT FIELD-----*/}
         <TextInput
-          style={{ color: (colorScheme == "dark") ? "white" : "black" }}
+          style={styles.inputField}
           placeholder="Username"
           onChangeText={(value) => state.username = value} />
+
+        {/* ---- INPUT FIELD-----*/}
         <TextInput
-          style={{ color: (colorScheme == "dark") ? "white" : "black" }}
+          style={styles.inputField}
           secureTextEntry={true}
           placeholder="Password"
-          onChangeText={(value) => state.password = value}
-        />
-        <Text>{loginResText}</Text>
-        <Button onPress={loginPress} title="Login"></Button>
-      </View>
-      <View style={styles.helpContainer}>
-        <TouchableOpacity onPress={handleRegisterPress} style={styles.helpLink}>
-          <Text style={styles.helpLinkText} lightColor={Colors.light.tint}>
-            Register Here
-          </Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-    </View>
+          onChangeText={(value) => state.password = value}/>
+
+        {/* Remember Me Container */}
+        <View style={styles.rememberMeContainer}>
+
+          {/*Remember Me Text*/}
+          <Text style={styles.rememberMeText}>Remember Me</Text>
+
+        {/* Remember Me Container */}
+        </View>
+
+        {/*WHAT WE NEED TO ADDRESS:
+
+          - WE NEED TO INCLUDE A PICTURE FOR THE TOP PART OF THE LOGIN PAGE
+          - A REMEMBER ME CHECKBOX WHICH WILL REMEMBER THE STUDEENT'S USER AND PASSWORD (BACKEND)
+          - WE NEED TO FIGURE OUT WHAT EXCATLY THE CODE BLELOW DOES
+        */}
+
+          {/*<Text>{loginResText}</Text>*/}
+
+          <View style={styles.logInButton}>
+            <Button color="white" onPress={loginPress} title="Login"></Button>
+          </View>
+
+        
+        <View style={styles.helpContainer}>
+          <TouchableOpacity onPress={handleRegisterPress} style={styles.helpLink}>
+            <Text style={styles.helpLinkText} lightColor={Colors.light.tint}>
+              Register Here
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+
+      {/*--- BOTTOM CONTAINER ---*/} 
+      </View> 
+
+    {/*--- CONTAINER ---*/} 
+    </View> 
   );
 }
 
+let elementWidth = "60%"
 const styles = StyleSheet.create({
+
+  /* ---- MAIN CONTAINER -----*/
   container: {
+    backgroundColor: "white",
+    width: "100%",
+    height: "100%",
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'center', 
   },
-  title: {
+
+  /* ---- PICTURE CONTAINER -----*/
+  pictureContainer:{
+    flexBasis: "33%",
+    width: "100%",
+    backgroundColor: "rgb(58, 106, 150)",
+  },
+
+
+  /* ---- BOTTOM CONTAINER  ------*/
+  bottomContainer: {
+    flexBasis:"67%",
+    width: "100%",
+
+    backgroundColor:"white",
+    
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+
+  /* --- LOG IN  --- */
+  logIn: {
+    fontSize: 30,
+  },
+
+  /* --- LINE UNDER LOGIN --- */
+  logInUnderline: {
+    width: elementWidth,
+    height: 2,
+
+    backgroundColor: "rgb(58, 106, 150)",
+  },
+
+  /* --- INPUT FIELDS --- */
+  inputField: {
+    width: elementWidth,
+
+    marginTop: 20,
+    paddingVertical:10,
+    paddingLeft:10,
+
+    backgroundColor: "lightgray",
+    borderRadius: 5,
+
+    textAlign: "left",
     fontSize: 20,
-    fontWeight: 'bold',
   },
+
+
+  /* --- REMEMBER ME CONTAINER ---  */
+  rememberMeContainer: {
+    width: elementWidth,
+
+    paddingVertical: 10,
+
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  /* --- REMEMBER ME TEXT --- */
+  rememberMeText:{
+    fontSize: 17,
+  },
+
+
+
+  /* --- LOG IN BUTTON  --- */
+  logInButton: {
+    width: elementWidth,
+
+    backgroundColor:"rgb(58, 106, 150)",
+    borderRadius: 5,
+  },
+
+  
+
+
+
+
+
+
+  /* --- CODE THAT MIGHT CHANGE --- */
   separator: {
-    marginVertical: 30,
+    marginTop: 20,
     height: 1,
-    width: '80%',
+    width: '60%',
   },
+
+
   helpContainer: {
     marginTop: 15,
     marginHorizontal: 20,
     alignItems: 'center',
   },
+
   helpLink: {
     paddingVertical: 15,
   },
+
   helpLinkText: {
     textAlign: 'center',
   },
+  /* --- CODE THAT MIGHT CHANGE --- */
 });
 
 function handleRegisterPress() {
