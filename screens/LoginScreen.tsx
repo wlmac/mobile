@@ -7,9 +7,7 @@ import { RouteProp } from '@react-navigation/native';
 import config from '../config.json';
 import { Text, View } from '../components/Themed';
 import Colors from '../constants/Colors';
-import useColorScheme from '../hooks/useColorScheme';
 import { RootStackParamList } from '../types';
-import RNGestureHandlerButton from 'react-native-gesture-handler/lib/typescript/components/GestureHandlerButton';
 
 let state = {
   username: "",
@@ -18,7 +16,6 @@ let state = {
 
 
 export default function LoginScreen({ route, navigation }: { route: RouteProp<RootStackParamList, 'Login'>, navigation: StackNavigationProp<RootStackParamList, 'Login'> }) {
-  const colorScheme = useColorScheme();
   let [loginResText, updateLoginResText] = React.useState("");
   const { loginNeeded } = route.params;
   let loginPress = () => {
@@ -55,6 +52,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
         <TextInput
           style={styles.inputField}
           placeholder="Username"
+          placeholderTextColor="gray"
           onChangeText={(value) => state.username = value} />
 
         {/* ---- INPUT FIELD-----*/}
@@ -62,13 +60,14 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
           style={styles.inputField}
           secureTextEntry={true}
           placeholder="Password"
+          placeholderTextColor="gray"
           onChangeText={(value) => state.password = value}/>
 
         {/* Remember Me Container */}
-        <View style={styles.rememberMeContainer}>
+        <View style={styles.loginStatusContainer}>
 
           {/*Remember Me Text*/}
-          <Text style={styles.rememberMeText}>Remember Me</Text>
+          <Text style={styles.loginStatusText}>{loginResText}</Text>
 
         {/* Remember Me Container */}
         </View>
@@ -109,7 +108,7 @@ const styles = StyleSheet.create({
 
   /* ---- MAIN CONTAINER -----*/
   container: {
-    backgroundColor: "white",
+    //backgroundColor: "white",
     width: "100%",
     height: "100%",
     flex: 1,
@@ -130,7 +129,7 @@ const styles = StyleSheet.create({
     flexBasis:"67%",
     width: "100%",
 
-    backgroundColor:"white",
+    //backgroundColor:"white",
     
     justifyContent: "center",
     alignItems: "center",
@@ -140,6 +139,7 @@ const styles = StyleSheet.create({
   /* --- LOG IN  --- */
   logIn: {
     fontSize: 30,
+    //color: "black"
   },
 
   /* --- LINE UNDER LOGIN --- */
@@ -163,11 +163,12 @@ const styles = StyleSheet.create({
 
     textAlign: "left",
     fontSize: 20,
+    color: "black"
   },
 
 
   /* --- REMEMBER ME CONTAINER ---  */
-  rememberMeContainer: {
+  loginStatusContainer: {
     width: elementWidth,
 
     paddingVertical: 10,
@@ -177,7 +178,7 @@ const styles = StyleSheet.create({
   },
 
   /* --- REMEMBER ME TEXT --- */
-  rememberMeText:{
+  loginStatusText:{
     fontSize: 17,
   },
 
