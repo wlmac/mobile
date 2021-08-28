@@ -8,7 +8,7 @@ import config from '../config.json';
 
 export default function HomeScreen() {
   let [timetable, updateTimeTable] = React.useState("Fetching data...");
-  let [weatherIcon, updateIcon] = React.useState(require('../assets/images/weather/loading.gif'));
+  let [weatherIcon, updateIcon] = React.useState(require('../assets/images/loading.gif'));
   let [temp, updateTemp] = React.useState('Loading...');
   let fetchData = () => {
     getTimetableInfo().then(data => {
