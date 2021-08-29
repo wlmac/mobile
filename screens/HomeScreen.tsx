@@ -22,6 +22,7 @@ export default function HomeScreen() {
               for (let i = 0; i < schedule.schedule.length; i++) {
                 displayedInfo += `P${i + 1} - ${schedule.schedule[i].course} (${schedule.schedule[i].info})\n`;
               }
+              updateTimeTable(displayedInfo);
             }
             else {
               updateTimeTable(`No class today!`);
