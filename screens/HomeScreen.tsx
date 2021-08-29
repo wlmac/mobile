@@ -2,7 +2,7 @@ import * as React from 'react';
 import { StyleSheet, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import EditScreenInfo from '../components/EditScreenInfo';
+import apiRequest from '../components/apiRequest';
 import { Text, View } from '../components/Themed';
 import config from '../config.json';
 
@@ -11,8 +11,9 @@ export default function HomeScreen() {
   let [weatherIcon, updateIcon] = React.useState(require('../assets/images/loading.gif'));
   let [temp, updateTemp] = React.useState('Loading...');
   let fetchData = () => {
-    getTimetableInfo().then(data => {
-      //process timetable data
+    apiRequest('/api/timetables', '').then(res => {
+      let parsed = JSON.parse(res.response);
+      //do some processing w/ data
     })
   }
   getWeather().then((data) => {
@@ -51,28 +52,6 @@ const styles = StyleSheet.create({
     height: 58,
   },
 });
-
-function getTimetableInfo() {
-  return new Promise((resolve, reject) => {
-    AsyncStorage.getItem('@accesstoken').then(token => {
-      fetch(`${config.server}/api/timetables`, { //refresh token endpoint
-        method: "POST",
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          access: token
-        })
-      }).then((response) => response.json())
-        .then((json) => {
-          //resolve data after processing (waiting on sample data)
-        }).catch(err => {
-          console.log(err);
-          resolve("Network error. Please try again later.");
-        });
-    }).catch(err => resolve("Error reading user data"));
-  })
-}
 
 function getWeather() {
   return new Promise<Weather>((resolve, reject) => {
