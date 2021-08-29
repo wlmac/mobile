@@ -10,12 +10,36 @@ export default function HomeScreen() {
   let [timetable, updateTimeTable] = React.useState("Fetching data...");
   let [weatherIcon, updateIcon] = React.useState(require('../assets/images/loading.gif'));
   let [temp, updateTemp] = React.useState('Loading...');
-  let fetchData = () => {
-    apiRequest('/api/timetables', '').then(res => {
-      let parsed = JSON.parse(res.response);
-      //do some processing w/ data
-    })
-  }
+  apiRequest('/api/timetables', '', 'GET').then(res1 => {
+    if (res1.success) {
+      let parsed = JSON.parse(res1.response);
+      if (parsed[0] && parsed[0].id) {
+        apiRequest(`/api/timetable/${parsed[0].id}/today`, '', 'GET').then(res => {
+          if (res.success) {
+            let schedule = JSON.parse(res.response);
+            if (schedule.schedule && schedule.schedule[0]) {
+              let displayedInfo = ``;
+              for (let i = 0; i < schedule.schedule.length; i++) {
+                displayedInfo += `P${i + 1} - ${schedule.schedule[i].course} (${schedule.schedule[i].info})\n`;
+              }
+            }
+            else {
+              updateTimeTable(`No class today!`);
+            }
+          }
+          else {
+            updateTimeTable(`Uh-oh, error occurred :(`);
+          }
+        })
+      }
+      else {
+        updateTimeTable(`No timetable`);
+      }
+    }
+    else {
+      updateTimeTable(`API request failed`);
+    }
+  })
   getWeather().then((data) => {
     updateIcon(wIcons[data.weather_state_abbr]);
     updateTemp(`${data.the_temp}°C`);
@@ -28,6 +52,7 @@ export default function HomeScreen() {
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
       <Text>{temp}</Text>
       <Image style={styles.logo} source={weatherIcon} />
+      <Text>{timetable}</Text>
     </View>
   );
 }
