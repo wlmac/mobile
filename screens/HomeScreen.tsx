@@ -2,7 +2,7 @@ import * as React from 'react';
 import { StyleSheet, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import apiRequest from '../components/apiRequest';
+import apiRequest from '../lib/apiRequest';
 import { Text, View } from '../components/Themed';
 import config from '../config.json';
 
