@@ -6,7 +6,7 @@ import NetInfo from "@react-native-community/netinfo";
 import { Alert } from 'react-native';
 import RNExitApp from 'react-native-exit-app';
 
-import defaultLogin from '../components/defaultLogin';
+import defaultLogin from '../lib/defaultLogin';
 
 export default function useCachedResources() {
   const [isLoadingComplete, setLoadingComplete] = React.useState(false);
