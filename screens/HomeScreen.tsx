@@ -20,7 +20,10 @@ export default function HomeScreen() {
             if (schedule.schedule && schedule.schedule[0]) {
               let displayedInfo = ``;
               for (let i = 0; i < schedule.schedule.length; i++) {
-                displayedInfo += `P${i + 1} - ${schedule.schedule[i].course} (${schedule.schedule[i].info})\n`;
+                displayedInfo += `P${i + 1} - ${schedule.schedule[i].course} (${schedule.schedule[i].info})`;
+                if (i !== schedule.schedule.length-1){
+                  displayedInfo += `\n`;
+                }
               }
               updateTimeTable(displayedInfo);
             }
@@ -43,17 +46,47 @@ export default function HomeScreen() {
   })
   getWeather().then((data) => {
     updateIcon(wIcons[data.weather_state_abbr]);
-    updateTemp(`${data.the_temp}°C`);
+    updateTemp(`${data.the_temp}°`);
   }).catch(() => {
     updateTemp(`Couldn't fetch :(`);
   })
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Home</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <Text>{temp}</Text>
-      <Image style={styles.logo} source={weatherIcon} />
-      <Text>{timetable}</Text>
+
+      {/* ---WEATHER CONTAINER ---*/}
+      <View style={styles.weatherContainer}>
+
+        {/* --- TEMPERATURE --- */}
+        <Text style={styles.temperature}>{temp}</Text>
+
+        {/* --- WEATHER DIVIDER --- */}
+        <View style={styles.weatherDivider}></View>
+
+        {/* --- WEATHER ICON --- */}
+        <Image style={styles.logo} source={weatherIcon} />
+
+      {/* ---WEATHER CONTAINER ---*/}
+      </View>
+
+      {/* --- TIME TABLE CONTAINER ---*/}
+      <View style={styles.timeTableContainer}>
+
+        {/* --- WEEK TEXT --- */}
+        <Text style={styles.weekText}>Week</Text>
+
+        {/* --- COURSE CONTAINER --- */}
+        <View style={styles.courseContainer}>
+
+          {/* --- COURSE TEXT --- */}
+          <Text style={styles.courseText}>{timetable}</Text>
+
+        {/* --- COURSE CONTAINER --- */}
+        </View>
+
+      {/* --- TIME TABLE CONTAINER ---*/}
+      </View>
+
+      
     </View>
   );
 }
@@ -64,19 +97,70 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+
+
+  /* ---------- WEATHER ---------- */ 
+
+  /* ---WEATHER CONTAINER ---*/
+  weatherContainer: {
+
+    position: "absolute",
+    right: 10,
+    top: 10,
+
+    alignItems: "center",
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+
+  /* ---TEMPERATURE ---*/
+  temperature : {
+    fontWeight: "bold",
+    fontSize: 35,
   },
+
+  /* --- WEATHER DIVIDER --- */
+  weatherDivider: {
+    borderColor: "white",
+    width: "90%",
+    borderWidth: 1,
+    marginBottom: 7,
+  },
+
+  /* ---TEMPERATURE LOGO ---*/
   logo: {
-    width: 66,
-    height: 58,
+    width: 60,
+    height: 60,
   },
+
+  /*---------- TIME TABLE ----------*/
+
+  /* --- TIME TABLE CONTAINER --- */
+  timeTableContainer: {
+    position: "absolute",
+    left:10,
+    bottom: 10,
+  },
+
+  /* --- COURSE CONTAINER --- */
+  courseContainer: {
+    borderColor:"rgb(58, 106, 150)",
+    borderLeftWidth: 4,
+    alignItems: "center",
+  },
+
+  /* --- WEEK TEXT --- */
+  weekText: {
+    fontSize: 30,
+    fontWeight: "bold"
+  },
+
+  /* --- COURSE TEXT --- */
+  courseText: {
+    marginVertical: 5,
+    marginLeft:10,
+
+    fontSize: 17,
+  },
+
 });
 
 function getWeather() {
