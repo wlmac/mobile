@@ -22,7 +22,7 @@ export default function MapScreen() {
 
     const [isEnabled, setIsEnabled] = useState(false);
     const toggleSwitch = () => setIsEnabled(isEnabled => !isEnabled);
-    const [selectRoom, setSelectRoom] = useState({id: '', room: "", latitude: 43.75340776088882, longitude: -79.46106695372214});
+    const [selectRoom, setSelectRoom] = useState({id: '', room: "", latitude: null, longitude: null});
 
 
     useEffect(() => {
@@ -173,21 +173,24 @@ const [text, setText] = useState("");
 
 function mapOverlay( altitude: any, isEnabled: boolean) {
   if((isEnabled||altitude>147)){
-    return (<Overlay 
-      image={require('../assets/images/Level2WLMACMAP.png')}
+    return (
+    <Overlay 
+      image={require('../assets/images/FloorTwo.png')}
       bounds={[
-        [43.75279562211260, -79.46283144388977],
-        [43.7540913854649, -79.46043910295570]
+        [43.75282562211260, -79.4627744388977],
+        [43.7540713854649, -79.46033910295570]
       ]}
     /> )
   }else if(altitude<147||!isEnabled){
-    return (<Overlay 
-      image={require('../assets/images/Level1WLMACMAP.png')}
+    return (
+    <Overlay 
+      image={require('../assets/images/FloorOne.png')}
       bounds={[
-        [43.75279562211260, -79.46283144388977],
-        [43.7540913854649, -79.46043910295570]
+        [43.75281562211260, -79.46284144388977],
+        [43.7541113854649, -79.46045910295570]
       ]}
-    /> )
+    /> 
+    )
   }
 }
 
@@ -200,9 +203,6 @@ function roomIdentifier(latitude: any, longitude: any){
     </Marker>
   );
 }
-
-
-
 
 const styles = StyleSheet.create({
   container: {
