@@ -139,7 +139,7 @@ const [text, setText] = useState("");
                 paddingTop:20
               }}>
                 <TextInput
-                  style={{height: 20}}
+                  style={{height: 20, width:'100%'}}
                   placeholder="Search"
                   onChangeText={text => handleSearch(text)}
                   defaultValue={text}
@@ -250,10 +250,10 @@ function mapOverlay( altitude: any, isEnabled: boolean) {
   if((isEnabled||altitude>147)){
     return (
     <Overlay 
-      image={require('../assets/images/FloorTwo1.png')}
+      image={require('../assets/images/FloorTwo.png')}
       bounds={[
-        [43.75282562211260, -79.4628044388977],
-        [43.7540713854649, -79.46047910295570]
+        [43.75275062211260, -79.4625844388977],
+        [43.7540903854649, -79.4606710295570]
       ]}
     /> )
   }else if(altitude<147||!isEnabled){
@@ -261,8 +261,8 @@ function mapOverlay( altitude: any, isEnabled: boolean) {
     <Overlay 
       image={require('../assets/images/FloorOne.png')}
       bounds={[
-        [43.75281562211260, -79.46284144388977],
-        [43.7541113854649, -79.46045910295570]
+        [43.75271562211260, -79.4627594388977],
+        [43.7541593854649, -79.46079110295570]
       ]}
     /> 
     )
