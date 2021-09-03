@@ -46,6 +46,7 @@ const [text, setText] = useState("");
   const [changed, setChanged] = useState(false); 
   // const [data, setData] = useState([{id: '', room: "", floor: 0, latitude: 0, longitude: 0}]
   const data = [
+    //floor one
     {id: '127', room: "large gym", floor: 1, latitude: 43.753628645506545, longitude: -79.46176003664733},
     {id: '124', room: "small gym", floor: 1, latitude: 43.753628887683234, longitude: -79.46221198886633},
     {id: 'girls change room', room: "girls change room", floor: 1, latitude: 43.75369500188763, longitude: -79.46201786398888},
@@ -82,7 +83,43 @@ const [text, setText] = useState("");
     {id: '114', room: "114", floor: 1, latitude: 43.75385483812394, longitude: -79.46182776242493},
     {id: '118', room: "118", floor: 1, latitude: 43.75383376882629, longitude: -79.46212381124496},
     //floor2: 
-
+    {id: '231', room: "231", floor: 2, latitude: 43.75365116793612, longitude: -79.46240242570639},
+    {id: '229', room: "229", floor: 2, latitude: 43.753565195175526, longitude: -79.46239538490772},
+    {id: '227', room: "227", floor: 2, latitude: 43.75347970664606, longitude: -79.46237158030272},
+    {id: '226', room: "co-op office", floor: 2, latitude: 43.75340390509994, longitude: -79.46234744042158},
+    {id: '225', room: "225", floor: 2, latitude:43.75336055529078, longitude: -79.46233838796616},
+    {id: '223', room: "223", floor: 2, latitude:43.75337629684523, longitude: -79.46219958364964},
+    {id: '233', room: "computer science office", floor: 2, latitude: 43.753481886241815, longitude: -79.46212079375984},
+    {id: '222', room: "222", floor: 2, latitude: 43.753405600343235, longitude: -79.46199808269739},
+    {id: '221', room: "221", floor: 2, latitude: 43.753421341885826, longitude: -79.46187168359755},
+    {id: '220', room: "220", floor: 2, latitude: 43.753432724229434, longitude: -79.46175031363964},
+    {id: '219', room: "219", floor: 2, latitude: 43.75344701270023, longitude: -79.46162827312946},
+    {id: '213', room: "213", floor: 2, latitude: 43.75342884938928, longitude: -79.46147739887238},
+    {id: '214', room: "214", floor: 2, latitude: 43.75344677052279, longitude: -79.46133323013783},
+    {id: '211', room: "211", floor: 2, latitude: 43.75333948581914, longitude: -79.46145694702864},
+    {id: '212', room: "212", floor: 2, latitude: 43.75335522737912, longitude: -79.46131143718958},
+    {id: '209', room: "209", floor: 2, latitude: 43.75325254389789, longitude: -79.46144085377455},
+    {id: '210', room: "210", floor: 2, latitude: 43.75327651953781, longitude: -79.46129769086838},
+    {id: '207', room: "207", floor: 2, latitude: 43.75316729710038, longitude: -79.46141436696053},
+    {id: '208', room: "208", floor: 2, latitude: 43.7531849761337, longitude: -79.46127321571112},
+    {id: '203', room: "203", floor: 2, latitude: 43.75303313001969, longitude: -79.46137748658656},
+    {id: '206', room: "206", floor: 2, latitude: 43.75310239320719, longitude: -79.46125041693449},
+    {id: '204', room: "204", floor: 2, latitude: 43.75301763055415, longitude: -79.46123063564302},
+    {id: '201', room: "201", floor: 2, latitude: 43.75291470431406, longitude: -79.4613479822874},
+    {id: '202', room: "202", floor: 2, latitude: 43.7529321412425, longitude: -79.46120783686638},
+    {id: 'modern lang. office', room: "modern languages office", floor: 2, latitude: 43.75348697196493, longitude: -79.46130875498056},
+    {id: 'history office', room: "history office", floor: 2, latitude: 43.75351506452293, longitude: -79.46131512522697},
+    {id: 'geography office', room: "geography office", floor: 2, latitude: 43.7535455788382, longitude: -79.4613191485405},
+    {id: 'english office', room: "english office", floor: 2, latitude: 43.753589170690184, longitude: -79.46133255958557},
+    {id: '238', room: "math office", floor: 2, latitude: 43.75362791897641, longitude: -79.46134228259324},
+    {id: 'book room', room: "book room", floor: 2, latitude: 43.7535988577641, longitude: -79.46155149489641},
+    {id: 'dark room', room: "dark room", floor: 2, latitude: 43.75363276251044, longitude: -79.46153406053782},
+    {id: '216A', room: "dark room A", floor: 2, latitude: 43.753774920059136, longitude: -79.46142073720694},
+    {id: '215', room: "215", floor: 2, latitude: 43.753836674936764, longitude: -79.46157932281494},
+    {id: '216', room: "216", floor: 2, latitude: 43.753852900717554, longitude: -79.46143213659525},
+    {id: '217', room: "217", floor: 2, latitude: 43.75397301979385, longitude: -79.46160983294249},
+    {id: '218', room: "218", floor: 2, latitude: 43.75394347439825, longitude: -79.46145627647638},
+    {id: '218A', room: "art office", floor: 2, latitude: 43.75399602644422, longitude: -79.46150656789541},
 
   ];
   const [state, setState] = useState({
@@ -217,7 +254,7 @@ const [text, setText] = useState("");
           <Marker 
             coordinate={{latitude,longitude}}
             draggable
-            onDragEnd={(e: { nativeEvent: { coordinate: any; }; }) => {console.log('dragEnd', e.nativeEvent.coordinate)}}
+            onDragEnd={(e: { nativeEvent: { coordinate: any; }; }) => {console.log("latitude: "+e.nativeEvent.coordinate.latitude+", longitude: "+e.nativeEvent.coordinate.longitude)}}
             >
           </Marker>
 
