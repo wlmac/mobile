@@ -217,7 +217,7 @@ const [text, setText] = useState("");
           <Marker 
             coordinate={{latitude,longitude}}
             draggable
-            onDragEnd={(e) => {console.log('dragEnd', e.nativeEvent.coordinate)}}
+            onDragEnd={(e: { nativeEvent: { coordinate: any; }; }) => {console.log('dragEnd', e.nativeEvent.coordinate)}}
             >
           </Marker>
 
