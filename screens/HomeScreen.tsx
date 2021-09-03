@@ -36,7 +36,7 @@ export default function HomeScreen() {
               for (let i = 0; i < schedule.schedule.length; i++) {
                 displayedInfo += `P${i + 1} - ${schedule.schedule[i].course} (${schedule.schedule[i].description})`;
                 for (let prop in schedule.schedule[i].time) {
-                  criticalTimes.push((Date.parse(schedule.schedule[i].time[prop]) % 86400000) / 60000);
+                  criticalTimes.push(((Date.parse(schedule.schedule[i].time[prop])-14400000) % 86400000) / 60000);
                 }
                 if (i !== schedule.schedule.length - 1) {
                   displayedInfo += `\n`;
