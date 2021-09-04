@@ -1,15 +1,18 @@
 import * as React from 'react';
-import { StyleSheet, Image } from 'react-native';
+import { StyleSheet, Image} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import apiRequest from '../lib/apiRequest';
 import { Text, View } from '../components/Themed';
 import config from '../config.json';
 
+
 export default function HomeScreen() {
+
   let criticalTimes: number[];
   let time: number;
   let schedule: any;
+  let dayOfTheWeek: number;
 
   let [timetable, updateTimeTable] = React.useState("Fetching data...");
   let [weatherIcon, updateIcon] = React.useState(require('../assets/images/loading.gif'));
@@ -36,7 +39,7 @@ export default function HomeScreen() {
               for (let i = 0; i < schedule.schedule.length; i++) {
                 displayedInfo += `P${i + 1} - ${schedule.schedule[i].course} (${schedule.schedule[i].description})`;
                 for (let prop in schedule.schedule[i].time) {
-                  criticalTimes.push(((Date.parse(schedule.schedule[i].time[prop])-14400000) % 86400000) / 60000);
+                  criticalTimes.push(((Date.parse(schedule.schedule[i].time[prop])-new Date().getTimezoneOffset()*60000) % 86400000) / 60000);
                 }
                 if (i !== schedule.schedule.length - 1) {
                   displayedInfo += `\n`;
@@ -77,9 +80,10 @@ export default function HomeScreen() {
 
   React.useEffect(() => {
     if (dataUploaded) {
+      dayOfTheWeek = new Date().getDay();
       const interval = setInterval(() => {
         time = Math.floor((Date.now() - new Date().setHours(0, 0, 0, 0)) / 60000);
-        if (time >= criticalTimes[3]) {
+        if (time >= criticalTimes[3] || dayOfTheWeek > 5) {
           updateCourse(`SCHOOL DAY FINISHED`);
           updateTimeText(``);
         }
@@ -228,7 +232,7 @@ const styles = StyleSheet.create({
 
   /* --- WEEK TEXT --- */
   weekText: {
-    fontSize: 30,
+    fontSize: 40,
     fontWeight: "bold"
   },
 
