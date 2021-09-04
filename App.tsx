@@ -6,10 +6,12 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import useCachedResources from './hooks/useCachedResources';
 import useColorScheme from './hooks/useColorScheme';
 import Navigation from './navigation';
+import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 
 export default function App() {
   const startupHook = useCachedResources();
   const colorScheme = useColorScheme();
+  const provider = {PROVIDER_GOOGLE};
 
   if (!startupHook.isLoadingComplete) {
     return null;
