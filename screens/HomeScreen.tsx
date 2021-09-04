@@ -1,31 +1,52 @@
 import * as React from 'react';
-import { StyleSheet, Image } from 'react-native';
+import { StyleSheet, Image} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import apiRequest from '../lib/apiRequest';
 import { Text, View } from '../components/Themed';
 import config from '../config.json';
 
+
 export default function HomeScreen() {
+
+  let criticalTimes: number[];
+  let time: number;
+  let schedule: any;
+  let dayOfTheWeek: number;
+
   let [timetable, updateTimeTable] = React.useState("Fetching data...");
   let [weatherIcon, updateIcon] = React.useState(require('../assets/images/loading.gif'));
   let [temp, updateTemp] = React.useState('Loading...');
+
+  let [course, updateCourse] = React.useState("Loading...");
+  let [timeText, updateTimeText] = React.useState("Loading...");
+
+  let [dataUploaded, updateDataUploaded] = React.useState(false);
+
+
+  criticalTimes = [];
+
+
   apiRequest('/api/timetables', '', 'GET').then(res1 => {
     if (res1.success) {
       let parsed = JSON.parse(res1.response);
       if (parsed[0] && parsed[0].id) {
         apiRequest(`/api/timetable/${parsed[0].id}/today`, '', 'GET').then(res => {
           if (res.success) {
-            let schedule = JSON.parse(res.response);
+            schedule = JSON.parse(res.response);
             if (schedule.schedule && schedule.schedule[0]) {
               let displayedInfo = ``;
               for (let i = 0; i < schedule.schedule.length; i++) {
-                displayedInfo += `P${i + 1} - ${schedule.schedule[i].course} (${schedule.schedule[i].info})`;
-                if (i !== schedule.schedule.length-1){
+                displayedInfo += `P${i + 1} - ${schedule.schedule[i].course} (${schedule.schedule[i].description})`;
+                for (let prop in schedule.schedule[i].time) {
+                  criticalTimes.push(((Date.parse(schedule.schedule[i].time[prop])-new Date().getTimezoneOffset()*60000) % 86400000) / 60000);
+                }
+                if (i !== schedule.schedule.length - 1) {
                   displayedInfo += `\n`;
                 }
               }
               updateTimeTable(displayedInfo);
+              updateDataUploaded(true);
             }
             else {
               updateTimeTable(`No class today!`);
@@ -50,6 +71,43 @@ export default function HomeScreen() {
   }).catch(() => {
     updateTemp(`Couldn't fetch :(`);
   })
+
+  const determineTimeString = (presentTime: number, futureTime: number) => {
+    return futureTime - presentTime >= 10 ?
+      `${Math.floor((futureTime - presentTime) / 60)}:${(futureTime - presentTime) % 60}` :
+      `${Math.floor((futureTime - presentTime) / 60)}:0${(futureTime - presentTime) % 60}`
+  }
+
+  React.useEffect(() => {
+    if (dataUploaded) {
+      dayOfTheWeek = new Date().getDay();
+      const interval = setInterval(() => {
+        time = Math.floor((Date.now() - new Date().setHours(0, 0, 0, 0)) / 60000);
+        if (time >= criticalTimes[3] || dayOfTheWeek > 5) {
+          updateCourse(`SCHOOL DAY FINISHED`);
+          updateTimeText(``);
+        }
+        else if (time >= criticalTimes[2]) {
+          updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[3])} hours`);
+          updateCourse(schedule.schedule[1].course);
+        }
+        else if (time >= criticalTimes[1]) {
+          updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[2])} hours`);
+          updateCourse(`LUNCH`);
+        }
+        else if (time >= criticalTimes[0]) {
+          updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[1])} hours`);
+        }
+        else {
+          updateTimeText(`Starts in ${determineTimeString(time, criticalTimes[0])} hours`);
+          updateCourse(schedule.schedule[0].course);
+        }
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [dataUploaded]);
+
+
   return (
     <View style={styles.container}>
 
@@ -65,8 +123,18 @@ export default function HomeScreen() {
         {/* --- WEATHER ICON --- */}
         <Image style={styles.logo} source={weatherIcon} />
 
-      {/* ---WEATHER CONTAINER ---*/}
+        {/* ---WEATHER CONTAINER ---*/}
       </View>
+
+
+
+      {/* --- COURSE ---*/}
+      <Text style={styles.course}>{course}</Text>
+
+      {/* --- TIME TEXT ---*/}
+      <Text style={styles.timeText}>{timeText}</Text>
+
+
 
       {/* --- TIME TABLE CONTAINER ---*/}
       <View style={styles.timeTableContainer}>
@@ -80,13 +148,13 @@ export default function HomeScreen() {
           {/* --- COURSE TEXT --- */}
           <Text style={styles.courseText}>{timetable}</Text>
 
-        {/* --- COURSE CONTAINER --- */}
+          {/* --- COURSE CONTAINER --- */}
         </View>
 
-      {/* --- TIME TABLE CONTAINER ---*/}
+        {/* --- TIME TABLE CONTAINER ---*/}
       </View>
 
-      
+
     </View>
   );
 }
@@ -99,7 +167,7 @@ const styles = StyleSheet.create({
   },
 
 
-  /* ---------- WEATHER ---------- */ 
+  /* ---------- WEATHER ---------- */
 
   /* ---WEATHER CONTAINER ---*/
   weatherContainer: {
@@ -112,7 +180,7 @@ const styles = StyleSheet.create({
   },
 
   /* ---TEMPERATURE ---*/
-  temperature : {
+  temperature: {
     fontWeight: "bold",
     fontSize: 35,
   },
@@ -131,32 +199,47 @@ const styles = StyleSheet.create({
     height: 60,
   },
 
+  /*---------- MAIN INFO ----------*/
+
+  course: {
+    width: "90%",
+    fontSize: 40,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+
+  timeText: {
+    width: "80%",
+    fontSize: 20,
+    textAlign: "center",
+  },
+
   /*---------- TIME TABLE ----------*/
 
   /* --- TIME TABLE CONTAINER --- */
   timeTableContainer: {
     position: "absolute",
-    left:10,
+    left: 10,
     bottom: 10,
   },
 
   /* --- COURSE CONTAINER --- */
   courseContainer: {
-    borderColor:"rgb(58, 106, 150)",
+    borderColor: "rgb(58, 106, 150)",
     borderLeftWidth: 4,
     alignItems: "center",
   },
 
   /* --- WEEK TEXT --- */
   weekText: {
-    fontSize: 30,
+    fontSize: 40,
     fontWeight: "bold"
   },
 
   /* --- COURSE TEXT --- */
   courseText: {
     marginVertical: 5,
-    marginLeft:10,
+    marginLeft: 10,
 
     fontSize: 17,
   },
