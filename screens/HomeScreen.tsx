@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, Image} from 'react-native';
+import { StyleSheet, Image, useColorScheme} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import apiRequest from '../lib/apiRequest';
@@ -50,6 +50,8 @@ export default function HomeScreen() {
             }
             else {
               updateTimeTable(`No class today!`);
+              updateCourse(`SCHOOL DAY FINISHED`);
+              updateTimeText(``);
             }
           }
           else {
@@ -118,7 +120,7 @@ export default function HomeScreen() {
         <Text style={styles.temperature}>{temp}</Text>
 
         {/* --- WEATHER DIVIDER --- */}
-        <View style={styles.weatherDivider}></View>
+        <View style={[styles.weatherDivider, {borderColor: useColorScheme()==="light"? "black": "white"}]}></View>
 
         {/* --- WEATHER ICON --- */}
         <Image style={styles.logo} source={weatherIcon} />
@@ -183,11 +185,11 @@ const styles = StyleSheet.create({
   temperature: {
     fontWeight: "bold",
     fontSize: 35,
+    fontFamily: "poppins",
   },
 
   /* --- WEATHER DIVIDER --- */
   weatherDivider: {
-    borderColor: "white",
     width: "90%",
     borderWidth: 1,
     marginBottom: 7,
@@ -206,6 +208,8 @@ const styles = StyleSheet.create({
     fontSize: 40,
     fontWeight: "bold",
     textAlign: "center",
+
+    fontFamily: "poppins",
   },
 
   timeText: {
@@ -233,7 +237,8 @@ const styles = StyleSheet.create({
   /* --- WEEK TEXT --- */
   weekText: {
     fontSize: 40,
-    fontWeight: "bold"
+    fontWeight: "bold",
+    fontFamily: "poppins",
   },
 
   /* --- COURSE TEXT --- */

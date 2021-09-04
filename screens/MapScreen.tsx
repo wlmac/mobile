@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { FlatList, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 
 import MapView, { Marker, Overlay, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Text, View } from '../components/Themed';
@@ -167,35 +167,30 @@ const [text, setText] = useState("");
 
     return (
       <View style={styles.container}>
-        <View
-              style={{
-                backgroundColor: '#fff',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: 10,
-                paddingTop:20
-              }}>
-                <TextInput
-                  style={{height: 20, width:'100%'}}
-                  placeholder="Search"
-                  onChangeText={text => handleSearch(text)}
-                  defaultValue={text}
-                />
+
+        {/* ---- SEARCH BAR --- */}
+        <TextInput
+          style={[styles.searchBar,{color: useColorScheme()==="light"? "black": "white"}]}
+          placeholderTextColor = {useColorScheme()==="light"? "black": "white"}
+          placeholder="Search"
+          onChangeText={text => handleSearch(text)}
+          defaultValue={text}
+        />
                 
-            </View>
-            <View
-              style={{
-                height: 1,
-                width: '86%',
-                backgroundColor: '#efefef',
-                marginBottom: (state.query.length > 0) ? 5 : -1
-              }}
-            />
-        <View style={styles.row2}>
+        <View
+          style={{
+          height: 1,
+          width: '86%',
+          backgroundColor: useColorScheme()==="light"? "black": "white",
+          marginBottom: (state.query.length > 0) ? 5 : -1
+        }}
+        />
+
+        <View style={[styles.row2, {color: useColorScheme()==="light"? "black": "white"}]}>
         
         <FlatList
           style={{
-            height: (state.query.length > 0) ? (state.fullData.length*40>150 ? 150: state.fullData.length*40) : 0, 
+            height: (state.query.length > 0) ? (state.fullData.length*40>150 ? 150: state.fullData.length*40) : 0
           }}
           data={state.fullData}
           keyExtractor={item=>item.id}
@@ -204,11 +199,11 @@ const [text, setText] = useState("");
               <View
                 style={{
                   flexDirection: 'row',
-                  alignItems: 'center'
+                  alignItems: 'center',
+                  
                 }}>
                 <Text
                   style={{
-                    color: '#000',
                     justifyContent: 'center',
                     paddingLeft:20,
                     padding:10 
@@ -219,10 +214,6 @@ const [text, setText] = useState("");
             </TouchableOpacity>
           )}
           extraData={changed}
-          // ItemSeparatorComponent={renderSeparator}
-          // ListHeaderComponent={
-            
-          // }
           />
         </View>
         <View
@@ -322,6 +313,11 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  searchBar: {
+    width: "100%",
+    height: 50,
+    textAlign: "center",
   },
   title: {
     fontSize: 20,

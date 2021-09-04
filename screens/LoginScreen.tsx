@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, TextInput, Button, Linking, TouchableOpacity } from 'react-native';
+import { StyleSheet, TextInput, Button, Linking, TouchableOpacity, Image, useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
@@ -37,7 +37,13 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
     <View style={styles.container}>
 
       {/* ---- PICTURE CONTAINER -----*/}
-      <View style={styles.pictureContainer}/>
+      <View style={styles.pictureContainer}>
+      
+        <Image style={{width:"100%", height: "100%"}} 
+          source={useColorScheme()==="light"? require('../assets/images/LogInGraphics_LightMode.png'): require('../assets/images/LogInGraphics_DarkMode.png')}/>
+
+      {/* ---- PICTURE CONTAINER -----*/}
+      </View>
 
       {/* ---- BOTTOM CONTAINER -----*/}
       <View style={styles.bottomContainer}>
@@ -108,9 +114,10 @@ const styles = StyleSheet.create({
 
   /* ---- MAIN CONTAINER -----*/
   container: {
-    //backgroundColor: "white",
     width: "100%",
     height: "100%",
+
+
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center', 
@@ -121,6 +128,8 @@ const styles = StyleSheet.create({
     flexBasis: "33%",
     width: "100%",
     backgroundColor: "rgb(58, 106, 150)",
+    alignItems: 'center',
+    justifyContent: 'center', 
   },
 
 
@@ -128,9 +137,10 @@ const styles = StyleSheet.create({
   bottomContainer: {
     flexBasis:"67%",
     width: "100%",
-
-    //backgroundColor:"white",
     
+    // borderColor: "white",
+    // borderTopWidth: 5,
+
     justifyContent: "center",
     alignItems: "center",
   },
@@ -139,7 +149,8 @@ const styles = StyleSheet.create({
   /* --- LOG IN  --- */
   logIn: {
     fontSize: 30,
-    //color: "black"
+    fontFamily: "poppins",
+    marginBottom: 5
   },
 
   /* --- LINE UNDER LOGIN --- */
@@ -181,8 +192,6 @@ const styles = StyleSheet.create({
   loginStatusText:{
     fontSize: 17,
   },
-
-
 
   /* --- LOG IN BUTTON  --- */
   logInButton: {
