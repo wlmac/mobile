@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, TextInput, Button, Linking, TouchableOpacity, Image, useColorScheme } from 'react-native';
+import { StyleSheet, TextInput, Button, Linking, TouchableOpacity, Image, useColorScheme, Platform, Keyboard, useWindowDimensions} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
@@ -17,6 +17,8 @@ let state = {
 
 export default function LoginScreen({ route, navigation }: { route: RouteProp<RootStackParamList, 'Login'>, navigation: StackNavigationProp<RootStackParamList, 'Login'> }) {
   let [loginResText, updateLoginResText] = React.useState("");
+  let [keyboardUp, updateKeyboardUp] = React.useState(false);
+
   const { loginNeeded } = route.params;
   let loginPress = () => {
     updateLoginResText("Logging in... Please wait");
@@ -33,8 +35,33 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
     navigation.replace('Root');
   }
 
+  //Keyboard animation code
+  const keyboardShown = () => {
+    updateKeyboardUp(true);
+  }
+
+  const keyboardHidden = () => {
+    updateKeyboardUp(false);
+  }
+
+  React.useEffect (()=>{
+    Keyboard.addListener(Platform.OS === `android`? `keyboardDidShow`: `keyboardWillShow`, keyboardShown);
+    Keyboard.addListener(Platform.OS === `android`? `keyboardDidHide`: `keyboardWillHide`, keyboardHidden);
+
+    return () => {
+      Keyboard.removeListener(Platform.OS === `android`? `keyboardDidShow`: `keyboardWillShow`, keyboardShown);
+      Keyboard.removeListener(Platform.OS === `android`? `keyboardDidHide`: `keyboardWillHide`, keyboardHidden);
+    }
+  },[]);
+
+  //Aspect Ratio code
+  const determineAspectRatio = () => {
+    return useWindowDimensions().width/useWindowDimensions().height;
+  }
+
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container,{flexDirection: determineAspectRatio() < 1? "column" : "column-reverse"}]}>
 
       {/* ---- PICTURE CONTAINER -----*/}
       <View style={styles.pictureContainer}>
@@ -46,7 +73,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
       </View>
 
       {/* ---- BOTTOM CONTAINER -----*/}
-      <View style={styles.bottomContainer}>
+      <View style={[styles.bottomContainer, {justifyContent: (determineAspectRatio() < 1 && keyboardUp)? "flex-start": "center" }]}>
 
         {/* ----LOG IN-----*/}
         <Text style={styles.logIn}>Log In</Text>
@@ -78,13 +105,6 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
         {/* Remember Me Container */}
         </View>
 
-        {/*WHAT WE NEED TO ADDRESS:
-
-          - WE NEED TO INCLUDE A PICTURE FOR THE TOP PART OF THE LOGIN PAGE
-          - A REMEMBER ME CHECKBOX WHICH WILL REMEMBER THE STUDEENT'S USER AND PASSWORD (BACKEND)
-          - WE NEED TO FIGURE OUT WHAT EXCATLY THE CODE BLELOW DOES
-        */}
-
           {/*<Text>{loginResText}</Text>*/}
 
           <View style={styles.logInButton}>
@@ -101,8 +121,12 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
         </View>
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
 
+
+
       {/*--- BOTTOM CONTAINER ---*/} 
       </View> 
+
+      
 
     {/*--- CONTAINER ---*/} 
     </View> 
@@ -114,35 +138,29 @@ const styles = StyleSheet.create({
 
   /* ---- MAIN CONTAINER -----*/
   container: {
-    width: "100%",
-    height: "100%",
-
-
     flex: 1,
+
     alignItems: 'center',
     justifyContent: 'center', 
   },
 
   /* ---- PICTURE CONTAINER -----*/
   pictureContainer:{
-    flexBasis: "33%",
+    flex: 1,
     width: "100%",
     backgroundColor: "rgb(58, 106, 150)",
     alignItems: 'center',
-    justifyContent: 'center', 
+    justifyContent: 'flex-start', 
   },
 
 
   /* ---- BOTTOM CONTAINER  ------*/
   bottomContainer: {
-    flexBasis:"67%",
+    flex: 2,
     width: "100%",
-    
-    // borderColor: "white",
-    // borderTopWidth: 5,
 
-    justifyContent: "center",
     alignItems: "center",
+    paddingTop: 10,
   },
 
 
