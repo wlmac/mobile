@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { StyleSheet, Image, useColorScheme } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import apiRequest from '../lib/apiRequest';
 import { Text, View } from '../components/Themed';
@@ -26,45 +25,31 @@ export default function HomeScreen() {
 
   criticalTimes = [];
 
-
-  apiRequest('/api/timetables', '', 'GET').then(res1 => {
-    if (res1.success) {
-      let parsed = JSON.parse(res1.response);
-      if (parsed[0] && parsed[0].id) {
-        apiRequest(`/api/timetable/${parsed[0].id}/schedule?date=${(new Date()).toISOString().split('T')[0]}`, '', 'GET').then(res => {
-          if (res.success) {
-            schedule = JSON.parse(res.response);
-            if (schedule.schedule && schedule.schedule[0]) {
-              let displayedInfo = ``;
-              for (let i = 0; i < schedule.schedule.length; i++) {
-                displayedInfo += `P${i + 1} - ${schedule.schedule[i].course} (${schedule.schedule[i].description})`;
-                for (let prop in schedule.schedule[i].time) {
-                  criticalTimes.push(((Date.parse(schedule.schedule[i].time[prop]) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000);
-                }
-                if (i !== schedule.schedule.length - 1) {
-                  displayedInfo += `\n`;
-                }
-              }
-              updateTimeTable(displayedInfo);
-              updateDataUploaded(true);
-            }
-            else {
-              updateTimeTable(`No class today!`);
-              updateCourse(`SCHOOL DAY FINISHED`);
-              updateTimeText(``);
-            }
+  apiRequest(`/api/me/schedule?date=${(new Date()).toISOString().split('T')[0]}`, '', 'GET').then(res => {
+    if (res.success) {
+      schedule = JSON.parse(res.response);
+      if (schedule.schedule && schedule.schedule[0]) {
+        let displayedInfo = ``;
+        for (let i = 0; i < schedule.schedule.length; i++) {
+          displayedInfo += `P${i + 1} - ${schedule.schedule[i].course} (${schedule.schedule[i].description})`;
+          for (let prop in schedule.schedule[i].time) {
+            criticalTimes.push(((Date.parse(schedule.schedule[i].time[prop]) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000);
           }
-          else {
-            updateTimeTable(`Uh-oh, error occurred :(`);
+          if (i !== schedule.schedule.length - 1) {
+            displayedInfo += `\n`;
           }
-        })
+        }
+        updateTimeTable(displayedInfo);
+        updateDataUploaded(true);
       }
       else {
-        updateTimeTable(`No timetable`);
+        updateTimeTable(`No class today!`);
+        updateCourse(`SCHOOL DAY FINISHED`);
+        updateTimeText(``);
       }
     }
     else {
-      updateTimeTable(`API request failed`);
+      updateTimeTable(`Uh-oh, error occurred :(`);
     }
   })
   getWeather().then((data) => {
