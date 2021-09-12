@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, Image, useColorScheme } from 'react-native';
+import { StyleSheet, Image, useColorScheme, ImageBackground } from 'react-native';
 
 import apiRequest from '../lib/apiRequest';
 import { Text, View } from '../components/Themed';
@@ -28,14 +28,14 @@ export default function HomeScreen() {
   apiRequest(`/api/me/schedule?date=${(new Date()).toISOString().split('T')[0]}`, '', 'GET').then(res => {
     if (res.success) {
       schedule = JSON.parse(res.response);
-      if (schedule.schedule && schedule.schedule[0]) {
+      if (schedule && schedule[0]) {
         let displayedInfo = ``;
-        for (let i = 0; i < schedule.schedule.length; i++) {
-          displayedInfo += `P${i + 1} - ${schedule.schedule[i].course} (${schedule.schedule[i].description})`;
-          for (let prop in schedule.schedule[i].time) {
-            criticalTimes.push(((Date.parse(schedule.schedule[i].time[prop]) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000);
+        for (let i = 0; i < schedule.length; i++) {
+          displayedInfo += `P${i + 1} - ${schedule[i].course} (${schedule[i].description.time})`;
+          for (let prop in schedule[i].time) {
+            criticalTimes.push(((Date.parse(schedule[i].time[prop]) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000);
           }
-          if (i !== schedule.schedule.length - 1) {
+          if (i !== schedule.length - 1) {
             displayedInfo += `\n`;
           }
         }
@@ -76,7 +76,7 @@ export default function HomeScreen() {
         }
         else if (time >= criticalTimes[2]) {
           updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[3])} hours`);
-          updateCourse(schedule.schedule[1].course);
+          updateCourse(schedule[1].course);
         }
         else if (time >= criticalTimes[1]) {
           updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[2])} hours`);
@@ -87,7 +87,7 @@ export default function HomeScreen() {
         }
         else {
           updateTimeText(`Starts in ${determineTimeString(time, criticalTimes[0])} hours`);
-          updateCourse(schedule.schedule[0].course);
+          updateCourse(schedule[0].course);
         }
       }, 1000);
       return () => clearInterval(interval);
