@@ -59,7 +59,6 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
     return useWindowDimensions().width/useWindowDimensions().height;
   }
 
-
   return (
     <View style={[styles.container,{flexDirection: determineAspectRatio() < 1? "column" : "column-reverse"}]}>
 
@@ -116,6 +115,11 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
           <TouchableOpacity onPress={handleRegisterPress} style={styles.helpLink}>
             <Text style={styles.helpLinkText} lightColor={Colors.light.tint}>
               Register Here
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleForgotPasswordPress} style={styles.helpLink}>
+            <Text style={styles.helpLinkText} lightColor={Colors.light.tint}>
+              Forgot Password
             </Text>
           </TouchableOpacity>
         </View>
@@ -237,11 +241,13 @@ const styles = StyleSheet.create({
   helpContainer: {
     marginTop: 15,
     marginHorizontal: 20,
+    flexDirection: 'row',
     alignItems: 'center',
   },
 
   helpLink: {
     paddingVertical: 15,
+    paddingHorizontal: 5
   },
 
   helpLinkText: {
@@ -252,6 +258,10 @@ const styles = StyleSheet.create({
 
 function handleRegisterPress() {
   Linking.openURL(`${config.server}/accounts/signup/?next=/`).catch(err => console.error("Couldn't load page", err));
+}
+
+function handleForgotPasswordPress() {
+  Linking.openURL(`${config.server}/accounts/password/reset/`).catch(err => console.error("Couldn't load page", err));
 }
 
 function login() {

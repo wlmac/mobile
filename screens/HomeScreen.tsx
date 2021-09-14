@@ -22,6 +22,8 @@ export default function HomeScreen() {
 
   let [dataUploaded, updateDataUploaded] = React.useState(false);
 
+  let [themeColor, updateThemeColor] = React.useState("")
+  
 
   criticalTimes = [];
 
@@ -94,55 +96,63 @@ export default function HomeScreen() {
     }
   }, [dataUploaded]);
 
+  const darkColor = "#300";
+  const lightColor = "white";
 
   return (
-    <View style={styles.container}>
+    <ImageBackground source={{uri:"https://media.discordapp.net/attachments/759867023885860934/886010709526323210/image0.png?width=1944&height=729"}} resizeMode="cover" style={styles.backgroundImage}>
 
-      {/* ---WEATHER CONTAINER ---*/}
-      <View style={styles.weatherContainer}>
-
-        {/* --- TEMPERATURE --- */}
-        <Text style={styles.temperature}>{temp}</Text>
-
-        {/* --- WEATHER DIVIDER --- */}
-        <View style={[styles.weatherDivider, { borderColor: useColorScheme() === "light" ? "black" : "white" }]}></View>
-
-        {/* --- WEATHER ICON --- */}
-        <Image style={styles.logo} source={weatherIcon} />
+      {/* ---  Main Page Container ---*/} 
+      <View style={[styles.container,{backgroundColor: useColorScheme() === "light" ? "transparent" : "rgba(0, 0, 0, 0.3)"}]}>
 
         {/* ---WEATHER CONTAINER ---*/}
-      </View>
+        <View style={styles.weatherContainer}>
 
+          {/* --- TEMPERATURE --- */}
+          <Text style={[styles.temperature,{color: useColorScheme() === "light" ? darkColor : lightColor}]}>{temp}</Text>
 
+          {/* --- WEATHER DIVIDER --- */}
+          <View style={[styles.weatherDivider, {borderColor: useColorScheme() === "light" ? darkColor : lightColor}]}/>
 
-      {/* --- COURSE ---*/}
-      <Text style={styles.course}>{course}</Text>
+          {/* --- WEATHER ICON --- */}
+          <Image style={styles.logo} source={weatherIcon} />
 
-      {/* --- TIME TEXT ---*/}
-      <Text style={styles.timeText}>{timeText}</Text>
-
-
-
-      {/* --- TIME TABLE CONTAINER ---*/}
-      <View style={styles.timeTableContainer}>
-
-        {/* --- WEEK TEXT --- */}
-        <Text style={styles.weekText}>Week</Text>
-
-        {/* --- COURSE CONTAINER --- */}
-        <View style={styles.courseContainer}>
-
-          {/* --- COURSE TEXT --- */}
-          <Text style={styles.courseText}>{timetable}</Text>
-
-          {/* --- COURSE CONTAINER --- */}
+          {/* ---WEATHER CONTAINER ---*/}
         </View>
 
+
+
+        {/* --- COURSE ---*/}
+        <Text style={[styles.course,{color: useColorScheme() === "light" ? darkColor : lightColor}]}>{course}</Text>
+
+        {/* --- TIME TEXT ---*/}
+        <Text style={[styles.timeText,{color: useColorScheme() === "light" ? darkColor : lightColor}]}>{timeText}</Text>
+
+
+
         {/* --- TIME TABLE CONTAINER ---*/}
+        <View style={styles.timeTableContainer}>
+
+          {/* --- WEEK TEXT --- */}
+          <Text style={[styles.weekText,{color: useColorScheme() === "light" ? darkColor : lightColor}]}>Week</Text>
+
+          {/* --- COURSE CONTAINER --- */}
+          <View style={styles.courseContainer}>
+
+            {/* --- COURSE TEXT --- */}
+            <Text style={[styles.courseText,{color: useColorScheme() === "light" ? darkColor : lightColor}]}>{timetable}</Text>
+
+            {/* --- COURSE CONTAINER --- */}
+          </View>
+
+          {/* --- TIME TABLE CONTAINER ---*/}
+        </View>
+
+
+      {/* ---  Main Page Container ---*/} 
       </View>
 
-
-    </View>
+    </ImageBackground>
   );
 }
 
@@ -153,7 +163,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-
+  /* --- BACKGROUND IMAGE --- */
+  backgroundImage: {
+    flex: 1,
+  },
   /* ---------- WEATHER ---------- */
 
   /* ---WEATHER CONTAINER ---*/
@@ -163,6 +176,7 @@ const styles = StyleSheet.create({
     right: 10,
     top: 10,
 
+    backgroundColor: "transparent",
     alignItems: "center",
   },
 
@@ -207,6 +221,7 @@ const styles = StyleSheet.create({
 
   /* --- TIME TABLE CONTAINER --- */
   timeTableContainer: {
+    backgroundColor: "transparent",
     position: "absolute",
     left: 10,
     bottom: 10,
@@ -214,6 +229,7 @@ const styles = StyleSheet.create({
 
   /* --- COURSE CONTAINER --- */
   courseContainer: {
+    backgroundColor: "transparent",
     borderColor: "rgb(58, 106, 150)",
     borderLeftWidth: 4,
     alignItems: "center",
