@@ -5,6 +5,7 @@ import apiRequest from '../lib/apiRequest';
 import { Text, View } from '../components/Themed';
 import config from '../config.json';
 
+let theme;
 
 export default function HomeScreen() {
 
@@ -21,9 +22,6 @@ export default function HomeScreen() {
   let [timeText, updateTimeText] = React.useState("Loading...");
 
   let [dataUploaded, updateDataUploaded] = React.useState(false);
-
-  let [themeColor, updateThemeColor] = React.useState("")
-  
 
   criticalTimes = [];
 
@@ -96,23 +94,34 @@ export default function HomeScreen() {
     }
   }, [dataUploaded]);
 
-  const darkColor = "#300";
-  const lightColor = "white";
+  if (useColorScheme() === "light"){
+    theme = {
+      color: "#300",
+      tint: "transparent" 
+    }
+  }
+  else {
+    theme = {
+      color: "white",
+      tint: "rgba(0, 0, 0, 0.3)"
+    } 
+  }
 
+  let color;
   return (
     <ImageBackground source={{uri:"https://media.discordapp.net/attachments/759867023885860934/886010709526323210/image0.png?width=1944&height=729"}} resizeMode="cover" style={styles.backgroundImage}>
 
       {/* ---  Main Page Container ---*/} 
-      <View style={[styles.container,{backgroundColor: useColorScheme() === "light" ? "transparent" : "rgba(0, 0, 0, 0.3)"}]}>
+      <View style={[styles.container,{backgroundColor: theme.tint}]}>
 
         {/* ---WEATHER CONTAINER ---*/}
         <View style={styles.weatherContainer}>
 
           {/* --- TEMPERATURE --- */}
-          <Text style={[styles.temperature,{color: useColorScheme() === "light" ? darkColor : lightColor}]}>{temp}</Text>
+          <Text style={[styles.temperature,{color: theme.color}]}>{temp}</Text>
 
           {/* --- WEATHER DIVIDER --- */}
-          <View style={[styles.weatherDivider, {borderColor: useColorScheme() === "light" ? darkColor : lightColor}]}/>
+          <View style={[styles.weatherDivider, {borderColor: theme.color}]}/>
 
           {/* --- WEATHER ICON --- */}
           <Image style={styles.logo} source={weatherIcon} />
@@ -123,10 +132,10 @@ export default function HomeScreen() {
 
 
         {/* --- COURSE ---*/}
-        <Text style={[styles.course,{color: useColorScheme() === "light" ? darkColor : lightColor}]}>{course}</Text>
+        <Text style={[styles.course,{color: theme.color}]}>{course}</Text>
 
         {/* --- TIME TEXT ---*/}
-        <Text style={[styles.timeText,{color: useColorScheme() === "light" ? darkColor : lightColor}]}>{timeText}</Text>
+        <Text style={[styles.timeText,{color: theme.color}]}>{timeText}</Text>
 
 
 
@@ -134,13 +143,13 @@ export default function HomeScreen() {
         <View style={styles.timeTableContainer}>
 
           {/* --- WEEK TEXT --- */}
-          <Text style={[styles.weekText,{color: useColorScheme() === "light" ? darkColor : lightColor}]}>Week</Text>
+          <Text style={[styles.weekText,{color: theme.color}]}>Week</Text>
 
           {/* --- COURSE CONTAINER --- */}
           <View style={styles.courseContainer}>
 
             {/* --- COURSE TEXT --- */}
-            <Text style={[styles.courseText,{color: useColorScheme() === "light" ? darkColor : lightColor}]}>{timetable}</Text>
+            <Text style={[styles.courseText,{color: theme.color}]}>{timetable}</Text>
 
             {/* --- COURSE CONTAINER --- */}
           </View>
