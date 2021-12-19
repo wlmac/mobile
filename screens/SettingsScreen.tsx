@@ -1,14 +1,15 @@
 import * as React from 'react';
 import { Button, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import RNExitApp from 'react-native-exit-app';
+import { StackNavigationProp } from '@react-navigation/stack';
 
 import { Text, View } from '../components/Themed';
+import { RootStackParamList } from '../types';
 
-export default function SettingsScreen() {
+export default function SettingsScreen({ navigation }: { navigation: StackNavigationProp<RootStackParamList, 'Root'> }) {
   let logout = () => {
     AsyncStorage.clear().then(() => {
-      Alert.alert('Success', `Logged out successfully`, [{ text: 'Exit', onPress: () => RNExitApp.exitApp() }], { cancelable: false });
+      Alert.alert('Success', `Logged out successfully`, [{ text: 'Ok', onPress: () => navigation.replace('Login', { loginNeeded: true }) }], { cancelable: false });
     });
   }
   return (
