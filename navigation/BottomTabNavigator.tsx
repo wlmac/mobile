@@ -31,6 +31,7 @@ export default function BottomTabNavigator() {
         component={HomeNavigator}
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+          headerTitle: "Home",
         }}
       />
       <BottomTab.Screen
@@ -38,6 +39,7 @@ export default function BottomTabNavigator() {
         component={NotifsNavigator}
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="notifications" color={color} />,
+          headerTitle: "Notifications",
         }}
       />
       <BottomTab.Screen
@@ -45,6 +47,7 @@ export default function BottomTabNavigator() {
         component={CalendarNavigator}
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="calendar" color={color} />,
+          headerTitle: "Calendar",
         }}
       />
       <BottomTab.Screen
@@ -52,6 +55,7 @@ export default function BottomTabNavigator() {
         component={MapNavigator}
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="map" color={color} />,
+          headerTitle: "School Map",
         }}
       />
       <BottomTab.Screen
@@ -59,6 +63,7 @@ export default function BottomTabNavigator() {
         component={SettingsNavigator}
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="settings" color={color} />,
+          headerTitle: "Settings",
         }}
       />
     </BottomTab.Navigator>
@@ -81,7 +86,7 @@ function HomeNavigator() {
       <HomeStack.Screen
         name="HomeScreen"
         component={HomeScreen}
-        options={{ headerTitle: 'Home' }}
+        options={{ headerTitle: () => { return null; }, headerShown: false }}
       />
     </HomeStack.Navigator>
   );
@@ -95,7 +100,7 @@ function NotifsNavigator() {
       <NotifsStack.Screen
         name="NotifsScreen"
         component={NotifsScreen}
-        options={{ headerTitle: 'Notifications' }}
+        options={{ headerTitle: () => { return null; }, headerShown: false }}
       />
     </NotifsStack.Navigator>
   );
@@ -109,7 +114,7 @@ function CalendarNavigator() {
       <CalendarStack.Screen
         name="CalendarScreen"
         component={CalendarScreen}
-        options={{ headerTitle: 'Calendar' }}
+        options={{ headerTitle: () => { return null; }, headerShown: false }}
       />
     </CalendarStack.Navigator>
   );
@@ -123,7 +128,7 @@ function MapNavigator() {
       <MapStack.Screen
         name="MapScreen"
         component={MapScreen}
-        options={{ headerTitle: 'School Map' }}
+        options={{ headerTitle: () => { return null; }, headerShown: false }}
       />
     </MapStack.Navigator>
   );
@@ -138,7 +143,7 @@ function SettingsNavigator() {
       <SettingsStack.Screen
         name="SettingsScreen"
         component={SettingsScreen}
-        options={{ headerTitle: 'Settings' }}
+        options={{ headerTitle: () => { return null; }, headerShown: false }}
       />
     </SettingsStack.Navigator>
   );
