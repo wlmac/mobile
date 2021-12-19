@@ -1,6 +1,4 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Alert } from 'react-native';
-import RNExitApp from 'react-native-exit-app';
 import { Buffer } from 'buffer';
 
 import config from '../config.json';
@@ -16,7 +14,7 @@ export default function apiRequest(endpoint: string, body: string, method: strin
                         return apiRequest(endpoint, body, method);
                     }
                     else {
-                        Alert.alert('Error', `An app restart is required. App will close now.`, [{ text: 'Exit', onPress: () => RNExitApp.exitApp() }], { cancelable: false });
+                        resolve(new ApiResponse(false, '', 'An unknown error occurred'));
                     }
                 }).catch(err => resolve(new ApiResponse(false, '', 'Error fetching refresh token')));
             }
