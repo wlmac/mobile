@@ -5,7 +5,7 @@
     "version": "0.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "metropolis",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png",
@@ -20,7 +20,7 @@
     ],
     "ios": {
       "supportsTablet": true, 
-      "bundleIdentifier": "com.wlmac.mobile"
+      "bundleIdentifier": "com.maclyonsden.mobile"
     },
     "android": {
       "adaptiveIcon": {
@@ -32,7 +32,7 @@
         "ACCESS_BACKGROUND_LOCATION",
         "ACCESS_FINE_LOCATION"
       ],
-      "package": "com.wlmac.thelyonsden"
+      "package": "com.maclyonsden.mobile"
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
