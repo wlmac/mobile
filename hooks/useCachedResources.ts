@@ -4,7 +4,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import * as React from 'react';
 import NetInfo from "@react-native-community/netinfo";
 import { Alert } from 'react-native';
-import RNExitApp from 'react-native-exit-app';
+import RNRestart from 'react-native-restart';
 
 import defaultLogin from '../lib/defaultLogin';
 
@@ -19,7 +19,9 @@ export default function useCachedResources() {
         SplashScreen.preventAutoHideAsync();
         await NetInfo.fetch().then(state => {
           if (!state.isConnected) {
-            Alert.alert('Error', `No internet connection found`, [{ text: 'Exit', onPress: () => RNExitApp.exitApp() }], { cancelable: false });
+            Alert.alert('Error', `No internet connection found`, [{ text: 'Retry', onPress: () => {
+              RNRestart.Restart();
+            } }], { cancelable: false });
           }
         })
         await defaultLogin().then(res => {
