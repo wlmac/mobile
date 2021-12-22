@@ -11,7 +11,7 @@ import * as React from 'react';
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
 import HomeScreen from '../screens/HomeScreen';
-import NotifsScreen from '../screens/NotifsScreen';
+import AnnouncementsScreen from '../screens/AnnouncementsScreen';
 import CalendarScreen from '../screens/CalendarScreen';
 import MapScreen from '../screens/MapScreen';
 import SettingsScreen from '../screens/SettingsScreen';
@@ -94,7 +94,7 @@ function NotifsNavigator() {
     <NotifsStack.Navigator>
       <NotifsStack.Screen
         name="NotifsScreen"
-        component={NotifsScreen}
+        component={AnnouncementsScreen}
         options={{ headerTitle: 'Notifications' }}
       />
     </NotifsStack.Navigator>
