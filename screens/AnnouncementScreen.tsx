@@ -4,7 +4,7 @@ import { Switch } from 'react-native';
 import { StyleSheet } from 'react-native';
 import { Text, View } from '../components/Themed';
 
-export default function AnnouncementsScreen() {
+export default function AnnouncementScreen() {
     // toggle between my feed and school feed
     const [isFilter, setFilter] = useState(false);
     const toggleSwitch = () => setFilter(isFilter => !isFilter);
