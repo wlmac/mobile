@@ -108,7 +108,7 @@ function NotifsNavigator() {
       <NotifsStack.Screen
         name="NotifsScreen"
         component={NotifsScreen}
-        options={{ headerTitle: 'Notifications' }}
+        options={{ headerTitle: () => { return null; }, headerShown: false }}
       />
     </NotifsStack.Navigator>
   );
@@ -122,7 +122,7 @@ function AnnouncementNavigator() {
       <AnnouncementStack.Screen
         name="AnnouncementScreen"
         component={AnnouncementScreen}
-        options={{ headerTitle: 'Announcements' }}
+        options={{ headerTitle: () => { return null; }, headerShown: false }}
       />
     </AnnouncementStack.Navigator>
   );
