@@ -14,6 +14,7 @@ export type RootStackParamList = {
 export type BottomTabParamList = {
   Home: undefined;
   Notifs: undefined;
+  Announcement: undefined;
   Calendar: undefined;
   Map: undefined;
   Settings: undefined;
@@ -25,6 +26,10 @@ export type HomeParamList = {
 
 export type NotifsParamList = {
   NotifsScreen: undefined;
+};
+
+export type AnnouncementParamList = {
+  AnnouncementScreen: undefined;
 };
 
 export type CalendarParamList = {

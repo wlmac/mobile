@@ -11,11 +11,12 @@ import * as React from 'react';
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
 import HomeScreen from '../screens/HomeScreen';
-import AnnouncementsScreen from '../screens/AnnouncementsScreen';
+import NotifsScreen from '../screens/NotifsScreen';
+import AnnouncementScreen from '../screens/AnnouncementScreen';
 import CalendarScreen from '../screens/CalendarScreen';
 import MapScreen from '../screens/MapScreen';
 import SettingsScreen from '../screens/SettingsScreen';
-import { BottomTabParamList, HomeParamList, NotifsParamList, CalendarParamList, MapParamList, SettingsParamList } from '../types';
+import { BottomTabParamList, HomeParamList, NotifsParamList, AnnouncementParamList, CalendarParamList, MapParamList, SettingsParamList } from '../types';
 
 const BottomTab = createBottomTabNavigator<BottomTabParamList>();
 
@@ -36,6 +37,13 @@ export default function BottomTabNavigator() {
       <BottomTab.Screen
         name="Notifs"
         component={NotifsNavigator}
+        options={{
+          tabBarIcon: ({ color }) => <TabBarIcon name="notifications" color={color} />,
+        }}
+      />
+      <BottomTab.Screen
+        name="Announcement"
+        component={AnnouncementNavigator}
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="notifications" color={color} />,
         }}
@@ -94,10 +102,24 @@ function NotifsNavigator() {
     <NotifsStack.Navigator>
       <NotifsStack.Screen
         name="NotifsScreen"
-        component={AnnouncementsScreen}
+        component={NotifsScreen}
         options={{ headerTitle: 'Notifications' }}
       />
     </NotifsStack.Navigator>
+  );
+}
+
+const AnnouncementStack = createStackNavigator<AnnouncementParamList>();
+
+function AnnouncementNavigator() {
+  return (
+    <AnnouncementStack.Navigator>
+      <AnnouncementStack.Screen
+        name="AnnouncementScreen"
+        component={AnnouncementScreen}
+        options={{ headerTitle: 'Announcements' }}
+      />
+    </AnnouncementStack.Navigator>
   );
 }
 
