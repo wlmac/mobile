@@ -51,6 +51,13 @@ export default function BottomTabNavigator() {
         }}
       />
       <BottomTab.Screen
+        name="Announcement"
+        component={AnnouncementNavigator}
+        options={{
+          tabBarIcon: ({ color }) => <TabBarIcon name="notifications" color={color} />,
+        }}
+      />
+      <BottomTab.Screen
         name="Calendar"
         component={CalendarNavigator}
         options={{
