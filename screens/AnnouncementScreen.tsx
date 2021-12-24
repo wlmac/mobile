@@ -1,10 +1,32 @@
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Switch } from 'react-native';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, StatusBar, ScrollView } from 'react-native';
 import { Text, View } from '../components/Themed';
 
+// api link
+const announcementURL = "https://maclyonsden.com/api/announcements?format=json";
+
 export default function AnnouncementScreen() {
+    // stores announcements
+    const [announcements, setAnnouncements] = useState([]);
+
+    // fetch from API
+    useEffect(() => {
+        const getAnnouncements = async() => {
+            const fromAPI = await fetchAnnouncements();
+            setAnnouncements(fromAPI);
+        }
+        getAnnouncements();
+    }, []);
+
+    // fetch announcements from API
+    const fetchAnnouncements = async() => {
+        const res = await fetch(announcementURL);
+        const data = await res.json();
+        return data;
+    }
+
     // toggle between my feed and school feed
     const [isFilter, setFilter] = useState(false);
     const toggleSwitch = () => setFilter(isFilter => !isFilter);
@@ -12,6 +34,16 @@ export default function AnnouncementScreen() {
 
     return (
         <View style={styles.container}>
+
+            <ScrollView style={styles.scrollView}>
+                {Object.entries(announcements).map(([key, ann]) => (
+                    <Text key={ann.id}>{ann.author.slug} {ann.id} {key}</Text>
+                ))}
+            </ScrollView>
+
+
+
+
 
             {/* Filter Announcements */}
             <View style={styles.row}>
@@ -31,16 +63,20 @@ export default function AnnouncementScreen() {
 
 const styles = StyleSheet.create({
     container: {
-    flex: 1,
-    flexDirection: "column",
-    alignItems: 'center',
-    justifyContent: 'center',
+        flex: 1,
+        flexDirection: "column",
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: StatusBar.currentHeight || 0,
+    },
+    scrollView: {
+        marginHorizontal: 0,
     },
     row: {
-    flexDirection: "row", 
+        flexDirection: "row", 
     },
     switch: {
-    paddingHorizontal:8,
+        paddingHorizontal:8,
     },
 });
 
