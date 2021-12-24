@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Switch } from 'react-native';
 import { StyleSheet, StatusBar, ScrollView } from 'react-native';
 import { Text, View } from '../components/Themed';
+import apiRequest from '../lib/apiRequest';
 
 // api link
 const announcementURL = "https://maclyonsden.com/api/announcements?format=json";
@@ -11,21 +12,13 @@ export default function AnnouncementScreen() {
     // stores announcements
     const [announcements, setAnnouncements] = useState([]);
 
-    // fetch from API
-    useEffect(() => {
-        const getAnnouncements = async() => {
-            const fromAPI = await fetchAnnouncements();
-            setAnnouncements(fromAPI);
+    apiRequest('/api/announcements?format=json', '', 'GET').then((res) => {
+        if(res.success){
+            setAnnouncements(JSON.parse(res.response));
         }
-        getAnnouncements();
-    }, []);
+    });
 
-    // fetch announcements from API
-    const fetchAnnouncements = async() => {
-        const res = await fetch(announcementURL);
-        const data = await res.json();
-        return data;
-    }
+    //console.log(announcements);
 
     // toggle between my feed and school feed
     const [isFilter, setFilter] = useState(false);
