@@ -1,10 +1,13 @@
-import React, {useState, Fragment, useCallback} from 'react';
-import { Dimensions, StyleSheet, ScrollView } from 'react-native';
+import React, {useState, Fragment, useCallback, useEffect} from 'react';
+import { Button, Dimensions, StyleSheet, ScrollView } from 'react-native';
 
 import { Calendar, CalendarList, CalendarProps, Agenda } from 'react-native-calendars';
 
 import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
+
+import apiRequest from '../lib/apiRequest';
+import config from '../config.json';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -67,9 +70,37 @@ export default function CalendarScreen() {
 
   // get today's date
   let today: string = new Date().toISOString().split('T')[0];
+  let rawEvents: any;
+  let dbg: string = "did not fetch data yet";
 
   // selected date state
   const [selectedDay, setSelectedDay] = useState(today);
+  
+  // current key state
+  const [currentKey, setCurrentKey] = useState(new Date());
+
+  // data fetched state
+  const [dataFetched, setDataFetched] = useState(false);
+
+  // events state
+  const [events, setEvents] = useState([]);
+
+  // fetch events from API if not fetched yet
+  if (!dataFetched) {
+    apiRequest(`/api/events`, '', 'GET').then(res => {
+      if (res.success) {
+        rawEvents = JSON.parse(res.response);
+        dbg = res.response;
+
+        setEvents(rawEvents);
+        setDataFetched(true);
+      }
+      else {
+        console.error(res.response);
+        dbg = res.response;
+      }
+    })
+  }
 
   // function that is called on day press
   const onDayPress = useCallback((day) => {
@@ -85,8 +116,8 @@ export default function CalendarScreen() {
       <View style={styles.calendar}>
 
         {/* --- Calendar component ---*/}
-        <Calendar 
-
+        <Calendar
+          key={currentKey}
           onDayPress={(day) => {onDayPress(day)}}
           theme = {calendarTheme}
           {...staticCalendarProps}
@@ -111,6 +142,13 @@ export default function CalendarScreen() {
       {/* --- Events may be displayed here ---*/}
       <View style={styles.container}>
         <Text style={styles.selectedDayStyle}>{selectedDay}</Text>
+        <Button
+          title="Return to Today"
+          onPress={() => {
+            setSelectedDay(today); 
+            setCurrentKey(new Date()); 
+          }}
+        />
       </View>
     </ScrollView>
   );
