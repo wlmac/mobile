@@ -70,8 +70,10 @@ export default function CalendarScreen() {
 
   // get today's date
   let today: string = new Date().toISOString().split('T')[0];
+  
   let rawEvents: any;
-  let dbg: string = "did not fetch data yet";
+  
+  const [dbg, sdbg] = useState("did not fetch data yet");
 
   // selected date state
   const [selectedDay, setSelectedDay] = useState(today);
@@ -88,16 +90,16 @@ export default function CalendarScreen() {
   // fetch events from API if not fetched yet
   if (!dataFetched) {
     apiRequest(`/api/events`, '', 'GET').then(res => {
+      console.log("fetching events...");
       if (res.success) {
+        console.log("success");
         rawEvents = JSON.parse(res.response);
-        dbg = res.response;
-
-        setEvents(rawEvents);
+        sdbg(res.response);
         setDataFetched(true);
       }
       else {
-        console.error(res.response);
-        dbg = res.response;
+        console.log(res.response);
+        sdbg(res.response);
       }
     })
   }
@@ -117,7 +119,7 @@ export default function CalendarScreen() {
 
         {/* --- Calendar component ---*/}
         <Calendar
-          key={currentKey}
+          key={currentKey.toISOString()}
           onDayPress={(day) => {onDayPress(day)}}
           theme = {calendarTheme}
           {...staticCalendarProps}
@@ -141,7 +143,6 @@ export default function CalendarScreen() {
 
       {/* --- Events may be displayed here ---*/}
       <View style={styles.container}>
-        <Text style={styles.selectedDayStyle}>{selectedDay}</Text>
         <Button
           title="Return to Today"
           onPress={() => {
@@ -149,6 +150,9 @@ export default function CalendarScreen() {
             setCurrentKey(new Date()); 
           }}
         />
+        <Text style={styles.selectedDayStyle}>{selectedDay}{" " + dbg}{" " + dataFetched}</Text>
+
+        
       </View>
     </ScrollView>
   );
