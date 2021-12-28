@@ -7,20 +7,21 @@ export default function Announcement({key, ann}:{key: string, ann: any}) {
         <View style={styles.announcement}>
             <View style={styles.tags}>
                 {Object.entries(ann.tags).map(([key, tag]) => (
-                    createTag(tag)
+                    createTag(key, tag)
                 ))}
             </View>
 
             {createHeader(ann.title)}
             
             {annDetails(ann.organization.slug, ann.author.slug, ann.created_date)}
+            {previewText(ann.body)}
         </View>
     );
 }
 
-function createTag(tag: any) {
+function createTag(key: any, tag: any) {
     return (
-        <Text style={[styles.tag, {backgroundColor: tag.color}]}>{tag.name}</Text>
+        <Text key={key} style={[styles.tag, {backgroundColor: tag.color}]}>{tag.name}</Text>
     );
 }
 
@@ -40,6 +41,14 @@ function annDetails(org: string, author: string, timeStamp: string) {
     );
 }
 
+function previewText(text: string) {
+    return (
+        <Text style={styles.text}>
+            {text}
+        </Text>
+    )
+}
+
 // ----- STYLES -----
 const styles = StyleSheet.create({
     announcement: {
@@ -56,23 +65,32 @@ const styles = StyleSheet.create({
     },
 
     tag: {
+        overflow: "hidden",
         paddingVertical: 2,
         paddingHorizontal: 7,
         marginHorizontal: 3,
-        marginBottom: 3,
+        marginBottom: 5,
+        borderRadius: 5,
     },
 
     header: {
         fontSize: 20,
         fontWeight: "bold",
         marginHorizontal: 20,
-        marginVertical: 10,
+        marginTop: 5,
+        marginBottom: 10,
     },
 
     details: {
         flexDirection: "row",
         flexWrap: "wrap",
     },
+
+    text: {
+        marginTop: 5,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        overflow: "hidden",
+        height: 100,
+    },
 });
-
-

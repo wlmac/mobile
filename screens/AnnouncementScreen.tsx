@@ -8,6 +8,7 @@ import Announcement from '../components/Announcement';
 
 // api link
 const announcementURL = "https://maclyonsden.com/api/announcements?format=json";
+var total;
 
 export default function AnnouncementScreen() {
     // stores announcements
@@ -16,10 +17,10 @@ export default function AnnouncementScreen() {
     apiRequest('/api/announcements?format=json', '', 'GET').then((res) => {
         if(res.success){
             setAnnouncements(JSON.parse(res.response));
+            total = announcements[0].id;
         }
     });
 
-    //console.log(announcements);
 
     // toggle between my feed and school feed
     const [isFilter, setFilter] = useState(false);
