@@ -4,6 +4,7 @@ import { Switch } from 'react-native';
 import { StyleSheet, StatusBar, ScrollView } from 'react-native';
 import { Text, View } from '../components/Themed';
 import apiRequest from '../lib/apiRequest';
+import Announcement from '../components/Announcement';
 
 // api link
 const announcementURL = "https://maclyonsden.com/api/announcements?format=json";
@@ -30,12 +31,9 @@ export default function AnnouncementScreen() {
 
             <ScrollView style={styles.scrollView}>
                 {Object.entries(announcements).map(([key, ann]) => (
-                    <Text key={ann.id}>{ann.author.slug} {ann.id} {key}</Text>
+                    <Announcement key={key} ann={ann}></Announcement>
                 ))}
             </ScrollView>
-
-
-
 
 
             {/* Filter Announcements */}
@@ -54,6 +52,8 @@ export default function AnnouncementScreen() {
     );
 }
 
+
+// ----- STYLES -----
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -62,10 +62,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginTop: StatusBar.currentHeight || 0,
     },
+
     scrollView: {
         marginHorizontal: 0,
     },
     row: {
+        marginVertical: 10,
         flexDirection: "row", 
     },
     switch: {
