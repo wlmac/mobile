@@ -8,6 +8,7 @@ import { Text, View } from '../components/Themed';
 
 import apiRequest from '../lib/apiRequest';
 import config from '../config.json';
+import { HideableView } from '../components/HideableView';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -38,8 +39,7 @@ const styles = StyleSheet.create({
 const staticCalendarProps = {
   showSixWeeks: true,
   disableMonthChange: true,
-  disableAllTouchEventsForDisabledDays: true,
-}
+};
 
 const calendarTheme = {
   backgroundColor: '#000000',
@@ -69,46 +69,82 @@ const calendarTheme = {
 export default function CalendarScreen() {
 
   // get today's date
-  let today: string = new Date().toISOString().split('T')[0];
-  
-  let rawEvents: any;
-  
-  const [dbg, sdbg] = useState("did not fetch data yet");
+  let today: YMDDate = new YMDDate(new Date().toISOString().split('T')[0]);
 
   // selected date state
   const [selectedDay, setSelectedDay] = useState(today);
+
+  // displayed date state
+  const [displayedDate, setDisplayedDate] = useState(today);
   
   // current key state
   const [currentKey, setCurrentKey] = useState(new Date());
 
   // data fetched state
-  const [dataFetched, setDataFetched] = useState(false);
+  const [data, setData] = useState(undefined as any);
 
-  // events state
-  const [events, setEvents] = useState([]);
+  // events this month state
+  const [eventsThisMonth, setEventsThisMonth] = useState([] as any[]);
+
+  // events today state
+  const [eventsToday, setEventsToday] = useState([] as any[]);
+
 
   // fetch events from API if not fetched yet
-  if (!dataFetched) {
-    apiRequest(`/api/events`, '', 'GET').then(res => {
-      console.log("fetching events...");
+  if (data === undefined) {
+    apiRequest(`/api/events?start=2021-09-20`, '', 'GET').then(res => {
+      //console.log("fetching events...");
       if (res.success) {
-        console.log("success");
-        rawEvents = JSON.parse(res.response);
-        sdbg(res.response);
-        setDataFetched(true);
+        //console.log("success");
+        setData(JSON.parse(res.response));
+        // triggers re-render
+        setSelectedDay(today);
       }
       else {
         console.log(res.response);
-        sdbg(res.response);
       }
     })
   }
 
-  // function that is called on day press
-  const onDayPress = useCallback((day) => {
-    setSelectedDay(day.dateString);
-    // TODO: update events on this day
-  }, []);
+  // update events on day change using useeffect
+  useEffect(() => {
+    // maybe we should set this to 'loading data' if it's undefined
+    if (data === undefined) {
+      setEventsToday([]);
+    } else {
+      let tempEventsToday: any = [];
+      for (let i = 0; i < data.length; i++) {
+        let event: any = data[i];
+        let startDate: YMDDate = new YMDDate(event.start_date.split('T')[0]);
+        let endDate: YMDDate = new YMDDate(event.end_date.split('T')[0]);
+        // startDate is before or on selected day and endDate is after or on selected day add to tempEventsToday (use the compare method)
+        if (startDate.compareDays(selectedDay) <= 0 && endDate.compareDays(selectedDay) >= 0) {
+          tempEventsToday.push(event);
+        }
+      }
+      setEventsToday(tempEventsToday);
+    }
+  }, [selectedDay]);
+
+  // update events on month change using useeffect
+  useEffect(() => {
+    // maybe we should set this to 'loading data' if it's undefined
+    if (data === undefined) {
+      setEventsToday([]);
+    } else {
+      let tempEventsThisMonth: any = [];
+      for (let i = 0; i < data.length; i++) {
+        let event: any = data[i];
+        let startDate: YMDDate = new YMDDate(event.start_date.split('T')[0]);
+        let endDate: YMDDate = new YMDDate(event.end_date.split('T')[0]);
+        // startDate is before or on displayed month and endDate is after or on selected month add to tempEventsToday (use the compare method)
+        if (startDate.compareMonths(displayedDate) <= 0 && endDate.compareMonths(displayedDate) >= 0) {
+          tempEventsThisMonth.push(event);
+        }
+      }
+      setEventsThisMonth(tempEventsThisMonth);
+    }
+  }, [displayedDate]);
 
   return (
     // scrollview tentatively, will change potentially
@@ -120,20 +156,55 @@ export default function CalendarScreen() {
         {/* --- Calendar component ---*/}
         <Calendar
           key={currentKey.toISOString()}
-          onDayPress={(day) => {onDayPress(day)}}
           theme = {calendarTheme}
           {...staticCalendarProps}
 
+          onDayPress={(day) => {
+            setSelectedDay(new YMDDate(day.dateString as string));
+          }}
+          
+          
+
           // what to do when a day is selected
           markedDates={{
-            [selectedDay]: {
+            [selectedDay.strform]: {
               selected: true,
               disableTouchEvent: true,
               selectedColor: '#fc1d00',
-              selectedTextColor: today == selectedDay ? '#f7c40c' : '#ffffff',
+              selectedTextColor: today.strform == selectedDay.strform ? '#f7c40c' : '#ffffff',
             }
+
+            // TODO: add event markers on dates (dots, etc)
+
           }}
 
+          // arrow change left
+          onPressArrowLeft={(substractMonth) => {
+            // change displayed date
+            let newYear: number = displayedDate.year;
+            let newMonth: number = displayedDate.month - 1;
+            let newDay = displayedDate.day; // this is not used
+            if (newMonth < 1) {
+              newMonth = 12;
+              newYear--;
+            }
+            setDisplayedDate(new YMDDate(`${newYear}-${newMonth}-${newDay}`));
+            substractMonth();
+          }}
+
+          // arrow change right
+          onPressArrowRight={(addMonth) => {
+            // change displayed date
+            let newYear: number = displayedDate.year;
+            let newMonth: number = displayedDate.month + 1;
+            let newDay = displayedDate.day; // this is not used
+            if (newMonth > 12) {
+              newMonth = 1;
+              newYear++;
+            }
+            setDisplayedDate(new YMDDate(`${newYear}-${newMonth}-${newDay}`));
+            addMonth();
+          }}
         />
       </View>
 
@@ -141,19 +212,69 @@ export default function CalendarScreen() {
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
       {/*<EditScreenInfo path="/screens/CalendarScreen.tsx" />*/}
 
-      {/* --- Events may be displayed here ---*/}
+
       <View style={styles.container}>
         <Button
           title="Return to Today"
           onPress={() => {
             setSelectedDay(today); 
-            setCurrentKey(new Date()); 
+            setCurrentKey(new Date());
+            setDisplayedDate(today);
           }}
-        />
-        <Text style={styles.selectedDayStyle}>{selectedDay}{" " + dbg}{" " + dataFetched}</Text>
+         />
+        <Text style={styles.selectedDayStyle}>{selectedDay.strform}{`${displayedDate.year}-${displayedDate.month} `}{eventsToday.length}{" " + eventsThisMonth.length}</Text> 
 
-        
+        {/* --- If no events, display `no events`, otherwise display a list of the event's titles using map ---*/}
+        {eventsToday.length == 0 ? <Text>No events</Text> : <Text>Yes events</Text>}
+
       </View>
+
     </ScrollView>
   );
+}
+
+// date class, but only year month and day
+class YMDDate {
+  year: number;
+  month: number;
+  day: number;
+
+  strform: string;
+
+  // constructor that takes in string in YYYY-MM-DD format
+  constructor(dateString: string) {
+    // split by -
+    this.strform = dateString;
+    let dateArray = dateString.split('-');
+    this.year = parseInt(dateArray[0]);
+    this.month = parseInt(dateArray[1]);
+    this.day = parseInt(dateArray[2]);
+  }
+
+  // compare two dates, date specific
+  // returns -1 if this is before date, 0 if equal, 1 if after
+  compareDays(date: YMDDate): number {
+    if (this.year < date.year) return -1;
+    else if (this.year > date.year) return 1;
+    else {
+      if (this.month < date.month) return -1;
+      else if (this.month > date.month) return 1;
+      else {
+        if (this.day < date.day) return -1;
+        else if (this.day > date.day) return 1;
+        else return 0;
+      }
+    }
+  }
+  
+  // compare two dates, month specific
+  compareMonths(date: YMDDate): number {
+    if (this.year < date.year) return -1;
+    else if (this.year > date.year) return 1;
+    else {
+      if (this.month < date.month) return -1;
+      else if (this.month > date.month) return 1;
+      else return 0;
+    }
+  }
 }
