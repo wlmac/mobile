@@ -1,14 +1,14 @@
-import React, {useState, Fragment, useCallback, useEffect} from 'react';
-import { Button, Dimensions, StyleSheet, ScrollView } from 'react-native';
+import React, {useState, useEffect} from 'react';
+import { Button, Dimensions, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 
-import { Calendar, CalendarList, CalendarProps, Agenda } from 'react-native-calendars';
+import { Calendar } from 'react-native-calendars';
 
 import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
 
 import apiRequest from '../lib/apiRequest';
 import config from '../config.json';
-import { HideableView } from '../components/HideableView';
+import { EventCard } from '../components/EventCard';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
   },
 
   separator: {
-    margin: 15,
+    marginVertical: 10,
     height: 1,
     width: '80%',
   },
@@ -33,12 +33,31 @@ const styles = StyleSheet.create({
   selectedDayStyle: {
     justifyContent: 'center',
     color: 'white',
+  },
+
+  returnToToday: {
+    alignItems: 'flex-end',
+    width: '95%',
+  },
+
+  returnToTodayText: {
+    color: 'white',
+    fontSize: 16,
+    textAlign: 'right',
+  },
+
+  eventsCountText: {
+    color: 'white',
+    fontSize: 20,
+    textAlign: 'left',
+    marginVertical: 5,
   }
 });
 
 const staticCalendarProps = {
   showSixWeeks: true,
   disableMonthChange: true,
+  disableAllTouchEventsForDisabledDays: true,
 };
 
 const calendarTheme = {
@@ -99,6 +118,7 @@ export default function CalendarScreen() {
         setData(JSON.parse(res.response));
         // triggers re-render
         setSelectedDay(today);
+        setDisplayedDate(today);
       }
       else {
         console.log(res.response);
@@ -108,7 +128,6 @@ export default function CalendarScreen() {
 
   // update events on day change using useeffect
   useEffect(() => {
-    // maybe we should set this to 'loading data' if it's undefined
     if (data === undefined) {
       setEventsToday([]);
     } else {
@@ -128,7 +147,6 @@ export default function CalendarScreen() {
 
   // update events on month change using useeffect
   useEffect(() => {
-    // maybe we should set this to 'loading data' if it's undefined
     if (data === undefined) {
       setEventsToday([]);
     } else {
@@ -147,89 +165,113 @@ export default function CalendarScreen() {
   }, [displayedDate]);
 
   return (
-    // scrollview tentatively, will change potentially
-    <ScrollView contentContainerStyle={styles.container}>
-      
-      {/* --- Calendar wrapper ---*/}
-      <View style={styles.calendar}>
+    <View style={styles.container}>
+      <ScrollView>
+        
+        {/* --- Calendar wrapper ---*/}
+        <View style={styles.calendar}>
 
-        {/* --- Calendar component ---*/}
-        <Calendar
-          key={currentKey.toISOString()}
-          theme = {calendarTheme}
-          {...staticCalendarProps}
+          {/* --- Calendar component ---*/}
+          <Calendar
+            key={currentKey.toISOString()}
+            theme = {calendarTheme}
+            {...staticCalendarProps}
 
-          onDayPress={(day) => {
-            setSelectedDay(new YMDDate(day.dateString as string));
-          }}
+            onDayPress={(day) => {
+              setSelectedDay(new YMDDate(day.dateString as string));
+            }}
+            
+            // what to do when a day is selected
+            markedDates={{
+              [selectedDay.strform]: {
+                selected: true,
+                disableTouchEvent: true,
+                selectedColor: '#fc1d00',
+                selectedTextColor: today.strform == selectedDay.strform ? '#f7c40c' : '#ffffff',
+              }
+
+              // TODO: add event markers on dates (dots, etc)
+
+            }}
+
+            // arrow change left
+            onPressArrowLeft={(substractMonth) => {
+              // change displayed date
+              let newYear: number = displayedDate.year;
+              let newMonth: number = displayedDate.month - 1;
+              let newDay = displayedDate.day; // this is not used
+              if (newMonth < 1) {
+                newMonth = 12;
+                newYear--;
+              }
+              setDisplayedDate(new YMDDate(`${newYear}-${newMonth}-${newDay}`));
+              substractMonth();
+            }}
+
+            // arrow change right
+            onPressArrowRight={(addMonth) => {
+              // change displayed date
+              let newYear: number = displayedDate.year;
+              let newMonth: number = displayedDate.month + 1;
+              let newDay = displayedDate.day; // this is not used
+              if (newMonth > 12) {
+                newMonth = 1;
+                newYear++;
+              }
+              setDisplayedDate(new YMDDate(`${newYear}-${newMonth}-${newDay}`));
+              addMonth();
+            }}
+          />
+        </View>
+        
+
+        <View style={styles.returnToToday}>
+          <TouchableOpacity
+            onPress={() => {
+              setSelectedDay(today); 
+              setCurrentKey(new Date());
+              setDisplayedDate(today);
+            }}
+          >
+              
+            <Text style={styles.returnToTodayText}>Return to Today</Text>
+          </TouchableOpacity>
           
+        </View> 
+
+          <View style={styles.container}>
+            <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+          </View>
+        
+        <View style={styles.container}>
           
 
-          // what to do when a day is selected
-          markedDates={{
-            [selectedDay.strform]: {
-              selected: true,
-              disableTouchEvent: true,
-              selectedColor: '#fc1d00',
-              selectedTextColor: today.strform == selectedDay.strform ? '#f7c40c' : '#ffffff',
-            }
+          {/* --- If data undefined, display `loading data`, if no events, display `no events`, otherwise display a list of the event's titles using map ---*/}
+          {
+          data === undefined 
+          ? 
+          <Text style={styles.eventsCountText}>Loading data...</Text> 
+          : 
+          eventsToday.length === 0 
+          ? 
+          <Text style={styles.eventsCountText}>No events</Text> 
+          : 
+          // number of events
+          <View>
+            <Text style={styles.eventsCountText}>{eventsToday.length} events today</Text>
 
-            // TODO: add event markers on dates (dots, etc)
+            {Object.entries(eventsToday).map(([key, event]) => (
+              <EventCard key={key} event={event} />
+            ))}
+            
+        
+          </View>
+          }
+          <Text style={styles.selectedDayStyle}>{selectedDay.strform}{`${displayedDate.year}-${displayedDate.month} `}{eventsToday.length}{" " + eventsThisMonth.length}</Text>
+        </View>
 
-          }}
-
-          // arrow change left
-          onPressArrowLeft={(substractMonth) => {
-            // change displayed date
-            let newYear: number = displayedDate.year;
-            let newMonth: number = displayedDate.month - 1;
-            let newDay = displayedDate.day; // this is not used
-            if (newMonth < 1) {
-              newMonth = 12;
-              newYear--;
-            }
-            setDisplayedDate(new YMDDate(`${newYear}-${newMonth}-${newDay}`));
-            substractMonth();
-          }}
-
-          // arrow change right
-          onPressArrowRight={(addMonth) => {
-            // change displayed date
-            let newYear: number = displayedDate.year;
-            let newMonth: number = displayedDate.month + 1;
-            let newDay = displayedDate.day; // this is not used
-            if (newMonth > 12) {
-              newMonth = 1;
-              newYear++;
-            }
-            setDisplayedDate(new YMDDate(`${newYear}-${newMonth}-${newDay}`));
-            addMonth();
-          }}
-        />
-      </View>
-
-      {/* --- Separator placed maybe temporarily ---*/}
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      {/*<EditScreenInfo path="/screens/CalendarScreen.tsx" />*/}
-
-
-      <View style={styles.container}>
-        <Button
-          title="Return to Today"
-          onPress={() => {
-            setSelectedDay(today); 
-            setCurrentKey(new Date());
-            setDisplayedDate(today);
-          }}
-         />
-        <Text style={styles.selectedDayStyle}>{selectedDay.strform}{`${displayedDate.year}-${displayedDate.month} `}{eventsToday.length}{" " + eventsThisMonth.length}</Text> 
-
-        {/* --- If no events, display `no events`, otherwise display a list of the event's titles using map ---*/}
-        {eventsToday.length == 0 ? <Text>No events</Text> : <Text>Yes events</Text>}
-
-      </View>
-
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
