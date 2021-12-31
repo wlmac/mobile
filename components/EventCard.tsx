@@ -34,13 +34,27 @@ export function EventCard({ event } : { event: any }) {
                 </View>
               </View>
             )}
+            {/* deal with tags*/}
+            <View style={styles.separator} />
+            {event.tags.length > 0 && (
+              <View style={styles.tags}>
+                {Object.entries(event.tags).map(([key, tag]) => (
+                  <Tag key={key} tag={tag}/>
+                ))}
+              </View>
+            )}
           </View>
         </View>
-    
       </TouchableOpacity>
-
     </View>
+  );
+}
 
+export function Tag({tag} : {tag: any}) {
+  return (
+    <View style={[styles.tag, {backgroundColor: tag.color}]}>
+    <Text style={styles.tagText}>{tag.name}</Text>
+    </View>
   );
 }
 
@@ -91,7 +105,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   description: {
-    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'transparent',
@@ -102,7 +115,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 5,
     borderBottomLeftRadius: 5,
     padding: 10,
-    width: '28%'
+    width: '28%',
   },
   timeRangeText: {
     fontSize: 14,
@@ -126,4 +139,20 @@ const styles = StyleSheet.create({
     color: '#4287f5',
     fontStyle: 'italic',
   },
+  tags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  tag: {
+    padding: '2%',
+    margin: '1.5%',
+    borderRadius: 5,
+  },
+  tagText: {
+    fontSize: 12,
+    color: '#525252',
+  }
 });
