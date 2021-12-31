@@ -13,47 +13,6 @@ import { EventCard } from '../components/EventCard';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#000000',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  separator: {
-    marginVertical: 10,
-    height: 1,
-    width: '80%',
-  },
-
-  calendar: {
-    width: windowWidth,
-  },
-
-  selectedDayStyle: {
-    justifyContent: 'center',
-    color: 'white',
-  },
-
-  returnToToday: {
-    alignItems: 'flex-end',
-    width: '95%',
-  },
-
-  returnToTodayText: {
-    color: 'white',
-    fontSize: 16,
-    textAlign: 'right',
-  },
-
-  eventsCountText: {
-    color: 'white',
-    fontSize: 20,
-    textAlign: 'left',
-    marginVertical: 5,
-  }
-});
-
 const staticCalendarProps = {
   showSixWeeks: true,
   disableMonthChange: true,
@@ -146,6 +105,9 @@ export default function CalendarScreen() {
   }, [selectedDay]);
 
   // update events on month change using useeffect
+
+  // TODO: update this to "dates to mark", iterate the dates and add them to a list if not already in it
+
   useEffect(() => {
     if (data === undefined) {
       setEventsToday([]);
@@ -158,6 +120,25 @@ export default function CalendarScreen() {
         // startDate is before or on displayed month and endDate is after or on selected month add to tempEventsToday (use the compare method)
         if (startDate.compareMonths(displayedDate) <= 0 && endDate.compareMonths(displayedDate) >= 0) {
           tempEventsThisMonth.push(event);
+          // iterate from start date to end date first checking day, then month, then year
+          let currentYear: number = startDate.year;
+          let currentMonth: number = startDate.month;
+          let currentDay: number = startDate.day;
+          while (currentYear <= endDate.year) {
+            while (currentMonth <= endDate.month) {
+              while (currentDay <= endDate.day) {
+                // add to tempEventsThisMonth
+
+                
+
+                currentDay++;
+              }
+              currentDay = 1;
+              currentMonth++;
+            }
+            currentMonth = 1;
+            currentYear++;
+          }
         }
       }
       setEventsThisMonth(tempEventsThisMonth);
@@ -188,7 +169,7 @@ export default function CalendarScreen() {
                 disableTouchEvent: true,
                 selectedColor: '#fc1d00',
                 selectedTextColor: today.strform == selectedDay.strform ? '#f7c40c' : '#ffffff',
-              }
+              },
 
               // TODO: add event markers on dates (dots, etc)
 
@@ -233,47 +214,43 @@ export default function CalendarScreen() {
               setDisplayedDate(today);
             }}
           >
-              
             <Text style={styles.returnToTodayText}>Return to Today</Text>
           </TouchableOpacity>
-          
         </View> 
 
-          <View style={styles.container}>
-            <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-          </View>
-        
         <View style={styles.container}>
+          <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+        </View>
+        
+        <View style={styles.eventsTitle}>
           
-
-          {/* --- If data undefined, display `loading data`, if no events, display `no events`, otherwise display a list of the event's titles using map ---*/}
           {
           data === undefined 
           ? 
-          <Text style={styles.eventsCountText}>Loading data...</Text> 
+          <Text style={styles.eventsCountText}>Loading Data...</Text> 
           : 
-          eventsToday.length === 0 
-          ? 
-          <Text style={styles.eventsCountText}>No events</Text> 
-          : 
-          // number of events
           <View>
-            <Text style={styles.eventsCountText}>{eventsToday.length} events today</Text>
-
+            {/* TODO: Change to date */}
+            <Text style={styles.eventsCountText}>{new Date(selectedDay.year, selectedDay.month-1, selectedDay.day).toLocaleDateString(undefined, options)}</Text>
             {Object.entries(eventsToday).map(([key, event]) => (
-              <EventCard key={key} event={event} />
+              // sketchy key
+              <EventCard key={key+new Date().toISOString()} event={event} />
             ))}
-            
-        
           </View>
           }
-          <Text style={styles.selectedDayStyle}>{selectedDay.strform}{`${displayedDate.year}-${displayedDate.month} `}{eventsToday.length}{" " + eventsThisMonth.length}</Text>
+          <Text style={styles.selectedDayStyle}>DEBUG: {selectedDay.strform} {`${displayedDate.year}-${displayedDate.month} `}{eventsToday.length}{" " + eventsThisMonth.length}</Text>
         </View>
 
+
+        <View style={styles.container}>
+          <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+        </View>
       </ScrollView>
     </View>
   );
 }
+
+const options = { weekday: 'long' as any, year: 'numeric' as any, month: 'long' as any, day: 'numeric' as any };
 
 // date class, but only year month and day
 class YMDDate {
@@ -320,3 +297,53 @@ class YMDDate {
     }
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#000000',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  separator: {
+    marginVertical: '5%',
+    height: 1,
+    width: '80%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  calendar: {
+    width: windowWidth,
+  },
+
+  selectedDayStyle: {
+    justifyContent: 'center',
+    color: 'white',
+  },
+
+  returnToToday: {
+    alignItems: 'flex-end',
+    width: '95%',
+  },
+
+  returnToTodayText: {
+    color: 'white',
+    fontSize: 16,
+    textAlign: 'right',
+  },
+
+  eventsCountText: {
+    color: 'white',
+    fontSize: 20,
+    textAlign: 'left',
+    marginVertical: '1%',
+    marginLeft: '2%',
+  },
+
+  eventsTitle: {
+    marginLeft: '3%',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+  }
+});

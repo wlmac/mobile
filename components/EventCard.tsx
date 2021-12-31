@@ -4,10 +4,10 @@ import { StyleSheet, TouchableOpacity } from 'react-native';
 
 import { View, Text } from './Themed';
 
-// This will be used to toggle between a weekly and monthly calendar page 
+// Event card
 export function EventCard({ event } : { event: any }) {
 
-  const color = event.tags.length == 0 ? '#03b6fc' : event.tags[0].color;
+  const color = event.tags.length == 0 ? '#74e1ed' : event.tags[0].color;
 
   // selected state
   const [selected, setSelected] = React.useState(false);
@@ -46,26 +46,31 @@ export function EventCard({ event } : { event: any }) {
 
 function timeRange(startDate: string, endDate: string, color: string) {
   
-  const startDateSplit = startDate.split('T');
-  const endDateSplit = endDate.split('T');
+  const startDateSplit: string[] = startDate.split('T');
+  const endDateSplit: string[] = endDate.split('T');
 
-  const startDateYMD = startDateSplit[0].split('-');
-  const endDateYMD = endDateSplit[0].split('-');
+  const startDateYMD: string[] = startDateSplit[0].split('-');
+  const endDateYMD: string[] = endDateSplit[0].split('-');
 
-  const startDateTime = startDateSplit[1].split(':');
-  const endDateTime = endDateSplit[1].split(':');
+  const startDateTime: string[] = startDateSplit[1].split(':');
+  const endDateTime: string[] = endDateSplit[1].split(':');
 
-  const startIsMorning = parseInt(startDateTime[0]) < 12;
-  const endIsMorning = parseInt(endDateTime[0]) < 12;
+  const startIsMorning: boolean = parseInt(startDateTime[0]) < 12;
+  const endIsMorning: boolean = parseInt(endDateTime[0]) < 12;
 
-  const startHour = startIsMorning ? parseInt(startDateTime[0]) === 0 ? 12 : startDateTime[0] : parseInt(startDateTime[0]) - 12;
-  const endHour = endIsMorning ? parseInt(endDateTime[0]) === 0 ? 12 : endDateTime[0] : parseInt(endDateTime[0]) - 12;
+  let startHour: number = parseInt(startDateTime[0]);
+  if (!startIsMorning) startHour -= 12;
+  if (startHour === 0) startHour = 12;
+
+  let endHour: number = parseInt(endDateTime[0]);
+  if (!endIsMorning) endHour -= 12;
+  if (endHour === 0) endHour = 12;
 
   return (
     <View style={[styles.timeRange, {backgroundColor: color}]}>
       <Text style={styles.timeRangeText}>{startDateYMD[0]}/{startDateYMD[1]}/{startDateYMD[2]}</Text>
       <Text style={styles.timeRangeText}>{startHour}:{startDateTime[1]}{startIsMorning?" AM":" PM"}</Text>
-      <Text style={[styles.timeRangeText, {fontSize: 10}]}>To</Text>
+      <Text style={[styles.timeRangeText, {fontSize: 10}, {color: '#383838'}]}>To</Text>
       <Text style={styles.timeRangeText}>{endDateYMD[0]}/{endDateYMD[1]}/{endDateYMD[2]}</Text>
       <Text style={styles.timeRangeText}>{endHour}:{endDateTime[1]}{endIsMorning?" AM":" PM"}</Text>
     </View>
