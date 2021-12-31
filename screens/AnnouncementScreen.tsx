@@ -16,8 +16,9 @@ export default function AnnouncementScreen() {
     const [myOrgs, setMyOrgs] = useState([]);
 
     // toggle between my feed and school feed
-    const [isFilter, setFilter] = useState(true);
+    const [isFilter, setFilter] = useState(false);
     const toggleSwitch = () => setFilter(isFilter => !isFilter);
+
 
     // announcements
     apiRequest('/api/announcements?format=json', '', 'GET').then((res) => {
@@ -44,24 +45,32 @@ export default function AnnouncementScreen() {
     });
 
     announcements.forEach((item:any) => {
-        let orgId = item.organization.id;
-        if (myOrgs.organizations.includes(organizations[orgId])) {
+        let orgId = item.organization.id; // gets the organization id
+        if (myOrgs.organizations.includes(organizations[orgId])) { // checks against the user's organization list
             myAnnouncements.push(item);
         }
     });
 
 
 
+
     return (
         <View style={styles.container}>
 
-            <ScrollView id="all" style={isFilter ? styles.scrollView : {display: "none"}}>
+            <Text style={styles.header}>
+                {isFilter ? "My Feed" : "School Feed"}
+            </Text>
+
+            {/* School Announcements */}
+            <ScrollView style={!isFilter ? styles.scrollView : {display: "none"}}>
                 {Object.entries(announcements).map(([key, ann]) => (
                     <Announcement key={key} ann={ann}></Announcement>
                 ))}
             </ScrollView>
 
-            <ScrollView id="my" style={!isFilter ? styles.scrollView : {display: "none"}}>
+
+            {/* My Feed Announcements */}
+            <ScrollView style={isFilter ? styles.scrollView : {display: "none"}}>
                 {Object.entries(myAnnouncements).map(([key, ann]) => (
                     <Announcement key={key} ann={ann}></Announcement>
                 ))}
@@ -71,14 +80,14 @@ export default function AnnouncementScreen() {
             {/* Filter Announcements */}
             <View style={styles.row}>
                 <Text style={{color: isFilter ?"#b7b7b7ff" : "#434343ff", fontFamily: 'poppins', paddingHorizontal: 8
-                }}>My Feed</Text>
+                }}>School </Text>
                 <Switch style={styles.switch}
                     trackColor={{ false: "#b7b7b7ff", true: "#b7b7b7ff" }}
                     thumbColor={isFilter ? "#434343ff" : "#434343ff"}
                     onValueChange={toggleSwitch}
                     value={isFilter}
                 />
-                <Text style={{color: isFilter ?"#434343ff" : "#b7b7b7ff", fontFamily: 'poppins', paddingHorizontal:12 }}>School </Text>
+                <Text style={{color: isFilter ?"#434343ff" : "#b7b7b7ff", fontFamily: 'poppins', paddingHorizontal:12 }}>My Feed</Text>
             </View>
         </View>
     );
@@ -94,7 +103,11 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginTop: StatusBar.currentHeight || 0,
     },
-
+    header: {
+        fontSize: 20,
+        fontWeight: "bold",
+        paddingVertical: 10,
+    },
     scrollView: {
         marginHorizontal: 0,
     },
