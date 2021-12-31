@@ -20,39 +20,46 @@ export default function AnnouncementScreen() {
     const [isFilter, setFilter] = useState(false);
     const toggleSwitch = () => setFilter(isFilter => !isFilter);
 
+    if (announcements.length == 0) {
+        // announcements
+        apiRequest('/api/announcements?format=json', '', 'GET').then((res) => {
+            if(res.success){
+                setAnnouncements(JSON.parse(res.response));
+                total = announcements[0].id;
+            }
+        });
+    }
 
-    // announcements
-    apiRequest('/api/announcements?format=json', '', 'GET').then((res) => {
-        if(res.success){
-            setAnnouncements(JSON.parse(res.response));
-            total = announcements[0].id;
-        }
-    });
+    if (Object.keys(orgName).length == 0) {
+        // organizations
+        apiRequest('/api/organizations?format=json', '', 'GET').then((res) => {
+            if(res.success){
+                JSON.parse(res.response).forEach((org:any) => {
+                    orgName[org.id] = org.name;
+                    orgIcon[org.id] = org.icon;
+                });
+            }
+        });
+    }
 
-    // organizations
-    apiRequest('/api/organizations?format=json', '', 'GET').then((res) => {
-        if(res.success){
-            JSON.parse(res.response).forEach((org:any) => {
-                orgName[org.id] = org.name;
-                orgIcon[org.id] = org.icon;
-            });
-        }
-    });
-
-    // my organizations
-    apiRequest('/api/me?format=json', '', 'GET').then((res) => {
-        if(res.success){
-            setMyOrgs(JSON.parse(res.response));
-        }
-    });
-
-    announcements.forEach((item:any) => {
-        let orgId = item.organization.id; // gets the organization id
-        item.icon = orgIcon[orgId];
-        if (myOrgs.organizations.includes(orgName[orgId])) { // checks against the user's organization list
-            myAnnouncements.push(item);
-        }
-    });
+    if (myOrgs.length == 0) {
+        // my organizations
+        apiRequest('/api/me?format=json', '', 'GET').then((res) => {
+            if(res.success){
+                setMyOrgs(JSON.parse(res.response));
+            }
+        });
+    }
+    
+    if (myOrgs.length != 0 && announcements.length != 0) {
+        announcements.forEach((item:any) => {
+            let orgId = item.organization.id; // gets the organization id
+            item.icon = orgIcon[orgId];
+            if (myOrgs.organizations.includes(orgName[orgId])) { // checks against the user's organization list
+                myAnnouncements.push(item);
+            }
+        });
+    }
 
 
 
