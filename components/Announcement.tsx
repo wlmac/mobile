@@ -34,7 +34,9 @@ function createHeader(title: string) {
 function annDetails(org: string, orgIcon: string, author: string, timeStamp: string) {
     return (
         <View style={styles.details}>
-            <Image style={styles.orgIcon} source={{uri: orgIcon}}></Image>
+            <View style={styles.iconShadow}>
+                <Image style={styles.orgIcon} source={{uri: orgIcon}}></Image>
+            </View>
             <Text>{org}</Text>
             <Text>{author}</Text>
             <Text>{timeStamp}</Text>
@@ -58,7 +60,6 @@ const styles = StyleSheet.create({
         shadowColor: "black",
         shadowOffset: {width: 0, height: 1},
         shadowOpacity: 0.4,
-        elevation: 1,
     },
     tags: {
         flex: 1,
@@ -83,10 +84,20 @@ const styles = StyleSheet.create({
     },
 
     details: {
+        flex: 1,
         flexDirection: "row",
         flexWrap: "wrap",
     },
+    iconShadow: {
+        shadowColor: "black",
+        shadowOffset: {width: 0, height: 1},
+        shadowOpacity: 0.4,
+        shadowRadius: 2,
+        marginHorizontal: 8,
+        borderRadius: 32/2,
+    },
     orgIcon: {
+        display: "flex",
         width: 32,
         height: 32,
         borderRadius: 32/2,
