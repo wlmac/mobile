@@ -52,9 +52,12 @@ function previewText(text: string) {
 // ----- STYLES -----
 const styles = StyleSheet.create({
     announcement: {
-        borderWidth: 1,
+        marginVertical: 15,
         marginHorizontal: 10,
-        marginBottom: 20,
+        shadowColor: "black",
+        shadowOffset: {width: 0, height: 1},
+        shadowOpacity: 0.4,
+        elevation: 1,
     },
 
     tags: {
