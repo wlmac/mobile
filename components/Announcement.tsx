@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, StatusBar, ScrollView, Linking } from 'react-native';
+import { StyleSheet, StatusBar, ScrollView, Linking, Image } from 'react-native';
 import { Text, View } from '../components/Themed';
 
 export default function Announcement({key, ann}:{key: string, ann: any}) {
@@ -13,7 +13,7 @@ export default function Announcement({key, ann}:{key: string, ann: any}) {
 
             {createHeader(ann.title)}
             
-            {annDetails(ann.organization.slug, ann.author.slug, ann.created_date)}
+            {annDetails(ann.organization.slug, ann.icon, ann.author.slug, ann.created_date)}
             {previewText(ann.body)}
         </View>
     );
@@ -31,9 +31,10 @@ function createHeader(title: string) {
     );
 }
 
-function annDetails(org: string, author: string, timeStamp: string) {
+function annDetails(org: string, orgIcon: string, author: string, timeStamp: string) {
     return (
         <View style={styles.details}>
+            <Image style={styles.orgIcon} source={{uri: orgIcon}}></Image>
             <Text>{org}</Text>
             <Text>{author}</Text>
             <Text>{timeStamp}</Text>
@@ -59,14 +60,12 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.4,
         elevation: 1,
     },
-
     tags: {
         flex: 1,
         flexDirection: "row",
         flexWrap: "wrap",
         marginTop: 5,
     },
-
     tag: {
         overflow: "hidden",
         paddingVertical: 2,
@@ -75,7 +74,6 @@ const styles = StyleSheet.create({
         marginBottom: 5,
         borderRadius: 5,
     },
-
     header: {
         fontSize: 20,
         fontWeight: "bold",
@@ -88,7 +86,11 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         flexWrap: "wrap",
     },
-
+    orgIcon: {
+        width: 32,
+        height: 32,
+        borderRadius: 32/2,
+    },
     text: {
         marginTop: 5,
         paddingHorizontal: 10,

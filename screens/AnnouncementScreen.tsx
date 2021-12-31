@@ -8,7 +8,8 @@ import Announcement from '../components/Announcement';
 
 var total;
 var myAnnouncements:Object[] = [];
-var organizations: {[id: number]: string} = {};
+var orgName: {[id: number]: string} = {};
+var orgIcon: {[id: number]: string} = {};
 
 export default function AnnouncementScreen() {
     // stores announcements
@@ -32,7 +33,8 @@ export default function AnnouncementScreen() {
     apiRequest('/api/organizations?format=json', '', 'GET').then((res) => {
         if(res.success){
             JSON.parse(res.response).forEach((org:any) => {
-                organizations[org.id] = org.name;
+                orgName[org.id] = org.name;
+                orgIcon[org.id] = org.icon;
             });
         }
     });
@@ -46,7 +48,8 @@ export default function AnnouncementScreen() {
 
     announcements.forEach((item:any) => {
         let orgId = item.organization.id; // gets the organization id
-        if (myOrgs.organizations.includes(organizations[orgId])) { // checks against the user's organization list
+        item.icon = orgIcon[orgId];
+        if (myOrgs.organizations.includes(orgName[orgId])) { // checks against the user's organization list
             myAnnouncements.push(item);
         }
     });
