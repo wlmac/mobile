@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, StatusBar, ScrollView } from 'react-native';
+import { StyleSheet, StatusBar, ScrollView, Linking } from 'react-native';
 import { Text, View } from '../components/Themed';
 
 export default function Announcement({key, ann}:{key: string, ann: any}) {

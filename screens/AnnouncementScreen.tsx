@@ -6,14 +6,20 @@ import { Text, View } from '../components/Themed';
 import apiRequest from '../lib/apiRequest';
 import Announcement from '../components/Announcement';
 
-// api link
-const announcementURL = "https://maclyonsden.com/api/announcements?format=json";
 var total;
+var myAnnouncements:Object[] = [];
+var organizations: {[id: number]: string} = {};
 
 export default function AnnouncementScreen() {
     // stores announcements
     const [announcements, setAnnouncements] = useState([]);
+    const [myOrgs, setMyOrgs] = useState([]);
 
+    // toggle between my feed and school feed
+    const [isFilter, setFilter] = useState(true);
+    const toggleSwitch = () => setFilter(isFilter => !isFilter);
+
+    // announcements
     apiRequest('/api/announcements?format=json', '', 'GET').then((res) => {
         if(res.success){
             setAnnouncements(JSON.parse(res.response));
@@ -21,17 +27,42 @@ export default function AnnouncementScreen() {
         }
     });
 
+    // organizations
+    apiRequest('/api/organizations?format=json', '', 'GET').then((res) => {
+        if(res.success){
+            JSON.parse(res.response).forEach((org:any) => {
+                organizations[org.id] = org.name;
+            });
+        }
+    });
 
-    // toggle between my feed and school feed
-    const [isFilter, setFilter] = useState(false);
-    const toggleSwitch = () => setFilter(isFilter => !isFilter);
+    // my organizations
+    apiRequest('/api/me?format=json', '', 'GET').then((res) => {
+        if(res.success){
+            setMyOrgs(JSON.parse(res.response));
+        }
+    });
+
+    announcements.forEach((item:any) => {
+        let orgId = item.organization.id;
+        if (myOrgs.organizations.includes(organizations[orgId])) {
+            myAnnouncements.push(item);
+        }
+    });
+
 
 
     return (
         <View style={styles.container}>
 
-            <ScrollView style={styles.scrollView}>
+            <ScrollView id="all" style={isFilter ? styles.scrollView : {display: "none"}}>
                 {Object.entries(announcements).map(([key, ann]) => (
+                    <Announcement key={key} ann={ann}></Announcement>
+                ))}
+            </ScrollView>
+
+            <ScrollView id="my" style={!isFilter ? styles.scrollView : {display: "none"}}>
+                {Object.entries(myAnnouncements).map(([key, ann]) => (
                     <Announcement key={key} ann={ann}></Announcement>
                 ))}
             </ScrollView>
