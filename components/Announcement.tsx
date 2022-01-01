@@ -13,7 +13,7 @@ export default function Announcement({key, ann}:{key: string, ann: any}) {
 
             {createHeader(ann.title)}
             
-            {annDetails(ann.organization.slug, ann.icon, ann.author.slug, ann.created_date)}
+            {annDetails(ann.name, ann.icon, ann.author.slug, ann.created_date)}
             {previewText(ann.body)}
         </View>
     );
@@ -37,9 +37,9 @@ function annDetails(org: string, orgIcon: string, author: string, timeStamp: str
             <View style={styles.iconShadow}>
                 <Image style={styles.orgIcon} source={{uri: orgIcon}}></Image>
             </View>
-            <Text>{org}</Text>
-            <Text>{author}</Text>
-            <Text>{timeStamp}</Text>
+            <Text style={styles.clubName}>{org}</Text>
+            <Text style={styles.author}>{author}</Text>
+            <Text style={styles.timeStamp}>{new Date(timeStamp).toLocaleString("en-US", {timeZone: "EST"})}</Text>
         </View>
     );
 }
@@ -108,5 +108,17 @@ const styles = StyleSheet.create({
         paddingVertical: 5,
         overflow: "hidden",
         height: 100,
+    },
+    clubName: {
+        paddingTop: 7,
+    },
+    author: {
+        paddingTop: 7,
+        paddingHorizontal: 5,
+    },
+    timeStamp: {
+        paddingTop: 7,
+        paddingLeft: 10,
+        color: '#939393',
     },
 });

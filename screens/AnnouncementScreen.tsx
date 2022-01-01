@@ -30,7 +30,7 @@ export default function AnnouncementScreen() {
         });
     }
 
-    if (Object.keys(orgName).length == 0) {
+    if (Object.keys(orgIcon).length == 0 || Object.keys(orgName).length == 0) {
         // organizations
         apiRequest('/api/organizations?format=json', '', 'GET').then((res) => {
             if(res.success){
@@ -55,10 +55,12 @@ export default function AnnouncementScreen() {
         announcements.forEach((item:any) => {
             let orgId = item.organization.id; // gets the organization id
             item.icon = orgIcon[orgId];
+            item.name = orgName[orgId];
             if (myOrgs.organizations.includes(orgName[orgId])) { // checks against the user's organization list
                 myAnnouncements.push(item);
             }
         });
+        console.log(announcements);
     }
 
 
