@@ -1,10 +1,11 @@
 import * as React from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Switch } from 'react-native';
 import { StyleSheet, StatusBar, ScrollView } from 'react-native';
 import { Text, View } from '../components/Themed';
 import apiRequest from '../lib/apiRequest';
 import Announcement from '../components/Announcement';
+import { unloadAllAsync } from 'expo-font';
 
 var total;
 var myAnnouncements:Object[] = [];
@@ -19,6 +20,11 @@ export default function AnnouncementScreen() {
     // toggle between my feed and school feed
     const [isFilter, setFilter] = useState(false);
     const toggleSwitch = () => setFilter(isFilter => !isFilter);
+
+    // scrollview reset to top on switch toggle
+    const allA = React.useRef<ScrollView>(null);
+    const myA = React.useRef<ScrollView>(null);
+    
 
     if (announcements.length == 0) {
         // announcements
@@ -74,7 +80,7 @@ export default function AnnouncementScreen() {
             </Text>
 
             {/* School Announcements */}
-            <ScrollView style={!isFilter ? styles.scrollView : {display: "none"}}>
+            <ScrollView ref={allA} style={!isFilter ? styles.scrollView : {display: "none"}}>
                 {Object.entries(announcements).map(([key, ann]) => (
                     <Announcement key={key} ann={ann}></Announcement>
                 ))}
@@ -82,7 +88,7 @@ export default function AnnouncementScreen() {
 
 
             {/* My Feed Announcements */}
-            <ScrollView style={isFilter ? styles.scrollView : {display: "none"}}>
+            <ScrollView ref={myA} style={isFilter ? styles.scrollView : {display: "none"}}>
                 {Object.entries(myAnnouncements).map(([key, ann]) => (
                     <Announcement key={key} ann={ann}></Announcement>
                 ))}
@@ -96,7 +102,11 @@ export default function AnnouncementScreen() {
                 <Switch style={styles.switch}
                     trackColor={{ false: "#b7b7b7ff", true: "#b7b7b7ff" }}
                     thumbColor={isFilter ? "#434343ff" : "#434343ff"}
-                    onValueChange={toggleSwitch}
+                    onValueChange={() => {
+                        toggleSwitch();
+                        allA?.current?.scrollTo(0);
+                        myA?.current?.scrollTo(0);
+                    }}
                     value={isFilter}
                 />
                 <Text style={{color: isFilter ?"#434343ff" : "#b7b7b7ff", fontFamily: 'poppins', paddingHorizontal:12 }}>My Feed</Text>
