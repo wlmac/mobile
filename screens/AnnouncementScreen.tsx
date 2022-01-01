@@ -66,7 +66,6 @@ export default function AnnouncementScreen() {
                 myAnnouncements.push(item);
             }
         });
-        console.log(announcements);
     }
 
 
@@ -104,8 +103,8 @@ export default function AnnouncementScreen() {
                     thumbColor={isFilter ? "#434343ff" : "#434343ff"}
                     onValueChange={() => {
                         toggleSwitch();
-                        allA?.current?.scrollTo(0);
-                        myA?.current?.scrollTo(0);
+                        allA?.current?.scrollTo(0, 0, false);
+                        myA?.current?.scrollTo(0, 0, false);
                     }}
                     value={isFilter}
                 />

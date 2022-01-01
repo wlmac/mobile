@@ -47,9 +47,13 @@ function annDetails(org: string, orgIcon: string, author: string, timeStamp: str
 function previewText(text: string) {
     return (
         <Text style={styles.text}>
-            {text}
+            {markdownToPlainText(text)}
         </Text>
     )
+}
+
+function markdownToPlainText(text: string) {
+    return text.replace(/<[^>]+>/g, '');
 }
 
 // ----- STYLES -----
