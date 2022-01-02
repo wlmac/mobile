@@ -22,13 +22,16 @@ export default function AnnouncementScreen() {
     const toggleSwitch = () => setFilter(isFilter => !isFilter);
 
     // toggle between scroll feed and full announcement feed
-    const [fullAnnId, setFullAnnId] = useState("-1");
-
+    const [fullAnnId, setAnnId] = useState("-1");
+    function setFullAnnId(id: string) {
+        setAnnId(id);
+        myA?.current?.scrollTo({x: 0, y: 0, animated: false});
+    }
 
     // scrollview reset to top on switch toggle
     const allA = React.useRef<ScrollView>(null);
     const myA = React.useRef<ScrollView>(null);
-    
+    const fullA = React.useRef<ScrollView>(null);
 
     if (announcements.length == 0) {
         // announcements

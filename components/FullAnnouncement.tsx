@@ -22,7 +22,7 @@ export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToSc
 
             {/* View More Details */}
             <View style={styles.click} onStartShouldSetResponder={(e) => true} onResponderRelease={() => backToScroll("-1")}>
-                <Text style={[{fontWeight: 'bold'}, {color: '#6e9bc4'}]}>{"<  Back to Announcements"}</Text>
+                <Text style={[{fontWeight: 'bold'}, {color: '#6e9bc4'}, {fontSize: 16}]}>{"<  Back to Announcements"}</Text>
             </View>
         </View>
     );
@@ -57,7 +57,7 @@ function annDetails(org: string, orgIcon: string, author: string, timeStamp: str
 function previewText(text: string) {
     return (
         <Text style={styles.text}>
-            <Markdown>{text}</Markdown>
+            <Markdown style={markdownStyles}>{text}</Markdown>
         </Text>
     )
 }
@@ -75,7 +75,8 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: "row",
         flexWrap: "wrap",
-        marginTop: 5,
+        marginTop: 10,
+        marginHorizontal: 5,
     },
     tag: {
         overflow: "hidden",
@@ -86,7 +87,7 @@ const styles = StyleSheet.create({
         borderRadius: 5,
     },
     header: {
-        fontSize: 20,
+        fontSize: 30,
         fontWeight: "bold",
         marginHorizontal: 20,
         marginTop: 5,
@@ -104,13 +105,13 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.4,
         shadowRadius: 2,
         marginHorizontal: 8,
-        borderRadius: 32/2,
+        borderRadius: 38/2,
     },
     orgIcon: {
         display: "flex",
-        width: 32,
-        height: 32,
-        borderRadius: 32/2,
+        width: 38,
+        height: 38,
+        borderRadius: 38/2,
     },
     text: {
         marginTop: 5,
@@ -119,13 +120,16 @@ const styles = StyleSheet.create({
         paddingVertical: 5,
     },
     clubName: {
+        fontSize: 18,
         paddingTop: 7,
     },
     author: {
+        fontSize: 18,
         paddingTop: 7,
         paddingHorizontal: 5,
     },
     timeStamp: {
+        fontSize: 18,
         paddingTop: 7,
         paddingLeft: 10,
         color: '#939393',
@@ -135,4 +139,10 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         marginHorizontal: 10,
     },
+});
+
+const markdownStyles = StyleSheet.create({
+    body: {
+        fontSize: 17,
+    }
 });
