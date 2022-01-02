@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { StyleSheet, StatusBar, ScrollView, Linking, Image } from 'react-native';
 import { Text, View } from '../components/Themed';
-import Markdown, {MarkdownIt} from 'react-native-markdown-display';
 
 export default function Announcement({key, ann}:{key: string, ann: any}) {
     return (
@@ -45,16 +44,13 @@ function annDetails(org: string, orgIcon: string, author: string, timeStamp: str
     );
 }
 
+// markdown to plaintext
 function previewText(text: string) {
+    const removeMd = require('remove-markdown');
+    const plaintext = removeMd(text);
     return (
-        <View style={styles.text}>
-            <Markdown>{text}</Markdown>
-        </View>
+        <Text style={styles.text}>{plaintext}</Text>
     )
-}
-
-function markdownToPlainText(text: string) {
-    return text.replace(/<[^>]+>/g, '');
 }
 
 // ----- STYLES -----
