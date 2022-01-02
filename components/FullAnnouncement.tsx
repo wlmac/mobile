@@ -1,10 +1,14 @@
 import * as React from 'react';
 import { StyleSheet, StatusBar, ScrollView, Linking, Image } from 'react-native';
 import { Text, View } from '../components/Themed';
+import Markdown from 'react-native-markdown-display';
 
-export default function Announcement({key, ann, fullAnn}:{key: string, ann: any, fullAnn: Function}) {
+export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToScroll: Function}) {
+    if (ann == undefined) { // prevent errors
+        return(<></>);
+    }
     return (
-        <View style={styles.announcement}>
+        <View style={styles.announcement} onStartShouldSetResponder={(e) => true} onResponderRelease={() => backToScroll(ann.id)}>
             <View style={styles.tags}>
                 {Object.entries(ann.tags).map(([key, tag]) => (
                     createTag(key, tag)
@@ -17,8 +21,8 @@ export default function Announcement({key, ann, fullAnn}:{key: string, ann: any,
             {previewText(ann.body)}
 
             {/* View More Details */}
-            <View style={styles.click} onStartShouldSetResponder={(e) => true} onResponderRelease={() => fullAnn(ann.id)}>
-                <Text style={[{fontWeight: 'bold'}, {color: '#6e9bc4'}]}>{"See announcement  >"}</Text>
+            <View style={styles.click} onStartShouldSetResponder={(e) => true} onResponderRelease={() => backToScroll("-1")}>
+                <Text style={[{fontWeight: 'bold'}, {color: '#6e9bc4'}]}>{"<  Back to Announcements"}</Text>
             </View>
         </View>
     );
@@ -51,10 +55,10 @@ function annDetails(org: string, orgIcon: string, author: string, timeStamp: str
 
 // markdown to plaintext
 function previewText(text: string) {
-    const removeMd = require('remove-markdown');
-    const plaintext = removeMd(text);
     return (
-        <Text style={styles.text}>{plaintext}</Text>
+        <Text style={styles.text}>
+            <Markdown>{text}</Markdown>
+        </Text>
     )
 }
 
@@ -110,10 +114,9 @@ const styles = StyleSheet.create({
     },
     text: {
         marginTop: 5,
+        marginHorizontal: 5,
         paddingHorizontal: 10,
         paddingVertical: 5,
-        overflow: "hidden",
-        height: 100,
     },
     clubName: {
         paddingTop: 7,

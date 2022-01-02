@@ -5,9 +5,9 @@ import { StyleSheet, StatusBar, ScrollView } from 'react-native';
 import { Text, View } from '../components/Themed';
 import apiRequest from '../lib/apiRequest';
 import Announcement from '../components/Announcement';
-import { unloadAllAsync } from 'expo-font';
+import FullAnnouncement from '../components/FullAnnouncement';
 
-var total;
+
 var myAnnouncements:Object[] = [];
 var orgName: {[id: number]: string} = {};
 var orgIcon: {[id: number]: string} = {};
@@ -21,6 +21,10 @@ export default function AnnouncementScreen() {
     const [isFilter, setFilter] = useState(false);
     const toggleSwitch = () => setFilter(isFilter => !isFilter);
 
+    // toggle between scroll feed and full announcement feed
+    const [fullAnnId, setFullAnnId] = useState("-1");
+
+
     // scrollview reset to top on switch toggle
     const allA = React.useRef<ScrollView>(null);
     const myA = React.useRef<ScrollView>(null);
@@ -31,7 +35,6 @@ export default function AnnouncementScreen() {
         apiRequest('/api/announcements?format=json', '', 'GET').then((res) => {
             if(res.success){
                 setAnnouncements(JSON.parse(res.response));
-                total = announcements[0].id;
             }
         });
     }
@@ -71,31 +74,35 @@ export default function AnnouncementScreen() {
 
 
 
+
     return (
         <View style={styles.container}>
 
-            <Text style={styles.header}>
+            <Text style={fullAnnId == "-1" ? styles.header : {display: "none"}}>
                 {isFilter ? "My Feed" : "School Feed"}
             </Text>
 
             {/* School Announcements */}
-            <ScrollView ref={allA} style={!isFilter ? styles.scrollView : {display: "none"}}>
+            <ScrollView ref={allA} style={!isFilter && fullAnnId == "-1" ? styles.scrollView : {display: "none"}}>
                 {Object.entries(announcements).map(([key, ann]) => (
-                    <Announcement key={key} ann={ann}></Announcement>
+                    <Announcement key={key} ann={ann} fullAnn={setFullAnnId}></Announcement>
                 ))}
             </ScrollView>
 
-
-            {/* My Feed Announcements */}
-            <ScrollView ref={myA} style={isFilter ? styles.scrollView : {display: "none"}}>
+            {/* My Feed Announcement */}
+            <ScrollView ref={myA} style={isFilter && fullAnnId == "-1" ? styles.scrollView : {display: "none"}}>
                 {Object.entries(myAnnouncements).map(([key, ann]) => (
-                    <Announcement key={key} ann={ann}></Announcement>
+                    <Announcement key={key} ann={ann} fullAnn={setFullAnnId}></Announcement>
                 ))}
             </ScrollView>
 
+            {/* Full Announcement */}
+            <ScrollView ref={myA} style={fullAnnId != "-1" ? styles.scrollView : {display: "none"}}>
+                <FullAnnouncement ann={announcements.find((e: any) => e.id == fullAnnId)} backToScroll={setFullAnnId}></FullAnnouncement>
+            </ScrollView>
 
             {/* Filter Announcements */}
-            <View style={styles.row}>
+            <View style={fullAnnId == "-1" ? styles.row : {display: "none"}}>
                 <Text style={{color: isFilter ?"#b7b7b7ff" : "#434343ff", fontFamily: 'poppins', paddingHorizontal: 8
                 }}>School </Text>
                 <Switch style={styles.switch}
