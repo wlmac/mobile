@@ -103,8 +103,8 @@ export default function AnnouncementScreen() {
                     thumbColor={isFilter ? "#434343ff" : "#434343ff"}
                     onValueChange={() => {
                         toggleSwitch();
-                        allA?.current?.scrollTo(0, 0, false);
-                        myA?.current?.scrollTo(0, 0, false);
+                        allA?.current?.scrollTo({x: 0, y: 0, animated: false});
+                        myA?.current?.scrollTo({x: 0, y: 0, animated: false});
                     }}
                     value={isFilter}
                 />

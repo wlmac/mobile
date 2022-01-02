@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { StyleSheet, StatusBar, ScrollView, Linking, Image } from 'react-native';
 import { Text, View } from '../components/Themed';
+import Markdown, {MarkdownIt} from 'react-native-markdown-display';
 
 export default function Announcement({key, ann}:{key: string, ann: any}) {
     return (
@@ -46,9 +47,9 @@ function annDetails(org: string, orgIcon: string, author: string, timeStamp: str
 
 function previewText(text: string) {
     return (
-        <Text style={styles.text}>
-            {markdownToPlainText(text)}
-        </Text>
+        <View style={styles.text}>
+            <Markdown>{text}</Markdown>
+        </View>
     )
 }
 
