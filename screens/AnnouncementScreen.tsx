@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState, useEffect, useRef } from 'react';
-import { Switch } from 'react-native';
+import { Switch, useColorScheme } from 'react-native';
 import { StyleSheet, StatusBar, ScrollView } from 'react-native';
 import { Text, View } from '../components/Themed';
 import apiRequest from '../lib/apiRequest';
@@ -106,7 +106,7 @@ export default function AnnouncementScreen() {
 
             {/* Filter Announcements */}
             <View style={fullAnnId == "-1" ? styles.row : {display: "none"}}>
-                <Text style={{color: isFilter ?"#b7b7b7ff" : "#434343ff", fontFamily: 'poppins', paddingHorizontal: 8
+                <Text style={{color: isFilter ?(useColorScheme() === "dark" ? "#434343ff" : "#b7b7b7ff") : (useColorScheme() === "light" ? "#434343ff" : "#b7b7b7ff"), fontFamily: 'poppins', paddingHorizontal: 8
                 }}>School </Text>
                 <Switch style={styles.switch}
                     trackColor={{ false: "#b7b7b7ff", true: "#b7b7b7ff" }}
@@ -118,7 +118,7 @@ export default function AnnouncementScreen() {
                     }}
                     value={isFilter}
                 />
-                <Text style={{color: isFilter ?"#434343ff" : "#b7b7b7ff", fontFamily: 'poppins', paddingHorizontal:12 }}>My Feed</Text>
+                <Text style={{color: isFilter ?(useColorScheme() === "light" ? "#434343ff" : "#b7b7b7ff") : (useColorScheme() === "dark" ? "#434343ff" : "#b7b7b7ff"), fontFamily: 'poppins', paddingHorizontal:12 }}>My Feed</Text>
             </View>
         </View>
     );

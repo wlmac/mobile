@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { StyleSheet, StatusBar, ScrollView, Linking, Image } from 'react-native';
 import { Text, View } from '../components/Themed';
+import useColorScheme from '../hooks/useColorScheme';
 
 export default function Announcement({key, ann, fullAnn}:{key: string, ann: any, fullAnn: Function}) {
     return (
-        <View style={styles.announcement}>
+        <View style={[styles.announcement, {shadowColor: useColorScheme() === "light" ? "black" : "white"}]}>
             <View style={styles.tags}>
                 {Object.entries(ann.tags).map(([key, tag]) => (
                     createTag(key, tag)
@@ -39,7 +40,7 @@ function createHeader(title: string) {
 function annDetails(org: string, orgIcon: string, author: string, timeStamp: string) {
     return (
         <View style={styles.details}>
-            <View style={styles.iconShadow}>
+            <View style={[styles.iconShadow, {shadowColor: useColorScheme() === "light" ? "black" : "white"}]}>
                 <Image style={styles.orgIcon} source={{uri: orgIcon}}></Image>
             </View>
             <Text style={styles.clubName}>{org}</Text>
@@ -63,7 +64,6 @@ const styles = StyleSheet.create({
     announcement: {
         marginVertical: 15,
         marginHorizontal: 10,
-        shadowColor: "black",
         shadowOffset: {width: 0, height: 1},
         shadowOpacity: 0.4,
     },
@@ -74,6 +74,7 @@ const styles = StyleSheet.create({
         marginTop: 5,
     },
     tag: {
+        color: "black",
         overflow: "hidden",
         paddingVertical: 2,
         paddingHorizontal: 7,
@@ -95,7 +96,6 @@ const styles = StyleSheet.create({
         flexWrap: "wrap",
     },
     iconShadow: {
-        shadowColor: "black",
         shadowOffset: {width: 0, height: 1},
         shadowOpacity: 0.4,
         shadowRadius: 2,
