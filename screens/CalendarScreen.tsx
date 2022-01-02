@@ -9,6 +9,7 @@ import { Text, View } from '../components/Themed';
 import apiRequest from '../lib/apiRequest';
 import config from '../config.json';
 import { EventCard } from '../components/EventCard';
+import useColorScheme from '../hooks/useColorScheme';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -43,8 +44,13 @@ const calendarTheme = {
   monthTextColor: '#ffffff',
 }
 
+let appTheme: string;
+
 // calendar screen
 export default function CalendarScreen() {
+
+  // get theme
+  appTheme = useColorScheme();
 
   // get today's date
   let today: YMDDate = new YMDDate(new Date().toISOString().split('T')[0]);
@@ -120,25 +126,6 @@ export default function CalendarScreen() {
         // startDate is before or on displayed month and endDate is after or on selected month add to tempEventsToday (use the compare method)
         if (startDate.compareMonths(displayedDate) <= 0 && endDate.compareMonths(displayedDate) >= 0) {
           tempEventsThisMonth.push(event);
-          // iterate from start date to end date first checking day, then month, then year
-          let currentYear: number = startDate.year;
-          let currentMonth: number = startDate.month;
-          let currentDay: number = startDate.day;
-          while (currentYear <= endDate.year) {
-            while (currentMonth <= endDate.month) {
-              while (currentDay <= endDate.day) {
-                // add to tempEventsThisMonth
-
-                
-
-                currentDay++;
-              }
-              currentDay = 1;
-              currentMonth++;
-            }
-            currentMonth = 1;
-            currentYear++;
-          }
         }
       }
       setEventsThisMonth(tempEventsThisMonth);
@@ -155,7 +142,28 @@ export default function CalendarScreen() {
           {/* --- Calendar component ---*/}
           <Calendar
             key={currentKey.toISOString()}
-            theme = {calendarTheme}
+            theme = {
+              {
+                backgroundColor: appTheme === 'dark' ? '#000000' : '#ffffff',
+                calendarBackground: appTheme === 'dark' ? '#000000' : '#ffffff',
+              
+                textSectionTitleColor: appTheme === 'dark' ? '#ffffff' : '#000000',
+                textSectionTitleDisabledColor: appTheme == 'dark' ? '#4a4a4a' : '#b8b8b8',
+              
+                todayTextColor: '#f7c40c',
+                dayTextColor: appTheme === 'dark' ? '#ffffff' : '#000000',
+              
+                textDisabledColor: appTheme == 'dark' ? '#4a4a4a' : '#b8b8b8',
+              
+                dotColor: '#00adf5',
+                selectedDotColor: '#ffffff',
+              
+                arrowColor: appTheme === 'dark' ? '#ffffff' : '#000000',
+                disabledArrowColor: '#4a4a4a',
+              
+                monthTextColor: appTheme === 'dark' ? '#ffffff' : '#000000',
+              }
+            }
             {...staticCalendarProps}
 
             onDayPress={(day) => {
@@ -208,13 +216,22 @@ export default function CalendarScreen() {
 
         <View style={styles.returnToToday}>
           <TouchableOpacity
+            disabled={displayedDate.strform == today.strform}
             onPress={() => {
               setSelectedDay(today); 
               setCurrentKey(new Date());
               setDisplayedDate(today);
             }}
           >
-            <Text style={styles.returnToTodayText}>Return to Today</Text>
+            <Text style={[styles.returnToTodayText, 
+              {color: appTheme === 'light'
+              ? 
+              displayedDate.strform == today.strform ? '#8b8b8b' : '#000'
+              : 
+              displayedDate.strform == today.strform ? '#4a4a4a' : '#fff'
+              }]}>
+                Return to Today
+              </Text>
           </TouchableOpacity>
         </View> 
 
@@ -227,18 +244,26 @@ export default function CalendarScreen() {
           {
           data === undefined 
           ? 
-          <Text style={styles.eventsCountText}>Loading Data...</Text> 
+          <Text style={[styles.eventsCountText, {color: appTheme === 'light' ? '#000' : '#fff'}]}>Loading Data...</Text> 
           : 
           <View>
             {/* TODO: Change to date */}
-            <Text style={styles.eventsCountText}>{new Date(selectedDay.year, selectedDay.month-1, selectedDay.day).toLocaleDateString(undefined, options)}</Text>
-            {Object.entries(eventsToday).map(([key, event]) => (
-              // sketchy key
-              <EventCard key={key+new Date().toISOString()} event={event} />
-            ))}
+            <Text style={[styles.eventsCountText, {color: appTheme === 'light' ? '#000' : '#fff'}]}>{new Date(selectedDay.year, selectedDay.month-1, selectedDay.day).toLocaleDateString(undefined, options)}</Text>
+            {
+              eventsToday.length === 0
+              ?
+              <Text style={[styles.eventsCountText, {color: appTheme === 'light' ? '#000' : '#fff'}]}>No events today</Text>
+              :
+              <View>
+                {Object.entries(eventsToday).map(([key, event]) => (
+                  // sketchy key
+                  <EventCard key={key+new Date().toISOString()} event={event} />
+                ))}
+              </View>
+            }
           </View>
           }
-          <Text style={styles.selectedDayStyle}>DEBUG: {selectedDay.strform} {`${displayedDate.year}-${displayedDate.month} `}{eventsToday.length}{" " + eventsThisMonth.length}</Text>
+
         </View>
 
 
@@ -300,7 +325,6 @@ class YMDDate {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#000000',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -328,21 +352,19 @@ const styles = StyleSheet.create({
   },
 
   returnToTodayText: {
-    color: 'white',
     fontSize: 16,
     textAlign: 'right',
+    marginHorizontal: '2%',
   },
 
   eventsCountText: {
-    color: 'white',
     fontSize: 20,
     textAlign: 'left',
-    marginVertical: '1%',
-    marginLeft: '2%',
+    marginVertical: '3%',
   },
 
   eventsTitle: {
-    marginLeft: '3%',
+    marginLeft: '5%',
     alignItems: 'flex-start',
     justifyContent: 'flex-start',
   }

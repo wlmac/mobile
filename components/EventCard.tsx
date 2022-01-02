@@ -1,11 +1,15 @@
 import React from 'react';
 
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 
 import { View, Text } from './Themed';
 
+let theme;
+
 // Event card
 export function EventCard({ event } : { event: any }) {
+
+  theme = useColorScheme();
 
   const color = event.tags.length == 0 ? '#74e1ed' : event.tags[0].color;
 
@@ -21,8 +25,8 @@ export function EventCard({ event } : { event: any }) {
 
         <View style={styles.quickInfo}>
           {timeRange(event.start_date, event.end_date, color)}
-          <View style={styles.info}>
-            <Text style={styles.titleText}>{event.name}</Text>
+          <View style={[styles.info, {backgroundColor: theme === 'light' ? '#edebeb' : '#2e2e2e'}]}>
+            <Text style={[styles.titleText, {color: theme === 'light' ? '#000' : '#fff'}]}>{event.name}</Text>
             <Text style={styles.organizationText}>{event.organization.name}</Text>
             {/* display if selected is true*/}
             {selected && (
@@ -30,7 +34,8 @@ export function EventCard({ event } : { event: any }) {
                 <View style={styles.separator} />
 
                 <View style={styles.description}>
-                  <Text>{event.description.length == 0 ? 'No description' : event.description}</Text>
+                
+                  <Text style={{color: theme === 'light' ? '#000' : '#fff'}}>{event.description.length == 0 ? 'No description' : event.description}</Text>
                 </View>
               </View>
             )}
@@ -127,12 +132,10 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 5,
     borderBottomRightRadius: 5,
     padding: 10,
-    backgroundColor: '#2e2e2e',
     width: '68%',
   },
   titleText: {
     fontSize: 20,
-    color: '#ffffff',
   },
   organizationText: {
     fontSize: 14,
