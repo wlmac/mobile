@@ -6,6 +6,7 @@ import { Text, View } from '../components/Themed';
 import apiRequest from '../lib/apiRequest';
 import Announcement from '../components/Announcement';
 import FullAnnouncement from '../components/FullAnnouncement';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 var myAnnouncements:Object[] = [];
@@ -25,7 +26,7 @@ export default function AnnouncementScreen() {
     const [fullAnnId, setAnnId] = useState("-1");
     function setFullAnnId(id: string) {
         setAnnId(id);
-        myA?.current?.scrollTo({x: 0, y: 0, animated: false});
+        fullA?.current?.scrollTo({x: 0, y: 0, animated: false});
     }
 
     // scrollview reset to top on switch toggle
@@ -33,48 +34,49 @@ export default function AnnouncementScreen() {
     const myA = React.useRef<ScrollView>(null);
     const fullA = React.useRef<ScrollView>(null);
 
-    if (announcements.length == 0) {
-        // announcements
-        apiRequest('/api/announcements?format=json', '', 'GET').then((res) => {
-            if(res.success){
-                setAnnouncements(JSON.parse(res.response));
-            }
-        });
-    }
 
-    if (Object.keys(orgIcon).length == 0 || Object.keys(orgName).length == 0) {
-        // organizations
-        apiRequest('/api/organizations?format=json', '', 'GET').then((res) => {
-            if(res.success){
-                JSON.parse(res.response).forEach((org:any) => {
-                    orgName[org.id] = org.name;
-                    orgIcon[org.id] = org.icon;
-                });
-            }
-        });
-    }
 
-    if (myOrgs.length == 0) {
-        // my organizations
-        apiRequest('/api/me?format=json', '', 'GET').then((res) => {
-            if(res.success){
-                setMyOrgs(JSON.parse(res.response));
-            }
+    // fetch data from API
+    useEffect(() => {
+        AsyncStorage.getItem("@announcements").then((res:any) => {
+            res = JSON.parse(res);
+            res = JSON.parse(res.response);
+            setAnnouncements(res);
         });
-    }
-    
-    if (myOrgs.length != 0 && announcements.length != 0) {
+    }, []);
+
+    useEffect(() => {
+        AsyncStorage.getItem("@orgName").then((res:any) => {
+            orgName = JSON.parse(res);
+        });
+    }, []);
+
+    useEffect(() => {
+        AsyncStorage.getItem("@orgIcon").then((res:any) => {
+            orgIcon = JSON.parse(res);
+        });
+    }, []);
+
+
+    useEffect(() => {
+        AsyncStorage.getItem("@myOrgs").then((res:any) => {
+            res = JSON.parse(res);
+            res = JSON.parse(res);
+            setMyOrgs(res.organizations);
+        });
+    }, []);
+    //useEffect(() => {
         announcements.forEach((item:any) => {
             let orgId = item.organization.id; // gets the organization id
             item.icon = orgIcon[orgId];
             item.name = orgName[orgId];
-            if (myOrgs.organizations.includes(orgName[orgId])) { // checks against the user's organization list
+            if (myOrgs.includes(orgName[orgId])) { // checks against the user's organization list
                 myAnnouncements.push(item);
             }
         });
-    }
+    //}, []);
 
-
+    console.log(myAnnouncements);
 
 
 
@@ -100,7 +102,7 @@ export default function AnnouncementScreen() {
             </ScrollView>
 
             {/* Full Announcement */}
-            <ScrollView ref={myA} style={fullAnnId != "-1" ? styles.scrollView : {display: "none"}}>
+            <ScrollView ref={fullA} style={fullAnnId != "-1" ? styles.scrollView : {display: "none"}}>
                 <FullAnnouncement ann={announcements.find((e: any) => e.id == fullAnnId)} backToScroll={setFullAnnId}></FullAnnouncement>
             </ScrollView>
 
@@ -123,6 +125,9 @@ export default function AnnouncementScreen() {
         </View>
     );
 }
+
+
+
 
 
 // ----- STYLES -----
@@ -152,3 +157,36 @@ const styles = StyleSheet.create({
 });
 
 
+function oldAPIThings() {
+    /*
+    if (announcements.length == 0) {
+        // announcements
+        apiRequest('/api/announcements?format=json', '', 'GET').then((res) => {
+            if(res.success){
+                setAnnouncements(JSON.parse(res.response));
+            }
+        });
+    }
+
+    if (Object.keys(orgIcon).length == 0 || Object.keys(orgName).length == 0) {
+        // organizations
+        apiRequest('/api/organizations?format=json', '', 'GET').then((res) => {
+            if(res.success){
+                JSON.parse(res.response).forEach((org:any) => {
+                    orgName[org.id] = org.name;
+                    orgIcon[org.id] = org.icon;
+                });
+            }
+        });
+    }
+
+    if (myOrgs.length == 0) {
+        // my organizations
+        apiRequest('/api/me?format=json', '', 'GET').then((res) => {
+            if(res.success){
+                setMyOrgs(JSON.parse(res.response));
+            }
+        });
+    }
+    */
+}

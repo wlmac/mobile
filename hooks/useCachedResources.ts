@@ -5,8 +5,10 @@ import * as React from 'react';
 import NetInfo from "@react-native-community/netinfo";
 import { Alert } from 'react-native';
 import RNRestart from 'react-native-restart';
-
+import apiRequest from '../lib/apiRequest';
 import defaultLogin from '../lib/defaultLogin';
+import AsyncStorageLib from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function useCachedResources() {
   const [isLoadingComplete, setLoadingComplete] = React.useState(false);
@@ -35,6 +37,7 @@ export default function useCachedResources() {
         await Font.loadAsync({
           'poppins': require('../assets/fonts/Poppins/Poppins-Bold.ttf'),
         });
+        await storeAnnouncements();
       } catch (e) {
         // We might want to provide this error information to an error reporting service
         console.warn(e);
@@ -48,4 +51,46 @@ export default function useCachedResources() {
   }, []);
 
   return { isLoadingComplete, loginNeeded };
+}
+
+async function storeAnnouncements() {
+  // announcements
+  await apiRequest('/api/announcements?format=json', '', 'GET').then((res) => {
+    if(res.success){
+      AsyncStorage.setItem("@announcements", JSON.stringify(res));
+    } else {
+      console.log("announcement cache failed");
+    }
+  });
+  console.log('announcement cache done');
+
+
+  // organizations
+  await apiRequest('/api/organizations?format=json', '', 'GET').then((res) => {
+    if(res.success){
+      var orgName: {[id: number]: string} = {};
+      var orgIcon: {[id: number]: string} = {};
+      JSON.parse(res.response).forEach((org:any) => {
+        orgName[org.id] = org.name;
+        orgIcon[org.id] = org.icon;
+      });
+      AsyncStorage.setItem("@orgName", JSON.stringify(orgName));
+      AsyncStorage.setItem("@orgIcon", JSON.stringify(orgIcon));
+    } else {
+      console.log("organization cache failed");
+    }
+  });
+  console.log('organization cache done');
+
+
+
+  // my organizations
+  await apiRequest('/api/me?format=json', '', 'GET').then((res) => {
+    if(res.success){
+      AsyncStorage.setItem("@myOrgs", JSON.stringify(res.response));
+    } else {
+      console.log("my orgs cache failed");
+    }
+  });
+  console.log("my orgs cache done");
 }
