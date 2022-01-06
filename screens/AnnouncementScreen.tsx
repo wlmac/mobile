@@ -9,7 +9,6 @@ import FullAnnouncement from '../components/FullAnnouncement';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
-var myAnnouncements:Object[] = [];
 var orgName: {[id: number]: string} = {};
 var orgIcon: {[id: number]: string} = {};
 
@@ -17,6 +16,7 @@ export default function AnnouncementScreen() {
     // stores announcements
     const [announcements, setAnnouncements] = useState([]);
     const [myOrgs, setMyOrgs] = useState([]);
+    const [myAnnouncements, setMyAnnouncements] = useState([]);
 
     // toggle between my feed and school feed
     const [isFilter, setFilter] = useState(false);
@@ -40,8 +40,14 @@ export default function AnnouncementScreen() {
     useEffect(() => {
         AsyncStorage.getItem("@announcements").then((res:any) => {
             res = JSON.parse(res);
-            res = JSON.parse(res.response);
             setAnnouncements(res);
+        });
+    }, []);
+
+    useEffect(() => {
+        AsyncStorage.getItem("@myann").then((res:any) => {
+            res = JSON.parse(res);
+            setMyAnnouncements(res);
         });
     }, []);
 
@@ -61,22 +67,11 @@ export default function AnnouncementScreen() {
     useEffect(() => {
         AsyncStorage.getItem("@myOrgs").then((res:any) => {
             res = JSON.parse(res);
-            res = JSON.parse(res);
-            setMyOrgs(res.organizations);
+            setMyOrgs(res);
         });
     }, []);
-    //useEffect(() => {
-        announcements.forEach((item:any) => {
-            let orgId = item.organization.id; // gets the organization id
-            item.icon = orgIcon[orgId];
-            item.name = orgName[orgId];
-            if (myOrgs.includes(orgName[orgId])) { // checks against the user's organization list
-                myAnnouncements.push(item);
-            }
-        });
-    //}, []);
 
-    console.log(myAnnouncements);
+
 
 
 

@@ -3,6 +3,7 @@ import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import * as React from 'react';
 import NetInfo from "@react-native-community/netinfo";
+import { useState } from 'react';
 import { Alert } from 'react-native';
 import RNRestart from 'react-native-restart';
 import apiRequest from '../lib/apiRequest';
@@ -28,6 +29,7 @@ export default function useCachedResources() {
         })
         await defaultLogin().then(res => {
           setDefaultLoginDone(res);
+          storeAnnouncements();
         })
         // Load fonts
         await Font.loadAsync({
@@ -37,7 +39,6 @@ export default function useCachedResources() {
         await Font.loadAsync({
           'poppins': require('../assets/fonts/Poppins/Poppins-Bold.ttf'),
         });
-        await storeAnnouncements();
       } catch (e) {
         // We might want to provide this error information to an error reporting service
         console.warn(e);
@@ -54,43 +55,59 @@ export default function useCachedResources() {
 }
 
 async function storeAnnouncements() {
-  // announcements
-  await apiRequest('/api/announcements?format=json', '', 'GET').then((res) => {
-    if(res.success){
-      AsyncStorage.setItem("@announcements", JSON.stringify(res));
-    } else {
-      console.log("announcement cache failed");
-    }
-  });
-  console.log('announcement cache done');
+  var announcements:Object[] = [];
+  var myAnnouncements:Object[] = [];
+  var orgName: {[id: number]: string} = {};
+  var orgIcon: {[id: number]: string} = {};
+  var myOrgs:Object[] = [];
 
 
   // organizations
   await apiRequest('/api/organizations?format=json', '', 'GET').then((res) => {
     if(res.success){
-      var orgName: {[id: number]: string} = {};
-      var orgIcon: {[id: number]: string} = {};
       JSON.parse(res.response).forEach((org:any) => {
         orgName[org.id] = org.name;
         orgIcon[org.id] = org.icon;
       });
       AsyncStorage.setItem("@orgName", JSON.stringify(orgName));
       AsyncStorage.setItem("@orgIcon", JSON.stringify(orgIcon));
+      console.log('organization cache done');
     } else {
       console.log("organization cache failed");
     }
   });
-  console.log('organization cache done');
-
-
 
   // my organizations
   await apiRequest('/api/me?format=json', '', 'GET').then((res) => {
     if(res.success){
       AsyncStorage.setItem("@myOrgs", JSON.stringify(res.response));
+      myOrgs = JSON.parse(res.response).organizations;
+      console.log("my orgs cache done");
     } else {
       console.log("my orgs cache failed");
     }
   });
-  console.log("my orgs cache done");
+
+  // announcements
+  await apiRequest('/api/announcements?format=json', '', 'GET').then((res) => {
+    if(res.success){
+      announcements = JSON.parse(res.response);
+      console.log('announcement cache done');
+    } else {
+      console.log("announcement cache failed");
+    }
+  });
+
+  // my announcements
+  announcements.forEach((item:any) => {
+    let orgId = item.organization.id; // gets the organization id
+    item.icon = orgIcon[orgId];
+    item.name = orgName[orgId];
+    if (myOrgs.includes(orgName[orgId])) { // checks against the user's organization list
+      myAnnouncements.push(item);
+    }
+  });
+
+  AsyncStorage.setItem("@announcements", JSON.stringify(announcements));
+  AsyncStorage.setItem("@myann", JSON.stringify(myAnnouncements));
 }
