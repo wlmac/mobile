@@ -4,6 +4,8 @@ import { Text, View } from '../components/Themed';
 import Markdown from 'react-native-markdown-display';
 import useColorScheme from '../hooks/useColorScheme';
 
+var lightC = "#3a6a96";
+var darkC = "#42a4ff";
 export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToScroll: Function}) {
     if (ann == undefined) { // prevent errors
         return(<></>);
@@ -23,7 +25,7 @@ export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToSc
 
             {/* View More Details */}
             <View style={styles.click} onStartShouldSetResponder={(e) => true} onResponderRelease={() => backToScroll("-1")}>
-                <Text style={[{color: '#3a6a96'}, {fontSize: 16}]}>{"<  Back to Announcements"}</Text>
+                <Text style={[{color: useColorScheme() === "light" ? lightC : darkC}, {fontSize: 16}]}>{"<  Back to Announcements"}</Text>
             </View>
         </View>
     );
@@ -47,8 +49,8 @@ function annDetails(org: string, orgIcon: string, author: string, timeStamp: str
             <View style={[styles.iconShadow, {shadowColor: useColorScheme() === "light" ? "black" : "white"}]}>
                 <Image style={styles.orgIcon} source={{uri: orgIcon}}></Image>
             </View>
-            <Text style={styles.clubName}>{org}</Text>
-            <Text style={styles.author}>{author}</Text>
+            <Text style={[styles.clubName, {color: useColorScheme() === "light" ? lightC : darkC}]}>{org}</Text>
+            <Text style={[styles.author, {color: useColorScheme() === "light" ? lightC : darkC}]}>{author}</Text>
             <Text style={styles.timeStamp}>{new Date(timeStamp).toLocaleString("en-US", {timeZone: "EST"})}</Text>
         </View>
     );
@@ -123,14 +125,12 @@ const styles = StyleSheet.create({
         fontSize: 18,
         paddingTop: 7,
         paddingHorizontal: 5,
-        color: "#3a6a96",
         fontWeight: "bold",
     },
     author: {
         fontSize: 18,
         paddingTop: 7,
         paddingHorizontal: 5,
-        color: "#3a6a96",
         fontWeight: "bold",
     },
     timeStamp: {
@@ -171,7 +171,7 @@ const markdownStylesDark = StyleSheet.create({
         backgroundColor: "black",
     },
     link: {
-        color: "#018bcf",
+        color: "#00abff",
     },
     image: {
         minWidth: '100%',

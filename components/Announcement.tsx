@@ -3,6 +3,8 @@ import { StyleSheet, StatusBar, ScrollView, Linking, Image } from 'react-native'
 import { Text, View } from '../components/Themed';
 import useColorScheme from '../hooks/useColorScheme';
 
+var lightC = "#3a6a96";
+var darkC = "#42a4ff";
 export default function Announcement({ann, fullAnn}:{ann: any, fullAnn: Function}) {
     return (
         <View style={[styles.announcement, {shadowColor: useColorScheme() === "light" ? "black" : "white"}]}>
@@ -19,7 +21,7 @@ export default function Announcement({ann, fullAnn}:{ann: any, fullAnn: Function
 
             {/* View More Details */}
             <View style={styles.click} onStartShouldSetResponder={(e) => true} onResponderRelease={() => fullAnn(ann.id)}>
-                <Text style={[{color: '#3a6a96'}]}>{"See announcement  >"}</Text>
+                <Text style={[{color: useColorScheme() === "light" ? lightC : darkC}]}>{"See announcement  >"}</Text>
             </View>
         </View>
     );
@@ -43,8 +45,8 @@ function annDetails(org: string, orgIcon: string, author: string, timeStamp: str
             <View style={[styles.iconShadow, {shadowColor: useColorScheme() === "light" ? "black" : "white"}]}>
                 <Image style={styles.orgIcon} source={{uri: orgIcon}}></Image>
             </View>
-            <Text style={styles.clubName}>{org}</Text>
-            <Text style={styles.author}>{author}</Text>
+            <Text style={[styles.clubName, {color: useColorScheme() === "light" ? lightC : darkC}]}>{org}</Text>
+            <Text style={[styles.author, {color: useColorScheme() === "light" ? lightC : darkC}]}>{author}</Text>
             <Text style={styles.timeStamp}>{new Date(timeStamp).toLocaleString("en-US", {timeZone: "EST"})}</Text>
         </View>
     );
@@ -117,13 +119,11 @@ const styles = StyleSheet.create({
     },
     clubName: {
         paddingTop: 7,
-        color: "#3a6a96",
         fontWeight: "bold",
     },
     author: {
         paddingTop: 7,
         paddingHorizontal: 5,
-        color: "#3a6a96",
         fontWeight: "bold",
     },
     timeStamp: {

@@ -76,9 +76,12 @@ export default function AnnouncementScreen() {
 
     return (
         <>
+        {/* Loading Icon */}
         <View style={isLoading ? styles.container : {display: "none"}}>
             <Image style={styles.loading} source={loadingIcon}/>
         </View>
+
+        {/* After Everything is Loaded */}
         <View style={!isLoading ? styles.container : {display: "none"}}>
             <Text style={fullAnnId == "-1" ? styles.header : {display: "none"}}>
                 {isFilter ? "My Feed" : "School Feed"}
