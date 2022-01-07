@@ -172,5 +172,9 @@ const markdownStylesDark = StyleSheet.create({
     },
     link: {
         color: "#018bcf",
+    },
+    image: {
+        minWidth: '100%',
+        margin: 10,
     }
 });
