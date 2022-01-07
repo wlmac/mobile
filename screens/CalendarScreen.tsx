@@ -11,6 +11,9 @@ import config from '../config.json';
 import { EventCard } from '../components/EventCard';
 import useColorScheme from '../hooks/useColorScheme';
 
+import AsyncStorageLib from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
@@ -20,29 +23,12 @@ const staticCalendarProps = {
   disableAllTouchEventsForDisabledDays: true,
 };
 
-const calendarTheme = {
-  backgroundColor: '#000000',
-  calendarBackground: '#000000',
-
-  textSectionTitleColor: '#ffffff',
-  textSectionTitleDisabledColor: '#4a4a4a',
-
-  selectedDayBackgroundColor: '#ffffff',
-  selectedDayTextColor: '#ffffff',
-
-  todayTextColor: '#f7c40c',
-  dayTextColor: '#ffffff',
-
-  textDisabledColor: '#4a4a4a',
-
-  dotColor: '#00adf5',
-  selectedDotColor: '#ffffff',
-
-  arrowColor: '#ffffff',
-  disabledArrowColor: '#4a4a4a',
-
-  monthTextColor: '#ffffff',
-}
+const options = { 
+  weekday: 'long' as any, 
+  year: 'numeric' as any, 
+  month: 'long' as any, 
+  day: 'numeric' as any 
+};
 
 let appTheme: string;
 
@@ -53,7 +39,7 @@ export default function CalendarScreen() {
   appTheme = useColorScheme();
 
   // get today's date
-  let today: YMDDate = new YMDDate(new Date().toISOString().split('T')[0]);
+  const today: YMDDate = new YMDDate(new Date().toISOString().split('T')[0]);
 
   // selected date state
   const [selectedDay, setSelectedDay] = useState(today);
@@ -67,29 +53,21 @@ export default function CalendarScreen() {
   // data fetched state
   const [data, setData] = useState(undefined as any);
 
-  // events this month state
-  const [eventsThisMonth, setEventsThisMonth] = useState([] as any[]);
-
   // events today state
   const [eventsToday, setEventsToday] = useState([] as any[]);
 
 
-  // fetch events from API if not fetched yet
-  if (data === undefined) {
-    apiRequest(`/api/events?start=2021-09-20`, '', 'GET').then(res => {
-      //console.log("fetching events...");
-      if (res.success) {
-        //console.log("success");
-        setData(JSON.parse(res.response));
-        // triggers re-render
-        setSelectedDay(today);
-        setDisplayedDate(today);
+  useEffect (() => {
+    AsyncStorage.getItem("@events").then((events: any) => {
+      if (events) {
+        setData(JSON.parse(events));
       }
-      else {
-        console.log(res.response);
-      }
-    })
-  }
+    }).catch((err) => {
+      console.log("Async storage error: " + err);
+    });
+    setSelectedDay(today);
+    setDisplayedDate(today);
+  }, []);
 
   // update events on day change using useeffect
   useEffect(() => {
@@ -112,26 +90,6 @@ export default function CalendarScreen() {
 
   // update events on month change using useeffect
 
-  // TODO: update this to "dates to mark", iterate the dates and add them to a list if not already in it
-
-  useEffect(() => {
-    if (data === undefined) {
-      setEventsToday([]);
-    } else {
-      let tempEventsThisMonth: any = [];
-      for (let i = 0; i < data.length; i++) {
-        let event: any = data[i];
-        let startDate: YMDDate = new YMDDate(event.start_date.split('T')[0]);
-        let endDate: YMDDate = new YMDDate(event.end_date.split('T')[0]);
-        // startDate is before or on displayed month and endDate is after or on selected month add to tempEventsToday (use the compare method)
-        if (startDate.compareMonths(displayedDate) <= 0 && endDate.compareMonths(displayedDate) >= 0) {
-          tempEventsThisMonth.push(event);
-        }
-      }
-      setEventsThisMonth(tempEventsThisMonth);
-    }
-  }, [displayedDate]);
-
   return (
     <View style={styles.container}>
       <ScrollView>
@@ -148,12 +106,12 @@ export default function CalendarScreen() {
                 calendarBackground: appTheme === 'dark' ? '#000000' : '#ffffff',
               
                 textSectionTitleColor: appTheme === 'dark' ? '#ffffff' : '#000000',
-                textSectionTitleDisabledColor: appTheme == 'dark' ? '#4a4a4a' : '#b8b8b8',
+                textSectionTitleDisabledColor: appTheme === 'dark' ? '#4a4a4a' : '#b8b8b8',
               
                 todayTextColor: '#f7c40c',
                 dayTextColor: appTheme === 'dark' ? '#ffffff' : '#000000',
               
-                textDisabledColor: appTheme == 'dark' ? '#4a4a4a' : '#b8b8b8',
+                textDisabledColor: appTheme === 'dark' ? '#4a4a4a' : '#b8b8b8',
               
                 dotColor: '#00adf5',
                 selectedDotColor: '#ffffff',
@@ -244,7 +202,7 @@ export default function CalendarScreen() {
           {
           data === undefined 
           ? 
-          <Text style={[styles.eventsCountText, {color: appTheme === 'light' ? '#000' : '#fff'}]}>Loading Data...</Text> 
+          <Text style={[styles.eventsCountText, {color: '#ff0000'}]}>Error Fetching Data</Text> 
           : 
           <View>
             {/* TODO: Change to date */}
@@ -274,8 +232,6 @@ export default function CalendarScreen() {
     </View>
   );
 }
-
-const options = { weekday: 'long' as any, year: 'numeric' as any, month: 'long' as any, day: 'numeric' as any };
 
 // date class, but only year month and day
 class YMDDate {

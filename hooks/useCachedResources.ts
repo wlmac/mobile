@@ -6,6 +6,10 @@ import NetInfo from "@react-native-community/netinfo";
 import { Alert } from 'react-native';
 import RNRestart from 'react-native-restart';
 
+import AsyncStorageLib from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import apiRequest from '../lib/apiRequest';
 import defaultLogin from '../lib/defaultLogin';
 
 export default function useCachedResources() {
@@ -26,6 +30,8 @@ export default function useCachedResources() {
         })
         await defaultLogin().then(res => {
           setDefaultLoginDone(res);
+          // store events
+          cacheEvents();
         })
         // Load fonts
         await Font.loadAsync({
@@ -48,4 +54,15 @@ export default function useCachedResources() {
   }, []);
 
   return { isLoadingComplete, loginNeeded };
+}
+
+async function cacheEvents() {
+  // request
+  await apiRequest(`/api/events?start=2021-09-20`, '', 'GET').then(res => {
+    if (res.success) {
+      AsyncStorage.setItem("@events", res.response);
+    } else {
+      console.log("API request error: " + res.response);
+    }
+  })
 }
