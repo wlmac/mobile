@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, StatusBar, ScrollView, Linking, Image } from 'react-native';
+import { StyleSheet, Image } from 'react-native';
 import { Text, View } from '../components/Themed';
 import useColorScheme from '../hooks/useColorScheme';
 

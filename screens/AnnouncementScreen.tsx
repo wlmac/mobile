@@ -161,37 +161,3 @@ const styles = StyleSheet.create({
     },
 });
 
-
-function oldAPIThings() {
-    /*
-    if (announcements.length == 0) {
-        // announcements
-        apiRequest('/api/announcements?format=json', '', 'GET').then((res) => {
-            if(res.success){
-                setAnnouncements(JSON.parse(res.response));
-            }
-        });
-    }
-
-    if (Object.keys(orgIcon).length == 0 || Object.keys(orgName).length == 0) {
-        // organizations
-        apiRequest('/api/organizations?format=json', '', 'GET').then((res) => {
-            if(res.success){
-                JSON.parse(res.response).forEach((org:any) => {
-                    orgName[org.id] = org.name;
-                    orgIcon[org.id] = org.icon;
-                });
-            }
-        });
-    }
-
-    if (myOrgs.length == 0) {
-        // my organizations
-        apiRequest('/api/me?format=json', '', 'GET').then((res) => {
-            if(res.success){
-                setMyOrgs(JSON.parse(res.response));
-            }
-        });
-    }
-    */
-}
