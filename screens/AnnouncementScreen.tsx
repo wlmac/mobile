@@ -1,13 +1,11 @@
 import * as React from 'react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Switch, useColorScheme } from 'react-native';
-import { StyleSheet, StatusBar, ScrollView } from 'react-native';
+import { StyleSheet, StatusBar, ScrollView, Image } from 'react-native';
 import { Text, View } from '../components/Themed';
-import apiRequest from '../lib/apiRequest';
 import Announcement from '../components/Announcement';
 import FullAnnouncement from '../components/FullAnnouncement';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 
 var orgName: {[id: number]: string} = {};
 var orgIcon: {[id: number]: string} = {};
@@ -17,6 +15,10 @@ export default function AnnouncementScreen() {
     const [announcements, setAnnouncements] = useState([]);
     const [myOrgs, setMyOrgs] = useState([]);
     const [myAnnouncements, setMyAnnouncements] = useState([]);
+    
+    // loading
+    const [isLoading, toggleLoading] = useState(true);
+    const loadingIcon = require('../assets/images/loading.gif');
 
     // toggle between my feed and school feed
     const [isFilter, setFilter] = useState(false);
@@ -68,16 +70,16 @@ export default function AnnouncementScreen() {
         AsyncStorage.getItem("@myOrgs").then((res:any) => {
             res = JSON.parse(res);
             setMyOrgs(res);
+            toggleLoading(false);
         });
     }, []);
 
-
-
-
-
     return (
-        <View style={styles.container}>
-
+        <>
+        <View style={isLoading ? styles.container : {display: "none"}}>
+            <Image style={styles.loading} source={loadingIcon}/>
+        </View>
+        <View style={!isLoading ? styles.container : {display: "none"}}>
             <Text style={fullAnnId == "-1" ? styles.header : {display: "none"}}>
                 {isFilter ? "My Feed" : "School Feed"}
             </Text>
@@ -118,6 +120,7 @@ export default function AnnouncementScreen() {
                 <Text style={{color: isFilter ?(useColorScheme() === "light" ? "#434343ff" : "#b7b7b7ff") : (useColorScheme() === "dark" ? "#434343ff" : "#b7b7b7ff"), fontFamily: 'poppins', paddingHorizontal:12 }}>My Feed</Text>
             </View>
         </View>
+        </>
     );
 }
 
@@ -133,6 +136,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         marginTop: StatusBar.currentHeight || 0,
+    },
+    loading: {
+        width: 40,
+        height: 40,
     },
     header: {
         fontSize: 20,
