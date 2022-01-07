@@ -3,7 +3,7 @@ import { StyleSheet, StatusBar, ScrollView, Linking, Image } from 'react-native'
 import { Text, View } from '../components/Themed';
 import useColorScheme from '../hooks/useColorScheme';
 
-export default function Announcement({key, ann, fullAnn}:{key: string, ann: any, fullAnn: Function}) {
+export default function Announcement({ann, fullAnn}:{ann: any, fullAnn: Function}) {
     return (
         <View style={[styles.announcement, {shadowColor: useColorScheme() === "light" ? "black" : "white"}]}>
             <View style={styles.tags}>
@@ -19,7 +19,7 @@ export default function Announcement({key, ann, fullAnn}:{key: string, ann: any,
 
             {/* View More Details */}
             <View style={styles.click} onStartShouldSetResponder={(e) => true} onResponderRelease={() => fullAnn(ann.id)}>
-                <Text style={[{fontWeight: 'bold'}, {color: '#6e9bc4'}]}>{"See announcement  >"}</Text>
+                <Text style={[{color: '#3a6a96'}]}>{"See announcement  >"}</Text>
             </View>
         </View>
     );
@@ -117,10 +117,14 @@ const styles = StyleSheet.create({
     },
     clubName: {
         paddingTop: 7,
+        color: "#3a6a96",
+        fontWeight: "bold",
     },
     author: {
         paddingTop: 7,
         paddingHorizontal: 5,
+        color: "#3a6a96",
+        fontWeight: "bold",
     },
     timeStamp: {
         paddingTop: 7,

@@ -23,7 +23,7 @@ export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToSc
 
             {/* View More Details */}
             <View style={styles.click} onStartShouldSetResponder={(e) => true} onResponderRelease={() => backToScroll("-1")}>
-                <Text style={[{fontWeight: 'bold'}, {color: '#6e9bc4'}, {fontSize: 16}]}>{"<  Back to Announcements"}</Text>
+                <Text style={[{color: '#3a6a96'}, {fontSize: 16}]}>{"<  Back to Announcements"}</Text>
             </View>
         </View>
     );
@@ -122,11 +122,16 @@ const styles = StyleSheet.create({
     clubName: {
         fontSize: 18,
         paddingTop: 7,
+        paddingHorizontal: 5,
+        color: "#3a6a96",
+        fontWeight: "bold",
     },
     author: {
         fontSize: 18,
         paddingTop: 7,
         paddingHorizontal: 5,
+        color: "#3a6a96",
+        fontWeight: "bold",
     },
     timeStamp: {
         fontSize: 18,
@@ -146,6 +151,13 @@ const markdownStylesLight = StyleSheet.create({
         color: "black",
         backgroundColor: "white",
         fontSize: 17,
+    },
+    link: {
+        color: "#018bcf",
+    },
+    image: {
+        minWidth: '100%',
+        margin: 10,
     }
 });
 
@@ -158,4 +170,7 @@ const markdownStylesDark = StyleSheet.create({
     blockquote: {
         backgroundColor: "black",
     },
+    link: {
+        color: "#018bcf",
+    }
 });
