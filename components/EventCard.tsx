@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   timeRange: {
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
     alignItems: 'flex-end',
     borderTopLeftRadius: 5,
     borderBottomLeftRadius: 5,
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     width: '28%',
   },
   timeRangeText: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#000000',
   },
   info: {

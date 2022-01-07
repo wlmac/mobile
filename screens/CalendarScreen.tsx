@@ -30,6 +30,8 @@ const options = {
   day: 'numeric' as any 
 };
 
+const daysInMonth = [-1, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
 let appTheme: string;
 
 // calendar screen
@@ -53,10 +55,14 @@ export default function CalendarScreen() {
   // data fetched state
   const [data, setData] = useState(undefined as any);
 
+  // event days state, use a set
+  const [eventDays, setEventDays] = useState([] as any[]);
+
   // events today state
   const [eventsToday, setEventsToday] = useState([] as any[]);
 
 
+  // use effect on component load
   useEffect (() => {
     AsyncStorage.getItem("@events").then((events: any) => {
       if (events) {
@@ -69,11 +75,46 @@ export default function CalendarScreen() {
     setDisplayedDate(today);
   }, []);
 
+
+  // use effect on data change
+  useEffect (() => {
+    // add every single event day to the set
+    if (data) {
+      let tempEventDays = new Set<string>();
+      for (let i = 0; i < data.length; i++) {
+        let event: any = data[i];
+        let startDate: YMDDate = new YMDDate(event.start_date.split('T')[0]);
+        let endDate: YMDDate = new YMDDate(event.end_date.split('T')[0]);
+        console.log(event.name + " " + startDate.strform + " " + endDate.strform);
+
+        let currentYear: number = startDate.year;
+        let currentMonth: number = startDate.month;
+        let currentDay: number = startDate.day;
+        
+        // number of days between start and end dates
+        let daysBetween: number = endDate.dayDifference(startDate);
+        for (let j = 1; j <= daysBetween; j++) {
+          tempEventDays.add(`${currentYear}-${currentMonth < 10 ? '0'+currentMonth : currentMonth}-${currentDay < 10 ? '0'+currentDay : currentDay}`);
+          currentDay++;
+          if (currentDay > daysInMonth[currentMonth]) {
+            currentDay = 1;
+            currentMonth++;
+            if (currentMonth > 12) {
+              currentMonth = 1;
+              currentYear++;
+            }
+          }
+        }
+      }
+      // convert set to array, and set as eventDays
+      setEventDays(Array.from(tempEventDays));
+    }
+  }, [data]);
+
+
   // update events on day change using useeffect
   useEffect(() => {
-    if (data === undefined) {
-      setEventsToday([]);
-    } else {
+    if (data) {
       let tempEventsToday: any = [];
       for (let i = 0; i < data.length; i++) {
         let event: any = data[i];
@@ -85,6 +126,8 @@ export default function CalendarScreen() {
         }
       }
       setEventsToday(tempEventsToday);
+    } else {
+      setEventsToday([]);
     }
   }, [selectedDay]);
 
@@ -138,6 +181,17 @@ export default function CalendarScreen() {
               },
 
               // TODO: add event markers on dates (dots, etc)
+              ...eventDays.reduce((obj, eventDay) => {
+                obj[eventDay] = {
+                  marked: true,
+                  dotColor: '#7b00bd',
+                  selected: selectedDay.strform === eventDay,
+                  selectedColor: '#fc1d00',
+                  selectedTextColor: today.strform == selectedDay.strform ? '#f7c40c' : '#ffffff',
+                };
+                return obj;
+              }, {}),
+
 
             }}
 
@@ -277,6 +331,14 @@ class YMDDate {
       else return 0;
     }
   }
+
+  // get the number of days between two dates, inclusive
+  dayDifference(date: YMDDate): number {
+    let millisecondsPerDay = 1000 * 60 * 60 * 24;
+    let thisDate = new Date(this.year, this.month-1, this.day);
+    let dateDate = new Date(date.year, date.month-1, date.day);
+    return Math.round((thisDate.getTime() - dateDate.getTime()) / millisecondsPerDay) + 1;
+  }
 }
 
 const styles = StyleSheet.create({
@@ -303,6 +365,7 @@ const styles = StyleSheet.create({
   },
 
   returnToToday: {
+    marginTop: '2%',
     alignItems: 'flex-end',
     width: '95%',
   },
