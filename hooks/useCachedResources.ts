@@ -29,7 +29,9 @@ export default function useCachedResources() {
         })
         await defaultLogin().then(res => {
           setDefaultLoginDone(res);
-          storeAnnouncements();
+          if(!res) {
+            storeAnnouncements();
+          }
         })
         // Load fonts
         await Font.loadAsync({
