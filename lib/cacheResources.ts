@@ -22,9 +22,9 @@ export async function storeAnnouncements() {
             });
             AsyncStorage.setItem("@orgName", JSON.stringify(orgName));
             AsyncStorage.setItem("@orgIcon", JSON.stringify(orgIcon));
-            console.log('organization cache done');
+            //console.log('organization cache done');
         } else {
-            console.log("organization cache failed");
+            //console.log("organization cache failed");
         }
     });
 
@@ -33,9 +33,9 @@ export async function storeAnnouncements() {
         if (res.success) {
             AsyncStorage.setItem("@myOrgs", JSON.stringify(res.response));
             myOrgs = JSON.parse(res.response).organizations;
-            console.log("my orgs cache done");
+            //console.log("my orgs cache done");
         } else {
-            console.log("my orgs cache failed");
+            //console.log("my orgs cache failed");
         }
     });
 
@@ -43,9 +43,9 @@ export async function storeAnnouncements() {
     await apiRequest('/api/announcements?format=json', '', 'GET').then((res) => {
         if (res.success) {
             announcements = JSON.parse(res.response);
-            console.log('announcement cache done');
+            //console.log('announcement cache done');
         } else {
-            console.log("announcement cache failed");
+            //console.log("announcement cache failed");
         }
     });
 
