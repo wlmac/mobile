@@ -54,7 +54,7 @@ export default function useCachedResources() {
   return { isLoadingComplete, loginNeeded };
 }
 
-async function storeAnnouncements() {
+export async function storeAnnouncements() {
   var announcements:Object[] = [];
   var myAnnouncements:Object[] = [];
   var orgName: {[id: number]: string} = {};
