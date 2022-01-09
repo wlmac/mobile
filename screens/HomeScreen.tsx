@@ -51,6 +51,8 @@ export default function HomeScreen() {
     else {
       updateTimeTable(`Uh-oh, error occurred :(`);
     }
+  }).catch(err => {
+    updateTimeTable(`Could not connect to server!`);
   })
   getWeather().then((data) => {
     updateIcon(wIcons[data.weather_state_abbr]);
