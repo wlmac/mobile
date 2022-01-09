@@ -8,7 +8,7 @@ import config from '../config.json';
 import { Text, View } from '../components/Themed';
 import Colors from '../constants/Colors';
 import { RootStackParamList } from '../types';
-import { storeAnnouncements } from '../hooks/useCachedResources';
+import cacheResources from '../lib/cacheResources';
 
 let state = {
   username: "",
@@ -25,7 +25,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
     updateLoginResText("Logging in... Please wait");
     login().then(val => {
       if (val == "success") {
-        storeAnnouncements();
+        cacheResources();
         navigation.replace('Root');
       }
       else {
