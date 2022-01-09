@@ -5,8 +5,8 @@ import * as React from 'react';
 import NetInfo from "@react-native-community/netinfo";
 import { Alert } from 'react-native';
 import RNRestart from 'react-native-restart';
-
 import defaultLogin from '../lib/defaultLogin';
+import cacheResources from '../lib/cacheResources';
 
 export default function useCachedResources() {
   const [isLoadingComplete, setLoadingComplete] = React.useState(false);
@@ -26,6 +26,9 @@ export default function useCachedResources() {
         })
         await defaultLogin().then(res => {
           setDefaultLoginDone(res);
+          if(!res) {
+            cacheResources();
+          }
         })
         // Load fonts
         await Font.loadAsync({
