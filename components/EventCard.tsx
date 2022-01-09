@@ -100,7 +100,8 @@ const styles = StyleSheet.create({
   eventCardContainer: {
     alignContent: 'center',
     justifyContent: 'center',
-    marginVertical: 7,
+    marginVertical: '2%',
+    marginLeft: '-2%',
   },
   separator: {
     marginVertical: 6,

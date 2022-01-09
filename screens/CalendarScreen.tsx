@@ -3,11 +3,8 @@ import { Button, Dimensions, StyleSheet, ScrollView, TouchableOpacity } from 're
 
 import { Calendar } from 'react-native-calendars';
 
-import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
 
-import apiRequest from '../lib/apiRequest';
-import config from '../config.json';
 import { EventCard } from '../components/EventCard';
 import useColorScheme from '../hooks/useColorScheme';
 
@@ -41,7 +38,7 @@ export default function CalendarScreen() {
   appTheme = useColorScheme();
 
   // get today's date
-  const today: YMDDate = new YMDDate(new Date().toISOString().split('T')[0]);
+  const today: YMDDate = new YMDDate(new Date().toLocaleDateString().replaceAll('/', '-'));
 
   // selected date state
   const [selectedDay, setSelectedDay] = useState(today);
@@ -70,14 +67,15 @@ export default function CalendarScreen() {
       }
     }).catch((err) => {
       console.log("Async storage error: " + err);
+      setData(null);
     });
-    setSelectedDay(today);
-    setDisplayedDate(today);
   }, []);
 
 
   // use effect on data change
   useEffect (() => {
+    setSelectedDay(today);
+    setDisplayedDate(today);
     // add every single event day to the set
     if (data) {
       let tempEventDays = new Set<string>();
@@ -85,7 +83,6 @@ export default function CalendarScreen() {
         let event: any = data[i];
         let startDate: YMDDate = new YMDDate(event.start_date.split('T')[0]);
         let endDate: YMDDate = new YMDDate(event.end_date.split('T')[0]);
-        console.log(event.name + " " + startDate.strform + " " + endDate.strform);
 
         let currentYear: number = startDate.year;
         let currentMonth: number = startDate.month;
@@ -145,24 +142,24 @@ export default function CalendarScreen() {
             key={currentKey.toISOString()}
             theme = {
               {
-                backgroundColor: appTheme === 'dark' ? '#000000' : '#ffffff',
-                calendarBackground: appTheme === 'dark' ? '#000000' : '#ffffff',
+                backgroundColor: appTheme === 'dark' ? '#000' : '#fff',
+                calendarBackground: appTheme === 'dark' ? '#000' : '#fff',
               
-                textSectionTitleColor: appTheme === 'dark' ? '#ffffff' : '#000000',
+                textSectionTitleColor: appTheme === 'dark' ? '#fff' : '#000',
                 textSectionTitleDisabledColor: appTheme === 'dark' ? '#4a4a4a' : '#b8b8b8',
               
                 todayTextColor: '#f7c40c',
-                dayTextColor: appTheme === 'dark' ? '#ffffff' : '#000000',
+                dayTextColor: appTheme === 'dark' ? '#fff' : '#000',
               
                 textDisabledColor: appTheme === 'dark' ? '#4a4a4a' : '#b8b8b8',
               
                 dotColor: '#00adf5',
-                selectedDotColor: '#ffffff',
+                selectedDotColor: '#fff',
               
-                arrowColor: appTheme === 'dark' ? '#ffffff' : '#000000',
+                arrowColor: appTheme === 'dark' ? '#fff' : '#000',
                 disabledArrowColor: '#4a4a4a',
               
-                monthTextColor: appTheme === 'dark' ? '#ffffff' : '#000000',
+                monthTextColor: appTheme === 'dark' ? '#fff' : '#000',
               }
             }
             {...staticCalendarProps}
@@ -177,7 +174,7 @@ export default function CalendarScreen() {
                 selected: true,
                 disableTouchEvent: true,
                 selectedColor: '#fc1d00',
-                selectedTextColor: today.strform == selectedDay.strform ? '#f7c40c' : '#ffffff',
+                selectedTextColor: today.strform == selectedDay.strform ? '#f7c40c' : '#fff',
               },
 
               // TODO: add event markers on dates (dots, etc)
@@ -186,8 +183,9 @@ export default function CalendarScreen() {
                   marked: true,
                   dotColor: '#7b00bd',
                   selected: selectedDay.strform === eventDay,
+                  disableTouchEvent: selectedDay.strform === eventDay,
                   selectedColor: '#fc1d00',
-                  selectedTextColor: today.strform == selectedDay.strform ? '#f7c40c' : '#ffffff',
+                  selectedTextColor: today.strform == selectedDay.strform ? '#f7c40c' : '#fff',
                 };
                 return obj;
               }, {}),
@@ -254,7 +252,7 @@ export default function CalendarScreen() {
         <View style={styles.eventsTitle}>
           
           {
-          data === undefined 
+          data === null
           ? 
           <Text style={[styles.eventsCountText, {color: '#ff0000'}]}>Error Fetching Data</Text> 
           : 
@@ -264,7 +262,7 @@ export default function CalendarScreen() {
             {
               eventsToday.length === 0
               ?
-              <Text style={[styles.eventsCountText, {color: appTheme === 'light' ? '#000' : '#fff'}]}>No events today</Text>
+              <Text style={[styles.eventsCountText, {color: appTheme === 'light' ? '#000' : '#fff', fontSize: 16,}]}>No events today</Text>
               :
               <View>
                 {Object.entries(eventsToday).map(([key, event]) => (
