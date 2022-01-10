@@ -2,9 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import * as React from 'react';
-import NetInfo from "@react-native-community/netinfo";
-import { Alert } from 'react-native';
-import RNRestart from 'react-native-restart';
 import defaultLogin from '../lib/defaultLogin';
 import cacheResources from '../lib/cacheResources';
 
@@ -17,13 +14,6 @@ export default function useCachedResources() {
     async function loadResourcesAndDataAsync() {
       try {
         SplashScreen.preventAutoHideAsync();
-        await NetInfo.fetch().then(state => {
-          if (!state.isConnected) {
-            Alert.alert('Error', `No internet connection found`, [{ text: 'Retry', onPress: () => {
-              RNRestart.Restart();
-            } }], { cancelable: false });
-          }
-        })
         await defaultLogin().then(res => {
           setDefaultLoginDone(res);
           if(!res) {
