@@ -8,18 +8,19 @@ import { Text, View } from '../components/Themed';
 import { EventCard } from '../components/EventCard';
 import useColorScheme from '../hooks/useColorScheme';
 
-import AsyncStorageLib from '@react-native-async-storage/async-storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
+// calendar settings that should not change
 const staticCalendarProps = {
   showSixWeeks: true,
   disableMonthChange: true,
   disableAllTouchEventsForDisabledDays: true,
 };
 
+// options to display date in form of "Monday, January 1, 2020" etc.
 const options = { 
   weekday: 'long' as any, 
   year: 'numeric' as any, 
@@ -27,8 +28,10 @@ const options = {
   day: 'numeric' as any 
 };
 
+// required to calculate date difference
 const daysInMonth = [-1, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
+// dark or light mode
 let appTheme: string;
 
 // calendar screen
@@ -38,7 +41,7 @@ export default function CalendarScreen() {
   appTheme = useColorScheme();
 
   // get today's date
-  const today: YMDDate = new YMDDate(new Date().toLocaleDateString().replaceAll('/', '-'));
+  const today: YMDDate = new YMDDate(new Date().toLocaleDateString().split('/').join('-'));
 
   // selected date state
   const [selectedDay, setSelectedDay] = useState(today);
@@ -61,13 +64,14 @@ export default function CalendarScreen() {
 
   // use effect on component load
   useEffect (() => {
+    // load from AsyncStorage
     AsyncStorage.getItem("@events").then((events: any) => {
       if (events) {
-        setData(JSON.parse(events));
+        setData(JSON.parse(events)); // set data
       }
     }).catch((err) => {
       console.log("Async storage error: " + err);
-      setData(null);
+      setData(null); // set data to null if error, this will show up as an error on the frontend
     });
   }, []);
 
@@ -90,7 +94,10 @@ export default function CalendarScreen() {
         
         // number of days between start and end dates
         let daysBetween: number = endDate.dayDifference(startDate);
+        
+        // iterate through all days between start and end dates
         for (let j = 1; j <= daysBetween; j++) {
+          // add to set (formatting is funny because they need the 0 for single digits)
           tempEventDays.add(`${currentYear}-${currentMonth < 10 ? '0'+currentMonth : currentMonth}-${currentDay < 10 ? '0'+currentDay : currentDay}`);
           currentDay++;
           if (currentDay > daysInMonth[currentMonth]) {
@@ -163,12 +170,13 @@ export default function CalendarScreen() {
               }
             }
             {...staticCalendarProps}
-
+            
+            // set selected day to whatever is selected
             onDayPress={(day) => {
               setSelectedDay(new YMDDate(day.dateString as string));
             }}
             
-            // what to do when a day is selected
+            // mark event days, selected day, and today's date
             markedDates={{
               [selectedDay.strform]: {
                 selected: true,
@@ -177,7 +185,6 @@ export default function CalendarScreen() {
                 selectedTextColor: today.strform == selectedDay.strform ? '#f7c40c' : '#fff',
               },
 
-              // TODO: add event markers on dates (dots, etc)
               ...eventDays.reduce((obj, eventDay) => {
                 obj[eventDay] = {
                   marked: true,
@@ -189,8 +196,6 @@ export default function CalendarScreen() {
                 };
                 return obj;
               }, {}),
-
-
             }}
 
             // arrow change left
@@ -223,7 +228,7 @@ export default function CalendarScreen() {
           />
         </View>
         
-
+        {/* --- Return to today button, disabled when selected day or displayed month isn't on the month ---*/}
         <View style={styles.returnToToday}>
           <TouchableOpacity
             disabled={displayedDate.strform == today.strform}
@@ -249,24 +254,29 @@ export default function CalendarScreen() {
           <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
         </View>
         
+        {/* --- Event list title ---*/}
         <View style={styles.eventsTitle}>
           
           {
+          // if the data is null, there is an error
           data === null
           ? 
           <Text style={[styles.eventsCountText, {color: '#ff0000'}]}>Error Fetching Data</Text> 
           : 
+
+          // events today
           <View>
-            {/* TODO: Change to date */}
             <Text style={[styles.eventsCountText, {color: appTheme === 'light' ? '#000' : '#fff'}]}>{new Date(selectedDay.year, selectedDay.month-1, selectedDay.day).toLocaleDateString(undefined, options)}</Text>
             {
               eventsToday.length === 0
               ?
+              // if there's no events, display `no events`
               <Text style={[styles.eventsCountText, {color: appTheme === 'light' ? '#000' : '#fff', fontSize: 16,}]}>No events today</Text>
               :
+              // lists events
               <View>
                 {Object.entries(eventsToday).map(([key, event]) => (
-                  // sketchy key
+                  // reset key (resets component)
                   <EventCard key={key+new Date().toISOString()} event={event} />
                 ))}
               </View>
@@ -276,10 +286,10 @@ export default function CalendarScreen() {
 
         </View>
 
-
         <View style={styles.container}>
           <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
         </View>
+
       </ScrollView>
     </View>
   );
