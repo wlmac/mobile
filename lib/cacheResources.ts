@@ -1,11 +1,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiRequest from '../lib/apiRequest';
 
-export default function cacheResources(): void {
-    storeAnnouncements();
+export default async function cacheResources(): Promise<void> {
+    return new Promise((resolve, reject) => {
+        storeApiCalls().then(() => {
+            resolve();
+        })
+    });
 }
 
-export async function storeAnnouncements(): Promise<void> {
+export async function storeApiCalls(): Promise<void> {
     var announcements: Object[] = [];
     var myAnnouncements: Object[] = [];
     var orgName: { [id: number]: string } = {};
@@ -46,6 +50,14 @@ export async function storeAnnouncements(): Promise<void> {
             //console.log('announcement cache done');
         } else {
             //console.log("announcement cache failed");
+        }
+    });
+
+    await apiRequest(`/api/events?start=2021-09-20`, '', 'GET').then(res => {
+        if (res.success) {
+            AsyncStorage.setItem("@events", res.response);
+        } else {
+            console.log("API request error: " + res.response);
         }
     });
 

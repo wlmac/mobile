@@ -25,8 +25,11 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
     updateLoginResText("Logging in... Please wait");
     login().then(val => {
       if (val == "success") {
-        cacheResources();
-        navigation.replace('Root');
+        cacheResources().then(() => {
+          React.useEffect(() => {
+            navigation.replace('Root');
+          }, []);
+        })
       }
       else {
         updateLoginResText(String(val));
@@ -34,7 +37,9 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
     }).catch(err => console.log(err));
   }
   if (!loginNeeded) {
-    navigation.replace('Root');
+    React.useEffect(() => {
+      navigation.replace('Root');
+    }, []);
   }
 
   //Keyboard animation code

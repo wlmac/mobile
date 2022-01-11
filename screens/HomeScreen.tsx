@@ -76,7 +76,8 @@ export default function HomeScreen() {
       dayOfTheWeek = new Date().getDay();
       const interval = setInterval(() => {
         time = Math.floor((Date.now() - new Date().setHours(0, 0, 0, 0)) / 60000);
-        if (time >= criticalTimes[3] || dayOfTheWeek > 5) {
+        if (criticalTimes.length ==  0) {}
+        else if (time >= criticalTimes[3] || dayOfTheWeek > 5) {
           updateCourse(`SCHOOL DAY FINISHED`);
           updateTimeText(``);
         }
