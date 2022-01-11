@@ -1,11 +1,17 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiRequest from '../lib/apiRequest';
 
-export default function cacheResources(): void {
-    storeAnnouncements();
+export default async function cacheResources(): Promise<void> {
+    return new Promise((resolve, reject) => {
+        storeAnnouncements().then(() => {
+            resolve();
+        })
+    });
 }
 
 export async function storeAnnouncements(): Promise<void> {
+    console.log('Being called');
+
     var announcements: Object[] = [];
     var myAnnouncements: Object[] = [];
     var orgName: { [id: number]: string } = {};

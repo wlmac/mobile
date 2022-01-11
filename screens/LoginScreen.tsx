@@ -25,8 +25,9 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
     updateLoginResText("Logging in... Please wait");
     login().then(val => {
       if (val == "success") {
-        cacheResources();
-        navigation.replace('Root');
+        cacheResources().then(() => {
+          navigation.replace('Root');
+        })
       }
       else {
         updateLoginResText(String(val));
