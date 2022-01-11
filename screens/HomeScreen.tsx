@@ -4,6 +4,7 @@ import { StyleSheet, Image, useColorScheme, ImageBackground } from 'react-native
 import apiRequest from '../lib/apiRequest';
 import { Text, View } from '../components/Themed';
 import config from '../config.json';
+import getSeason from '../lib/getSeason';
 
 let theme;
 
@@ -13,9 +14,11 @@ export default function HomeScreen() {
   let time: number;
   let schedule: any;
   let dayOfTheWeek: number;
+  let season = getSeason();
 
   let [timetable, updateTimeTable] = React.useState("Fetching data...");
   let [weatherIcon, updateIcon] = React.useState(require('../assets/images/loading.gif'));
+  let [weather, updateWeather] = React.useState('c');
   let [temp, updateTemp] = React.useState('Loading...');
 
   let [course, updateCourse] = React.useState("Loading...");
@@ -51,10 +54,13 @@ export default function HomeScreen() {
     else {
       updateTimeTable(`Uh-oh, error occurred :(`);
     }
+  }).catch(err => {
+    updateTimeTable(`Could not connect to server!`);
   })
   getWeather().then((data) => {
     updateIcon(wIcons[data.weather_state_abbr]);
     updateTemp(`${data.the_temp}°`);
+    updateWeather(data.weather_state_abbr);
   }).catch(() => {
     updateTemp(`Couldn't fetch :(`);
   })
@@ -70,7 +76,8 @@ export default function HomeScreen() {
       dayOfTheWeek = new Date().getDay();
       const interval = setInterval(() => {
         time = Math.floor((Date.now() - new Date().setHours(0, 0, 0, 0)) / 60000);
-        if (time >= criticalTimes[3] || dayOfTheWeek > 5) {
+        if (criticalTimes.length ==  0) {}
+        else if (time >= criticalTimes[3] || dayOfTheWeek > 5) {
           updateCourse(`SCHOOL DAY FINISHED`);
           updateTimeText(``);
         }
@@ -107,9 +114,9 @@ export default function HomeScreen() {
     } 
   }
 
-  let color;
   return (
-    <ImageBackground source={{uri:"https://media.discordapp.net/attachments/759867023885860934/886010709526323210/image0.png?width=1944&height=729"}} resizeMode="cover" style={styles.backgroundImage}>
+    <ImageBackground source={seasonBase[season]} resizeMode="cover" style={styles.backgroundImage}>
+      <ImageBackground source={wLayers[weather][season]} resizeMode="cover" style={styles.backgroundImage}>
 
       {/* ---  Main Page Container ---*/} 
       <View style={[styles.container,{backgroundColor: theme.tint}]}>
@@ -161,6 +168,7 @@ export default function HomeScreen() {
       {/* ---  Main Page Container ---*/} 
       </View>
 
+      </ImageBackground>
     </ImageBackground>
   );
 }
@@ -293,4 +301,79 @@ const wIcons: {
   sl: require(`../assets/images/weather/sl.png`),
   sn: require(`../assets/images/weather/sn.png`),
   t: require(`../assets/images/weather/t.png`)
+}
+
+const seasonBase: {
+  [key: string]: any
+} = {
+  spring: require(`../assets/images/weather/background/base_spring.png`),
+  summer: require(`../assets/images/weather/background/base_summer.png`),
+  fall: require(`../assets/images/weather/background/base_fall.png`),
+  winter: require(`../assets/images/weather/background/base_winter.png`)
+}
+
+//all properties here are specified as spring, summer, fall, and winter
+const wLayers: {
+  [key: string]: any
+} = {
+  c: {
+    spring: require(`../assets/images/weather/background/clear_spring.png`),
+    summer: require(`../assets/images/weather/background/clear_summer.png`),
+    fall: require(`../assets/images/weather/background/clear_fall.png`),
+    winter: require(`../assets/images/weather/background/clear_winter.png`)
+  },
+  h: {
+    spring: require(`../assets/images/weather/background/hail_all.png`),
+    summer: require(`../assets/images/weather/background/hail_all.png`),
+    fall: require(`../assets/images/weather/background/hail_all.png`),
+    winter: require(`../assets/images/weather/background/hail_all.png`)
+  },
+  hc: {
+    spring: require(`../assets/images/weather/background/heavyclouds_winterspringfall.png`),
+    summer: require(`../assets/images/weather/background/heavyclouds_summer.png`),
+    fall: require(`../assets/images/weather/background/heavyclouds_winterspringfall.png`),
+    winter: require(`../assets/images/weather/background/heavyclouds_winterspringfall.png`)
+  },
+  hr: {
+    spring: require(`../assets/images/weather/background/heavyrain_winterspringfall.png`),
+    summer: require(`../assets/images/weather/background/heavyrain_summer.png`),
+    fall: require(`../assets/images/weather/background/heavyrain_winterspringfall.png`),
+    winter: require(`../assets/images/weather/background/heavyrain_winterspringfall.png`)
+  },
+  lc: {
+    spring: require(`../assets/images/weather/background/lightclouds_spring.png`),
+    summer: require(`../assets/images/weather/background/lightclouds_summer.png`),
+    fall: require(`../assets/images/weather/background/lightclouds_fall.png`),
+    winter: require(`../assets/images/weather/background/lightclouds_winter.png`)
+  },
+  lr: {
+    spring: require(`../assets/images/weather/background/lightrain_winterspringfall.png`),
+    summer: require(`../assets/images/weather/background/lightrain_summer.png`),
+    fall: require(`../assets/images/weather/background/lightrain_winterspringfall.png`),
+    winter: require(`../assets/images/weather/background/lightrain_winterspringfall.png`)
+  },
+  s: {
+    spring: require(`../assets/images/weather/background/showers_spring.png`),
+    summer: require(`../assets/images/weather/background/showers_summer.png`),
+    fall: require(`../assets/images/weather/background/showers_fall.png`),
+    winter: require(`../assets/images/weather/background/showers_winter.png`)
+  },
+  sl: {
+    spring: require(`../assets/images/weather/background/sleet_all.png`),
+    summer: require(`../assets/images/weather/background/sleet_all.png`),
+    fall: require(`../assets/images/weather/background/sleet_all.png`),
+    winter: require(`../assets/images/weather/background/sleet_all.png`)
+  },
+  sn: {
+    spring: require(`../assets/images/weather/background/snow_all.png`),
+    summer: require(`../assets/images/weather/background/snow_all.png`),
+    fall: require(`../assets/images/weather/background/snow_all.png`),
+    winter: require(`../assets/images/weather/background/snow_all.png`)
+  },
+  t: {
+    spring: require(`../assets/images/weather/background/thunderstorm_winterspringfall.png`),
+    summer: require(`../assets/images/weather/background/thunderstorm_summer.png`),
+    fall: require(`../assets/images/weather/background/thunderstorm_winterspringfall.png`),
+    winter: require(`../assets/images/weather/background/thunderstorm_winterspringfall.png`)
+  }
 }

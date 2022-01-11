@@ -2,15 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import * as React from 'react';
-import NetInfo from "@react-native-community/netinfo";
-import { Alert } from 'react-native';
-import RNRestart from 'react-native-restart';
-
-import AsyncStorageLib from '@react-native-async-storage/async-storage';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-import apiRequest from '../lib/apiRequest';
 import defaultLogin from '../lib/defaultLogin';
+import cacheResources from '../lib/cacheResources';
 
 export default function useCachedResources() {
   const [isLoadingComplete, setLoadingComplete] = React.useState(false);
@@ -21,17 +14,11 @@ export default function useCachedResources() {
     async function loadResourcesAndDataAsync() {
       try {
         SplashScreen.preventAutoHideAsync();
-        await NetInfo.fetch().then(state => {
-          if (!state.isConnected) {
-            Alert.alert('Error', `No internet connection found`, [{ text: 'Retry', onPress: () => {
-              RNRestart.Restart();
-            } }], { cancelable: false });
-          }
-        })
         await defaultLogin().then(res => {
           setDefaultLoginDone(res);
-          // store events
-          cacheEvents();
+          if(!res) {
+            cacheResources();
+          }
         })
         // Load fonts
         await Font.loadAsync({
@@ -54,15 +41,4 @@ export default function useCachedResources() {
   }, []);
 
   return { isLoadingComplete, loginNeeded };
-}
-
-async function cacheEvents() {
-  // request
-  await apiRequest(`/api/events?start=2021-09-20`, '', 'GET').then(res => {
-    if (res.success) {
-      AsyncStorage.setItem("@events", res.response);
-    } else {
-      console.log("API request error: " + res.response);
-    }
-  })
 }

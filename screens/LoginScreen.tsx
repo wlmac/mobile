@@ -8,6 +8,7 @@ import config from '../config.json';
 import { Text, View } from '../components/Themed';
 import Colors from '../constants/Colors';
 import { RootStackParamList } from '../types';
+import cacheResources from '../lib/cacheResources';
 
 let state = {
   username: "",
@@ -24,7 +25,11 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
     updateLoginResText("Logging in... Please wait");
     login().then(val => {
       if (val == "success") {
-        navigation.replace('Root');
+        cacheResources().then(() => {
+          React.useEffect(() => {
+            navigation.replace('Root');
+          }, []);
+        })
       }
       else {
         updateLoginResText(String(val));
@@ -32,7 +37,9 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
     }).catch(err => console.log(err));
   }
   if (!loginNeeded) {
-    navigation.replace('Root');
+    React.useEffect(() => {
+      navigation.replace('Root');
+    }, []);
   }
 
   //Keyboard animation code
