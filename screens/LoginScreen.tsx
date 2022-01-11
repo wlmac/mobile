@@ -25,10 +25,9 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
     updateLoginResText("Logging in... Please wait");
     login().then(val => {
       if (val == "success") {
+        updateLoginResText("Success! Preparing app...");
         cacheResources().then(() => {
-          React.useEffect(() => {
-            navigation.replace('Root');
-          }, []);
+          navigation.replace('Root');
         })
       }
       else {
