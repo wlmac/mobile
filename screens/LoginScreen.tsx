@@ -26,7 +26,9 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
     login().then(val => {
       if (val == "success") {
         cacheResources().then(() => {
-          navigation.replace('Root');
+          React.useEffect(() => {
+            navigation.replace('Root');
+          }, []);
         })
       }
       else {
@@ -35,7 +37,9 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
     }).catch(err => console.log(err));
   }
   if (!loginNeeded) {
-    navigation.replace('Root');
+    React.useEffect(() => {
+      navigation.replace('Root');
+    }, []);
   }
 
   //Keyboard animation code
