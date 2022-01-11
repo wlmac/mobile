@@ -4,14 +4,12 @@ import { Button, Dimensions, StyleSheet, ScrollView, TouchableOpacity } from 're
 import { Calendar } from 'react-native-calendars';
 
 import { Text, View } from '../components/Themed';
-
 import { EventCard } from '../components/EventCard';
 import useColorScheme from '../hooks/useColorScheme';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const windowWidth = Dimensions.get('window').width;
-const windowHeight = Dimensions.get('window').height;
 
 // calendar settings that should not change
 const staticCalendarProps = {
@@ -134,8 +132,6 @@ export default function CalendarScreen() {
       setEventsToday([]);
     }
   }, [selectedDay]);
-
-  // update events on month change using useeffect
 
   return (
     <View style={styles.container}>
@@ -266,12 +262,14 @@ export default function CalendarScreen() {
 
           // events today
           <View>
-            <Text style={[styles.eventsCountText, {color: appTheme === 'light' ? '#000' : '#fff'}]}>{new Date(selectedDay.year, selectedDay.month-1, selectedDay.day).toLocaleDateString(undefined, options)}</Text>
+            <Text style={[styles.eventsCountText, {color: appTheme === 'light' ? '#000' : '#fff'}]}>
+              {new Date(selectedDay.year, selectedDay.month-1, selectedDay.day).toLocaleDateString(undefined, options)}
+            </Text>
             {
               eventsToday.length === 0
               ?
               // if there's no events, display `no events`
-              <Text style={[styles.eventsCountText, {color: appTheme === 'light' ? '#000' : '#fff', fontSize: 16,}]}>No events today</Text>
+              <Text style={[styles.eventsCountText, {color: appTheme === 'light' ? '#000' : '#fff'}]}>No events today</Text>
               :
               // lists events
               <View>
@@ -385,7 +383,7 @@ const styles = StyleSheet.create({
   },
 
   eventsCountText: {
-    fontSize: 20,
+    fontSize: 16,
     textAlign: 'left',
     marginVertical: '3%',
   },
