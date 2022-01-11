@@ -10,8 +10,6 @@ export default async function cacheResources(): Promise<void> {
 }
 
 export async function storeAnnouncements(): Promise<void> {
-    console.log('Being called');
-
     var announcements: Object[] = [];
     var myAnnouncements: Object[] = [];
     var orgName: { [id: number]: string } = {};
