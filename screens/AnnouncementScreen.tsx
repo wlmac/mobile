@@ -7,13 +7,9 @@ import Announcement from '../components/Announcement';
 import FullAnnouncement from '../components/FullAnnouncement';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-var orgName: {[id: number]: string} = {};
-var orgIcon: {[id: number]: string} = {};
-
 export default function AnnouncementScreen() {
     // stores announcements
     const [announcements, setAnnouncements] = useState([]);
-    const [myOrgs, setMyOrgs] = useState([]);
     const [myAnnouncements, setMyAnnouncements] = useState([]);
     
     // loading
@@ -50,29 +46,10 @@ export default function AnnouncementScreen() {
         AsyncStorage.getItem("@myann").then((res:any) => {
             res = JSON.parse(res);
             setMyAnnouncements(res);
-        });
-    }, []);
-
-    useEffect(() => {
-        AsyncStorage.getItem("@orgName").then((res:any) => {
-            orgName = JSON.parse(res);
-        });
-    }, []);
-
-    useEffect(() => {
-        AsyncStorage.getItem("@orgIcon").then((res:any) => {
-            orgIcon = JSON.parse(res);
-        });
-    }, []);
-
-
-    useEffect(() => {
-        AsyncStorage.getItem("@myOrgs").then((res:any) => {
-            res = JSON.parse(res);
-            setMyOrgs(res);
             toggleLoading(false);
         });
     }, []);
+    
 
     return (
         <>
