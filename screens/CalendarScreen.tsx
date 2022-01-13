@@ -39,7 +39,7 @@ export default function CalendarScreen() {
   appTheme = useColorScheme();
 
   // get today's date
-  const today: YMDDate = new YMDDate(new Date().toLocaleDateString().split('/').join('-'));
+  const today: YMDDate = new YMDDate(new Date().toLocaleDateString('en-CA').split('/').join('-'));
 
   // selected date state
   const [selectedDay, setSelectedDay] = useState(today);
@@ -263,7 +263,7 @@ export default function CalendarScreen() {
           // events today
           <View>
             <Text style={[styles.eventsCountText, {color: appTheme === 'light' ? '#000' : '#fff'}]}>
-              {new Date(selectedDay.year, selectedDay.month-1, selectedDay.day).toLocaleDateString(undefined, options)}
+              {new Date(selectedDay.year, selectedDay.month-1, selectedDay.day).toLocaleDateString('en-CA', options)}
             </Text>
             {
               eventsToday.length === 0
