@@ -186,7 +186,7 @@ const [text, setText] = useState("");
         }}
         />
 
-        <View style={[styles.row2, {color: useColorScheme()==="light"? "black": "white"}]}>
+        <View style={[styles.row2, {backgroundColor: useColorScheme()==="light"? "black": "white"}]}>
         
         <FlatList
           style={{

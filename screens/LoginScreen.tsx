@@ -113,7 +113,9 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
           {/*<Text>{loginResText}</Text>*/}
 
           <View style={styles.logInButton}>
-            <Button color="white" onPress={loginPress} title="Login"></Button>
+            <TouchableOpacity style={styles.logInButton} onPress={loginPress}>
+              <Text> Login </Text>
+            </TouchableOpacity>
           </View>
 
         
@@ -224,9 +226,10 @@ const styles = StyleSheet.create({
   /* --- LOG IN BUTTON  --- */
   logInButton: {
     width: elementWidth,
-
     backgroundColor:"rgb(58, 106, 150)",
     borderRadius: 5,
+    alignItems: 'center',
+    padding: 10
   },
 
   
