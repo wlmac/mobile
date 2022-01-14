@@ -47,7 +47,7 @@ export default function BottomTabNavigator() {
         name="Announcements"
         component={AnnouncementNavigator}
         options={{
-          tabBarIcon: ({ color }) => <TabBarIcon name="notifications" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="megaphone" color={color} />,
         }}
       />
       <BottomTab.Screen
