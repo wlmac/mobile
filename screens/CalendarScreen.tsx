@@ -15,16 +15,13 @@ const windowWidth = Dimensions.get('window').width;
 const staticCalendarProps = {
   showSixWeeks: true,
   disableMonthChange: true,
-  disableAllTouchEventsForDisabledDays: true,
 };
 
-// options to display date in form of "Monday, January 1, 2020" etc.
-const options = { 
-  weekday: 'long' as any, 
-  year: 'numeric' as any, 
-  month: 'long' as any, 
-  day: 'numeric' as any 
-};
+// month names
+const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+// day names
+const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 // required to calculate date difference
 const daysInMonth = [-1, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
@@ -39,7 +36,7 @@ export default function CalendarScreen() {
   appTheme = useColorScheme();
 
   // get today's date
-  const today: YMDDate = new YMDDate(new Date().toLocaleDateString().split('/').join('-'));
+  const today: YMDDate = dateToYMD();
 
   // selected date state
   const [selectedDay, setSelectedDay] = useState(today);
@@ -204,7 +201,7 @@ export default function CalendarScreen() {
                 newMonth = 12;
                 newYear--;
               }
-              setDisplayedDate(new YMDDate(`${newYear}-${newMonth}-${newDay}`));
+              setDisplayedDate(new YMDDate(`${newYear}-${newMonth < 10 ? '0' + newMonth : newMonth}-${newDay < 10 ? '0' + newDay : newDay}`));
               substractMonth();
             }}
 
@@ -218,7 +215,7 @@ export default function CalendarScreen() {
                 newMonth = 1;
                 newYear++;
               }
-              setDisplayedDate(new YMDDate(`${newYear}-${newMonth}-${newDay}`));
+              setDisplayedDate(new YMDDate(`${newYear}-${newMonth < 10 ? '0' + newMonth : newMonth}-${newDay < 10 ? '0' + newDay : newDay}`));
               addMonth();
             }}
           />
@@ -263,7 +260,7 @@ export default function CalendarScreen() {
           // events today
           <View>
             <Text style={[styles.eventsCountText, {color: appTheme === 'light' ? '#000' : '#fff'}]}>
-              {new Date(selectedDay.year, selectedDay.month-1, selectedDay.day).toLocaleDateString(undefined, options)}
+              {YMDToLong(selectedDay)}
             </Text>
             {
               eventsToday.length === 0
@@ -291,6 +288,21 @@ export default function CalendarScreen() {
       </ScrollView>
     </View>
   );
+}
+
+// function that turns an ISO date to YYYY-MM-DD form
+function dateToYMD(): YMDDate {
+  let date = new Date();
+  let year = date.getFullYear();
+  let month = date.getMonth() + 1;
+  let day = date.getDate();
+  return new YMDDate(`${year}-${month < 10 ? '0' + month : month}-${day < 10 ? '0' + day : day}`);
+}
+
+// function that turns a YMD to long form: [day name], [month] [day], [year]
+function YMDToLong(ymd: YMDDate): string {
+  let date = new Date(ymd.year, ymd.month-1, ymd.day);
+  return `${dayNames[date.getDay()]}, ${monthNames[ymd.month-1]} ${ymd.day}, ${ymd.year}`;
 }
 
 // date class, but only year month and day

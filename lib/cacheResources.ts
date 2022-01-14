@@ -24,8 +24,6 @@ export async function storeApiCalls(): Promise<void> {
                 orgName[org.id] = org.name;
                 orgIcon[org.id] = org.icon;
             });
-            AsyncStorage.setItem("@orgName", JSON.stringify(orgName));
-            AsyncStorage.setItem("@orgIcon", JSON.stringify(orgIcon));
             //console.log('organization cache done');
         } else {
             //console.log("organization cache failed");
@@ -35,7 +33,6 @@ export async function storeApiCalls(): Promise<void> {
     // my organizations
     await apiRequest('/api/me?format=json', '', 'GET').then((res) => {
         if (res.success) {
-            AsyncStorage.setItem("@myOrgs", JSON.stringify(res.response));
             myOrgs = JSON.parse(res.response).organizations;
             //console.log("my orgs cache done");
         } else {
