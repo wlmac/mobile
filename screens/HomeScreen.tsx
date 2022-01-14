@@ -82,18 +82,19 @@ export default function HomeScreen() {
           updateTimeText(``);
         }
         else if (time >= criticalTimes[2]) {
-          updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[3])} hours`);
+          updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[3])}`);
           updateCourse(schedule[1].course);
         }
         else if (time >= criticalTimes[1]) {
-          updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[2])} hours`);
+          updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[2])}`);
           updateCourse(`LUNCH`);
         }
         else if (time >= criticalTimes[0]) {
-          updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[1])} hours`);
+          updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[1])}`);
+          updateCourse(schedule[0].course);
         }
         else {
-          updateTimeText(`Starts in ${determineTimeString(time, criticalTimes[0])} hours`);
+          updateTimeText(`Starts in ${determineTimeString(time, criticalTimes[0])}`);
           updateCourse(schedule[0].course);
         }
       }, 1000);
