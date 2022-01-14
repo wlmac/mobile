@@ -32,25 +32,21 @@ export default function AnnouncementScreen() {
     const myA = React.useRef<ScrollView>(null);
     const fullA = React.useRef<ScrollView>(null);
 
-
-
+    const readData = async() => {
+        await AsyncStorage.getItem("@announcements").then((res:any) => {
+            setAnnouncements(JSON.parse(res));
+        });
+        await AsyncStorage.getItem("@myann").then((res:any) => {
+            setMyAnnouncements(JSON.parse(res));
+        });
+        toggleLoading(false);
+    }
+    
     // fetch data from API
     useEffect(() => {
-        AsyncStorage.getItem("@announcements").then((res:any) => {
-            res = JSON.parse(res);
-            setAnnouncements(res);
-        });
-    }, []);
-
-    useEffect(() => {
-        AsyncStorage.getItem("@myann").then((res:any) => {
-            res = JSON.parse(res);
-            setMyAnnouncements(res);
-            toggleLoading(false);
-        });
+        readData();
     }, []);
     
-
     return (
         <>
         {/* Loading Icon */}
@@ -103,8 +99,6 @@ export default function AnnouncementScreen() {
         </>
     );
 }
-
-
 
 
 
