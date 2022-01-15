@@ -14,6 +14,9 @@ import { Switch } from "react-native";
 import { TextInput } from "react-native";
 import filter from "lodash.filter";
 
+const floorOne = require("../assets/images/FloorOne.png");
+const floorTwo = require("../assets/images/FloorTwo.png");
+
 export default function MapScreen() {
   const LATITUDE_DELTA = 0.00122;
   const LONGITUDE_DELTA = 0.00061;
@@ -1388,7 +1391,7 @@ function mapOverlay(altitude: any, isEnabled: boolean) {
   if (isEnabled ) {//|| altitude > 147
     return (
       <Overlay
-        image={require("../assets/images/FloorTwo.png")}
+        image={floorTwo}
         bounds={[
           [43.752834542813886, -79.4626054388977],
           [43.7540593854649, -79.46087161319494],
@@ -1399,7 +1402,7 @@ function mapOverlay(altitude: any, isEnabled: boolean) {
   } else if ( !isEnabled) {
     return (
       <Overlay
-        image={require("../assets/images/FloorOne.png")}
+        image={floorOne}
         bounds={[
           [43.752824542813886, -79.4626394388977],
           [43.7540893854649, -79.46088161319494],
