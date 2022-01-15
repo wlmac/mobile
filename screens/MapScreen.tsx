@@ -7,7 +7,7 @@ import {
   useColorScheme,
 } from "react-native";
 
-import MapView, { Marker, Overlay, PROVIDER_GOOGLE } from "react-native-maps";
+import MapView, { Marker, Overlay, PROVIDER_DEFAULT } from "react-native-maps";
 import { Text, View } from "../components/Themed";
 import * as Location from "expo-location";
 import { Switch } from "react-native";
@@ -1314,7 +1314,13 @@ export default function MapScreen() {
           latitudeDelta: LATITUDE_DELTA,
           longitudeDelta: LONGITUDE_DELTA,
         }}
-        provider={PROVIDER_GOOGLE}
+        region={{
+          latitude: latitude,
+          longitude: longitude,
+          latitudeDelta: LATITUDE_DELTA,
+          longitudeDelta: LONGITUDE_DELTA,
+        }}
+        provider={PROVIDER_DEFAULT}
         mapType="standard"
         zoomEnabled={true}
         pitchEnabled={true}
