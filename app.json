@@ -32,7 +32,12 @@
         "ACCESS_BACKGROUND_LOCATION",
         "ACCESS_FINE_LOCATION"
       ],
-      "package": "com.maclyonsden.mobile"
+      "package": "com.maclyonsden.mobile",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyAs7wslGwGn6csQG5v-TztbSCj2Tis-HUo"
+        }
+      }
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
