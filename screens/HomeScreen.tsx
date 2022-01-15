@@ -76,23 +76,25 @@ export default function HomeScreen() {
       dayOfTheWeek = new Date().getDay();
       const interval = setInterval(() => {
         time = Math.floor((Date.now() - new Date().setHours(0, 0, 0, 0)) / 60000);
-        if (time >= criticalTimes[3] || dayOfTheWeek > 5) {
+        if (criticalTimes.length ==  0) {}
+        else if (time >= criticalTimes[3] || dayOfTheWeek > 5) {
           updateCourse(`SCHOOL DAY FINISHED`);
           updateTimeText(``);
         }
         else if (time >= criticalTimes[2]) {
-          updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[3])} hours`);
+          updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[3])}`);
           updateCourse(schedule[1].course);
         }
         else if (time >= criticalTimes[1]) {
-          updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[2])} hours`);
+          updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[2])}`);
           updateCourse(`LUNCH`);
         }
         else if (time >= criticalTimes[0]) {
-          updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[1])} hours`);
+          updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[1])}`);
+          updateCourse(schedule[0].course);
         }
         else {
-          updateTimeText(`Starts in ${determineTimeString(time, criticalTimes[0])} hours`);
+          updateTimeText(`Starts in ${determineTimeString(time, criticalTimes[0])}`);
           updateCourse(schedule[0].course);
         }
       }, 1000);

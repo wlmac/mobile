@@ -25,8 +25,10 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
     updateLoginResText("Logging in... Please wait");
     login().then(val => {
       if (val == "success") {
-        cacheResources();
-        navigation.replace('Root');
+        updateLoginResText("Success! Preparing app...");
+        cacheResources().then(() => {
+          navigation.replace('Root');
+        })
       }
       else {
         updateLoginResText(String(val));
@@ -34,7 +36,9 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
     }).catch(err => console.log(err));
   }
   if (!loginNeeded) {
-    navigation.replace('Root');
+    React.useEffect(() => {
+      navigation.replace('Root');
+    }, []);
   }
 
   //Keyboard animation code
@@ -109,7 +113,9 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
           {/*<Text>{loginResText}</Text>*/}
 
           <View style={styles.logInButton}>
-            <Button color="white" onPress={loginPress} title="Login"></Button>
+            <TouchableOpacity style={styles.logInButton} onPress={loginPress}>
+              <Text> Login </Text>
+            </TouchableOpacity>
           </View>
 
         
@@ -220,9 +226,10 @@ const styles = StyleSheet.create({
   /* --- LOG IN BUTTON  --- */
   logInButton: {
     width: elementWidth,
-
     backgroundColor:"rgb(58, 106, 150)",
     borderRadius: 5,
+    alignItems: 'center',
+    padding: 10
   },
 
   

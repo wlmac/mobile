@@ -1,11 +1,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiRequest from '../lib/apiRequest';
 
-export default function cacheResources(): void {
-    storeAnnouncements();
+export default async function cacheResources(): Promise<void> {
+    return new Promise((resolve, reject) => {
+        storeApiCalls().then(() => {
+            resolve();
+        })
+    });
 }
 
-export async function storeAnnouncements(): Promise<void> {
+export async function storeApiCalls(): Promise<void> {
     var announcements: Object[] = [];
     var myAnnouncements: Object[] = [];
     var orgName: { [id: number]: string } = {};
@@ -20,8 +24,6 @@ export async function storeAnnouncements(): Promise<void> {
                 orgName[org.id] = org.name;
                 orgIcon[org.id] = org.icon;
             });
-            AsyncStorage.setItem("@orgName", JSON.stringify(orgName));
-            AsyncStorage.setItem("@orgIcon", JSON.stringify(orgIcon));
             //console.log('organization cache done');
         } else {
             //console.log("organization cache failed");
@@ -31,7 +33,6 @@ export async function storeAnnouncements(): Promise<void> {
     // my organizations
     await apiRequest('/api/me?format=json', '', 'GET').then((res) => {
         if (res.success) {
-            AsyncStorage.setItem("@myOrgs", JSON.stringify(res.response));
             myOrgs = JSON.parse(res.response).organizations;
             //console.log("my orgs cache done");
         } else {
@@ -46,6 +47,14 @@ export async function storeAnnouncements(): Promise<void> {
             //console.log('announcement cache done');
         } else {
             //console.log("announcement cache failed");
+        }
+    });
+
+    await apiRequest(`/api/events?start=2021-09-20`, '', 'GET').then(res => {
+        if (res.success) {
+            AsyncStorage.setItem("@events", res.response);
+        } else {
+            console.log("API request error: " + res.response);
         }
     });
 

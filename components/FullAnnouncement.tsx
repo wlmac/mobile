@@ -3,6 +3,7 @@ import { StyleSheet, Image } from 'react-native';
 import { Text, View } from '../components/Themed';
 import Markdown from 'react-native-markdown-display';
 import useColorScheme from '../hooks/useColorScheme';
+import { ScrollView } from 'react-native-gesture-handler';
 
 var lightC = "#3a6a96";
 var darkC = "#42a4ff";
@@ -59,9 +60,9 @@ function annDetails(org: string, orgIcon: string, author: string, timeStamp: str
 // markdown to plaintext
 function previewText(text: string) {
     return (
-        <Text style={styles.text}>
+        <View style={styles.text}>
             <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark}>{text}</Markdown>
-        </Text>
+        </View>
     )
 }
 
@@ -96,7 +97,6 @@ const styles = StyleSheet.create({
         marginTop: 5,
         marginBottom: 10,
     },
-
     details: {
         flex: 1,
         flexDirection: "row",
@@ -156,7 +156,7 @@ const markdownStylesLight = StyleSheet.create({
         color: "#018bcf",
     },
     image: {
-        minWidth: '100%',
+        minWidth: '90%',
         margin: 10,
     }
 });
@@ -174,7 +174,7 @@ const markdownStylesDark = StyleSheet.create({
         color: "#00abff",
     },
     image: {
-        minWidth: '100%',
+        minWidth: '90%',
         margin: 10,
     }
 });

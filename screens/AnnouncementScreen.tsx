@@ -7,13 +7,9 @@ import Announcement from '../components/Announcement';
 import FullAnnouncement from '../components/FullAnnouncement';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-var orgName: {[id: number]: string} = {};
-var orgIcon: {[id: number]: string} = {};
-
 export default function AnnouncementScreen() {
     // stores announcements
     const [announcements, setAnnouncements] = useState([]);
-    const [myOrgs, setMyOrgs] = useState([]);
     const [myAnnouncements, setMyAnnouncements] = useState([]);
     
     // loading
@@ -36,44 +32,21 @@ export default function AnnouncementScreen() {
     const myA = React.useRef<ScrollView>(null);
     const fullA = React.useRef<ScrollView>(null);
 
-
-
+    const readData = async() => {
+        await AsyncStorage.getItem("@announcements").then((res:any) => {
+            setAnnouncements(JSON.parse(res));
+        });
+        await AsyncStorage.getItem("@myann").then((res:any) => {
+            setMyAnnouncements(JSON.parse(res));
+        });
+        toggleLoading(false);
+    }
+    
     // fetch data from API
     useEffect(() => {
-        AsyncStorage.getItem("@announcements").then((res:any) => {
-            res = JSON.parse(res);
-            setAnnouncements(res);
-        });
+        readData();
     }, []);
-
-    useEffect(() => {
-        AsyncStorage.getItem("@myann").then((res:any) => {
-            res = JSON.parse(res);
-            setMyAnnouncements(res);
-        });
-    }, []);
-
-    useEffect(() => {
-        AsyncStorage.getItem("@orgName").then((res:any) => {
-            orgName = JSON.parse(res);
-        });
-    }, []);
-
-    useEffect(() => {
-        AsyncStorage.getItem("@orgIcon").then((res:any) => {
-            orgIcon = JSON.parse(res);
-        });
-    }, []);
-
-
-    useEffect(() => {
-        AsyncStorage.getItem("@myOrgs").then((res:any) => {
-            res = JSON.parse(res);
-            setMyOrgs(res);
-            toggleLoading(false);
-        });
-    }, []);
-
+    
     return (
         <>
         {/* Loading Icon */}
@@ -126,8 +99,6 @@ export default function AnnouncementScreen() {
         </>
     );
 }
-
-
 
 
 
