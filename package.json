@@ -16,6 +16,12 @@
     "type": "git",
     "url": "https://github.com/wlmac/mobile.git"
   },
+  "author": "ApocalypseCalculator",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/wlmac/mobile/issues"
+  },
+  "homepage": "https://github.com/wlmac/mobile#readme",
   "jest": {
     "preset": "jest-expo"
   },
