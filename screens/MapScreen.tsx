@@ -29,12 +29,16 @@ export default function MapScreen() {
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled((isEnabled) => !isEnabled);
   const [selectRoom, setSelectRoom] = useState({
-    id: "",
-    room: "",
-    floor: 0,
-    latitude: null,
-    longitude: null,
-  });
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [0, 0],
+      },
+      properties: {
+        title: "",
+        floor: 0,
+      },
+    },);
 
   useEffect(() => {
     (async () => {
@@ -60,508 +64,1137 @@ export default function MapScreen() {
   const data = [
     //floor one
     {
-      id: "127",
-      room: "large gym",
-      floor: 1,
-      latitude: 43.753628645506545,
-      longitude: -79.46176003664733,
-    },
-    {
-      id: "124",
-      room: "small gym",
-      floor: 1,
-      latitude: 43.753628887683234,
-      longitude: -79.46221198886633,
-    },
-    {
-      id: "girls change room",
-      room: "girls change room",
-      floor: 1,
-      latitude: 43.75369500188763,
-      longitude: -79.46201786398888,
-    },
-    {
-      id: "boys change room",
-      room: "boys change room",
-      floor: 1,
-      latitude: 43.753544367952976,
-      longitude: -79.46196589618921,
-    },
-    {
-      id: "team change room",
-      room: "team change room",
-      floor: 1,
-      latitude: 43.75365915976391,
-      longitude: -79.46210503578186,
-    },
-    {
-      id: "124c",
-      room: "fitness centre",
-      floor: 1,
-      latitude: 43.75347171479428,
-      longitude: -79.46209900081158,
-    },
-    {
-      id: "127A",
-      room: "gym office A",
-      floor: 1,
-      latitude: 43.75376776088882,
-      longitude: -79.46106695372214,
-    },
-    {
-      id: "127E",
-      room: "gym office E",
-      floor: 1,
-      latitude: 43.75376776088882,
-      longitude: -79.46106695372214,
-    },
-    {
-      id: "134",
-      room: "library",
-      latitude: 43.753364914490895,
-      longitude: -79.4610619917512,
-    },
-    {
-      id: "135",
-      room: "cafeteria",
-      floor: 1,
-      latitude: 43.75377927922907,
-      longitude: -79.46122158318758,
-    },
-    {
-      id: "student services",
-      room: "student services",
-      floor: 1,
-      latitude: 43.75351118968812,
-      longitude: -79.4611944258213,
-    },
-    {
-      id: "sac room",
-      room: "sac room",
-      floor: 1,
-      latitude: 43.75326005142254,
-      longitude: -79.46105394512415,
-    },
-    {
-      id: "cyw",
-      room: "cyw",
-      floor: 1,
-      latitude: 43.75327046508419,
-      longitude: -79.46099828928709,
-    },
-    {
-      id: "library office",
-      room: "library office",
-      floor: 1,
-      latitude: 43.75327046508419,
-      longitude: -79.46099828928709,
-    },
-    {
-      id: "108",
-      room: "sepecial ed resource",
-      floor: 1,
-      latitude: 43.75329008151169,
-      longitude: -79.46124169975518,
-    },
-    {
-      id: "116",
-      room: "main office",
-      floor: 1,
-      latitude: 43.75355163326401,
-      longitude: -79.46133021265268,
-    },
-    {
-      id: "dance room",
-      room: "dance room",
-      floor: 1,
-      latitude: 43.75398343333141,
-      longitude: -79.4614740461111,
-    },
-    {
-      id: "101",
-      room: "101",
-      floor: 1,
-      latitude: 43.75292947726766,
-      longitude: -79.46136139333248,
-    },
-    {
-      id: "102",
-      room: "102",
-      floor: 1,
-      latitude: 43.75293674265332,
-      longitude: -79.46121588349342,
-    },
-    {
-      id: "103",
-      room: "103",
-      floor: 1,
-      latitude: 43.753060254074676,
-      longitude: -79.46139559149742,
-    },
-    {
-      id: "104",
-      room: "104",
-      floor: 1,
-      latitude: 43.75306848816038,
-      longitude: -79.4612480700016,
-    },
-    {
-      id: "105",
-      room: "science office",
-      floor: 1,
-      latitude: 43.753142352702,
-      longitude: -79.4614153727889,
-    },
-    {
-      id: "106",
-      room: "106",
-      floor: 1,
-      latitude: 43.75318449177667,
-      longitude: -79.4612842798233,
-    },
-    {
-      id: "107",
-      room: "107",
-      floor: 1,
-      latitude: 43.753270222906025,
-      longitude: -79.46144588291645,
-    },
-    {
-      id: "109",
-      room: "109",
-      floor: 1,
-      latitude: 43.75342836503427,
-      longitude: -79.46147873997688,
-    },
-    {
-      id: "111",
-      room: "111",
-      floor: 1,
-      latitude: 43.753447254877685,
-      longitude: -79.46165274828672,
-    },
-    {
-      id: "113",
-      room: "113",
-      floor: 1,
-      latitude: 43.75343369293942,
-      longitude: -79.4617922231555,
-    },
-    {
-      id: "115",
-      room: "business office",
-      floor: 1,
-      latitude: 43.753418920110306,
-      longitude: -79.46187872439623,
-    },
-    {
-      id: "117",
-      room: "117",
-      floor: 1,
-      latitude: 43.75340535816562,
-      longitude: -79.46199540048838,
-    },
-    {
-      id: "119",
-      room: "119",
-      floor: 1,
-      latitude: 43.753376539022945,
-      longitude: -79.46234039962292,
-    },
-    {
-      id: "121",
-      room: "121",
-      floor: 1,
-      latitude: 43.75347558963164,
-      longitude: -79.46236722171308,
-    },
-    {
-      id: "123",
-      room: "123",
-      floor: 1,
-      latitude: 43.75356858565292,
-      longitude: -79.46238800883293,
-    },
-    {
-      id: "125",
-      room: "125",
-      floor: 1,
-      latitude: 43.753660854999985,
-      longitude: -79.46241114288567,
-    },
-    {
-      id: "114",
-      room: "114",
-      floor: 1,
-      latitude: 43.75385483812394,
-      longitude: -79.46182776242493,
-    },
-    {
-      id: "118",
-      room: "118",
-      floor: 1,
-      latitude: 43.75383376882629,
-      longitude: -79.46212381124496,
-    },
-    //floor2:
-    {
-      id: "231",
-      room: "231",
-      floor: 2,
-      latitude: 43.75365116793612,
-      longitude: -79.46240242570639,
-    },
-    {
-      id: "229",
-      room: "229",
-      floor: 2,
-      latitude: 43.753565195175526,
-      longitude: -79.46239538490772,
-    },
-    {
-      id: "227",
-      room: "227",
-      floor: 2,
-      latitude: 43.75347970664606,
-      longitude: -79.46237158030272,
-    },
-    {
-      id: "226",
-      room: "co-op office",
-      floor: 2,
-      latitude: 43.75340390509994,
-      longitude: -79.46234744042158,
-    },
-    {
-      id: "225",
-      room: "225",
-      floor: 2,
-      latitude: 43.75336055529078,
-      longitude: -79.46233838796616,
-    },
-    {
-      id: "223",
-      room: "223",
-      floor: 2,
-      latitude: 43.75337629684523,
-      longitude: -79.46219958364964,
-    },
-    {
-      id: "233",
-      room: "computer science office",
-      floor: 2,
-      latitude: 43.753481886241815,
-      longitude: -79.46212079375984,
-    },
-    {
-      id: "222",
-      room: "222",
-      floor: 2,
-      latitude: 43.753405600343235,
-      longitude: -79.46199808269739,
-    },
-    {
-      id: "221",
-      room: "221",
-      floor: 2,
-      latitude: 43.753421341885826,
-      longitude: -79.46187168359755,
-    },
-    {
-      id: "220",
-      room: "220",
-      floor: 2,
-      latitude: 43.753432724229434,
-      longitude: -79.46175031363964,
-    },
-    {
-      id: "219",
-      room: "219",
-      floor: 2,
-      latitude: 43.75344701270023,
-      longitude: -79.46162827312946,
-    },
-    {
-      id: "213",
-      room: "213",
-      floor: 2,
-      latitude: 43.75342884938928,
-      longitude: -79.46147739887238,
-    },
-    {
-      id: "214",
-      room: "214",
-      floor: 2,
-      latitude: 43.75344677052279,
-      longitude: -79.46133323013783,
-    },
-    {
-      id: "211",
-      room: "211",
-      floor: 2,
-      latitude: 43.75333948581914,
-      longitude: -79.46145694702864,
-    },
-    {
-      id: "212",
-      room: "212",
-      floor: 2,
-      latitude: 43.75335522737912,
-      longitude: -79.46131143718958,
-    },
-    {
-      id: "209",
-      room: "209",
-      floor: 2,
-      latitude: 43.75325254389789,
-      longitude: -79.46144085377455,
-    },
-    {
-      id: "210",
-      room: "210",
-      floor: 2,
-      latitude: 43.75327651953781,
-      longitude: -79.46129769086838,
-    },
-    {
-      id: "207",
-      room: "207",
-      floor: 2,
-      latitude: 43.75316729710038,
-      longitude: -79.46141436696053,
-    },
-    {
-      id: "208",
-      room: "208",
-      floor: 2,
-      latitude: 43.7531849761337,
-      longitude: -79.46127321571112,
-    },
-    {
-      id: "203",
-      room: "203",
-      floor: 2,
-      latitude: 43.75303313001969,
-      longitude: -79.46137748658656,
-    },
-    {
-      id: "206",
-      room: "206",
-      floor: 2,
-      latitude: 43.75310239320719,
-      longitude: -79.46125041693449,
-    },
-    {
-      id: "204",
-      room: "204",
-      floor: 2,
-      latitude: 43.75301763055415,
-      longitude: -79.46123063564302,
-    },
-    {
-      id: "201",
-      room: "201",
-      floor: 2,
-      latitude: 43.75291470431406,
-      longitude: -79.4613479822874,
-    },
-    {
-      id: "202",
-      room: "202",
-      floor: 2,
-      latitude: 43.7529321412425,
-      longitude: -79.46120783686638,
-    },
-    {
-      id: "modern lang. office",
-      room: "modern languages office",
-      floor: 2,
-      latitude: 43.75348697196493,
-      longitude: -79.46130875498056,
-    },
-    {
-      id: "history office",
-      room: "history office",
-      floor: 2,
-      latitude: 43.75351506452293,
-      longitude: -79.46131512522697,
-    },
-    {
-      id: "geography office",
-      room: "geography office",
-      floor: 2,
-      latitude: 43.7535455788382,
-      longitude: -79.4613191485405,
-    },
-    {
-      id: "english office",
-      room: "english office",
-      floor: 2,
-      latitude: 43.753589170690184,
-      longitude: -79.46133255958557,
-    },
-    {
-      id: "238",
-      room: "math office",
-      floor: 2,
-      latitude: 43.75362791897641,
-      longitude: -79.46134228259324,
-    },
-    {
-      id: "book room",
-      room: "book room",
-      floor: 2,
-      latitude: 43.7535988577641,
-      longitude: -79.46155149489641,
-    },
-    {
-      id: "dark room",
-      room: "dark room",
-      floor: 2,
-      latitude: 43.75363276251044,
-      longitude: -79.46153406053782,
-    },
-    {
-      id: "216A",
-      room: "dark room A",
-      floor: 2,
-      latitude: 43.753774920059136,
-      longitude: -79.46142073720694,
-    },
-    {
-      id: "215",
-      room: "215",
-      floor: 2,
-      latitude: 43.753836674936764,
-      longitude: -79.46157932281494,
-    },
-    {
-      id: "216",
-      room: "216",
-      floor: 2,
-      latitude: 43.753852900717554,
-      longitude: -79.46143213659525,
-    },
-    {
-      id: "217",
-      room: "217",
-      floor: 2,
-      latitude: 43.75397301979385,
-      longitude: -79.46160983294249,
-    },
-    {
-      id: "218",
-      room: "218",
-      floor: 2,
-      latitude: 43.75394347439825,
-      longitude: -79.46145627647638,
-    },
-    {
-      id: "218A",
-      room: "art office",
-      floor: 2,
-      latitude: 43.75399602644422,
-      longitude: -79.46150656789541,
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46242786599252, 43.75383226893149],
+      },
+      properties: {
+        title: "Portable 1",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46243325527307, 43.753970965485735],
+      },
+      properties: {
+        title: "Portable 2",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46221099031513, 43.75317237412631],
+      },
+      properties: {
+        title: "Portable 3",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.4624108175995, 43.75314428115445],
+      },
+      properties: {
+        title: "Portable 4",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46218818873812, 43.75305128362666],
+      },
+      properties: {
+        title: "Portable 5",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46238399545628, 43.753030941531875],
+      },
+      properties: {
+        title: "Portable 6",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46256102100658, 43.75326634251712],
+      },
+      properties: {
+        title: "Portable 7",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.462327663467, 43.75335158721401],
+      },
+      properties: {
+        title: "Room 119",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46234644222046, 43.753461051808415],
+      },
+      properties: {
+        title: "Room 121",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46236521768313, 43.75354726659225],
+      },
+      properties: {
+        title: "Room 123",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46238265202406, 43.75363735643279],
+      },
+      properties: {
+        title: "Room 125",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.462198032334, 43.75360889118667],
+      },
+      properties: {
+        title: "small gym (124)",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46207609586855, 43.75347184182684],
+      },
+      properties: {
+        title: "fitness centre (124c)",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46208442599088, 43.75363465159106],
+      },
+      properties: {
+        title: "team change room",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46199855338851, 43.753670911751186],
+      },
+      properties: {
+        title: "girls change room",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46195099685673, 43.753506785659],
+      },
+      properties: {
+        title: "boys change room",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46193094840253, 43.75359351676818],
+      },
+      properties: {
+        title: "equipment office (127D)",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46188333944669, 43.75353345567834],
+      },
+      properties: {
+        title: "gym office (127E)",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46191351470047, 43.75364049932426],
+      },
+      properties: {
+        title: "gym office (127A)",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46172911873167, 43.75361606821852],
+      },
+      properties: {
+        title: "large gym (127)",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.4621022029668, 43.75382222066108],
+      },
+      properties: {
+        title: "Room 118T",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46215856297853, 43.753759532291014],
+      },
+      properties: {
+        title: "Room 118C",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46195278569445, 43.75379119907919],
+      },
+      properties: {
+        title: "Room 118E",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.4618069554343, 43.75382092588782],
+      },
+      properties: {
+        title: "Room 114",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46167722609954, 43.7537957223808],
+      },
+      properties: {
+        title: "music office",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46145355825836, 43.753934020553146],
+      },
+      properties: {
+        title: "dance room",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46121179888955, 43.75373700003314],
+      },
+      properties: {
+        title: "cafeteria/cafetorium",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46105544571898, 43.75333204884339],
+      },
+      properties: {
+        title: "library (134)",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46107005200406, 43.75322380678202],
+      },
+      properties: {
+        title: "special education resource",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46104008434995, 43.753229743456245],
+      },
+      properties: {
+        title: "SAC room",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46100721719883, 43.75323148904425],
+      },
+      properties: {
+        title: "cyw",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46098063358639, 43.753235329484454],
+      },
+      properties: {
+        title: "library office",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46100511477736, 43.75357005485046],
+      },
+      properties: {
+        title: "staff room",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.4611868324436, 43.75348515432293],
+      },
+      properties: {
+        title: "student services",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.4613271203871, 43.7535216196801],
+      },
+      properties: {
+        title: "Main Office (116)",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.4612725332962, 43.75326367491422],
+      },
+      properties: {
+        title: "Room 108b",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46127074403375, 43.75321326924049],
+      },
+      properties: {
+        title: "Room 108a",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46128058522986, 43.75315898346079],
+      },
+      properties: {
+        title: "Room 106",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46125649284252, 43.75304288437272],
+      },
+      properties: {
+        title: "Room 104",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46122382537122, 43.752906633057165],
+      },
+      properties: {
+        title: "Room 102",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46136354515774, 43.752898126964254],
+      },
+      properties: {
+        title: "Room 101",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46139777712486, 43.753043114903306],
+      },
+      properties: {
+        title: "Room 103",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46140380351744, 43.75312579142903],
+      },
+      properties: {
+        title: "Science Office (105)",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46145048325354, 43.753248299164255],
+      },
+      properties: {
+        title: "Room 107",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.4614761683771, 43.75338955719843],
+      },
+      properties: {
+        title: "Room 109",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46164036883964, 43.75341958509614],
+      },
+      properties: {
+        title: "Room 111",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.4617811841459, 43.75340328772481],
+      },
+      properties: {
+        title: "Room 113",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.4618675399702, 43.75338755291526],
+      },
+      properties: {
+        title: "business office",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.4619749024224, 43.753384181329636],
+      },
+      properties: {
+        title: "Room 117",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46238565237367, 43.75363361197046],
+      },
+      properties: {
+        title: "Room 231",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46236964343728, 43.75353590861371],
+      },
+      properties: {
+        title: "Room 229",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46235355018324, 43.7534516311066],
+      },
+      properties: {
+        title: "Room 227",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46233057723609, 43.753381976637144],
+      },
+      properties: {
+        title: "co-op office (226)",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46232115842207, 43.75333592207335],
+      },
+      properties: {
+        title: "Room 225",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46218059901656, 43.75335319315036],
+      },
+      properties: {
+        title: "Room 223",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46211394375436, 43.75346309583611],
+      },
+      properties: {
+        title: "computer office (233)",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46199367203847, 43.753379882216166],
+      },
+      properties: {
+        title: "Room 222",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46186832688937, 43.75339349079542],
+      },
+      properties: {
+        title: "Room 221",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46175240183594, 43.75340709778331],
+      },
+      properties: {
+        title: "Room 220",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46163140622886, 43.75342489140834],
+      },
+      properties: {
+        title: "Room 219",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46148515501359, 43.75340071235618],
+      },
+      properties: {
+        title: "Room 213",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46146486998195, 43.75331017352619],
+      },
+      properties: {
+        title: "Room 211",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46144603105236, 43.753222249695966],
+      },
+      properties: {
+        title: "Room 209",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46142791795658, 43.753137991624214],
+      },
+      properties: {
+        title: "Room 207",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46139302860175, 43.75298885245036],
+      },
+      properties: {
+        title: "Room 203",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46136767069875, 43.75288156880836],
+      },
+      properties: {
+        title: "Room 201",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46122821655393, 43.752901057246845],
+      },
+      properties: {
+        title: "Room 202",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.4612506789127, 43.75298740995075],
+      },
+      properties: {
+        title: "Room 204",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46126661842634, 43.75306957486865],
+      },
+      properties: {
+        title: "Room 206",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46128545635727, 43.75315802234198],
+      },
+      properties: {
+        title: "Room 208",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46130284491909, 43.75324332707672],
+      },
+      properties: {
+        title: "Room 210",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46132168256682, 43.75332549164267],
+      },
+      properties: {
+        title: "Room 212",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46134559208431, 43.75341393834546],
+      },
+      properties: {
+        title: "Room 214",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46154185196188, 43.75361634427],
+      },
+      properties: {
+        title: "dark room",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46144650667092, 43.75375052923056],
+      },
+      properties: {
+        title: "dark room (216A)",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.4615603074014, 43.75358834987574],
+      },
+      properties: {
+        title: "book room",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.4614354341234, 43.753830952741794],
+      },
+      properties: {
+        title: "Room 216",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46158008591014, 43.753810213485025],
+      },
+      properties: {
+        title: "Room 215",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46145890294959, 43.75391685074018],
+      },
+      properties: {
+        title: "Room 218",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46160715142894, 43.75393995400347],
+      },
+      properties: {
+        title: "Room 217",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46138769422942, 43.75345548469946],
+      },
+      properties: {
+        title: "modern languages office",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46139276605106, 43.753478131876875],
+      },
+      properties: {
+        title: "history office",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46139737638734, 43.75350077690234],
+      },
+      properties: {
+        title: "geography office",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46140705817172, 43.753543403070495],
+      },
+      properties: {
+        title: "english office",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46141581781006, 43.75359668555146],
+      },
+      properties: {
+        title: "math office (238)",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46150331164226, 43.753973545031556],
+      },
+      properties: {
+        title: "art office (218A)",
+        floor: 2,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46100506863056, 43.75350601053009],
+      },
+      properties: {
+        title: "library room A",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46098927243114, 43.753440973854964],
+      },
+      properties: {
+        title: "library room B",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.461073977011, 43.75360391989807],
+      },
+      properties: {
+        title: "Exit 1",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.4612968674094, 43.7528424736621],
+      },
+      properties: {
+        title: "Exit 2",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46154945637606, 43.75343068463039],
+      },
+      properties: {
+        title: "Exit 3",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46207053027169, 43.753387916496564],
+      },
+      properties: {
+        title: "Exit 4",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.462225356633, 43.75329998220087],
+      },
+      properties: {
+        title: "Exit 5",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.4623567892464, 43.75368485054281],
+      },
+      properties: {
+        title: "Exit 6",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46225551171938, 43.753697201431095],
+      },
+      properties: {
+        title: "Exit 7",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.4616471361122, 43.753852812405086],
+      },
+      properties: {
+        title: "Exit 7C",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46163294208165, 43.75396385435636],
+      },
+      properties: {
+        title: "Exit 7D",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46163524982596, 43.753980964854605],
+      },
+      properties: {
+        title: "Exit 7E",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.4616518679316, 43.75403205707923],
+      },
+      properties: {
+        title: "Exit 7F",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46154103707552, 43.754010022029945],
+      },
+      properties: {
+        title: "Exit 8",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46143369162724, 43.75400234476848],
+      },
+      properties: {
+        title: "Exit 8A",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46139309605415, 43.75381129680861],
+      },
+      properties: {
+        title: "Exit 8B",
+        floor: 1,
+      },
+    },
+    {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [-79.46109108651713, 43.75380139567167],
+      },
+      properties: {
+        title: "Exit 8C",
+        floor: 1,
+      },
     },
   ];
   const [state, setState] = useState({
@@ -579,8 +1212,8 @@ export default function MapScreen() {
     setState({ fullData: nextData, query: text });
   };
 
-  const contains = ({ id, room, long, lat }: any, query: any) => {
-    if (id.includes(query) || room.includes(query)) {
+  const contains = ({ type,geometry,properties }: any, query: any) => {
+    if (properties.title.includes(query)) {
       return true;
     }
     return false;
@@ -642,7 +1275,7 @@ export default function MapScreen() {
                 : 0,
           }}
           data={state.fullData}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.properties.title}
           renderItem={({ item }) => (
             <TouchableOpacity onPress={() => reset(item)}>
               <View
@@ -658,7 +1291,7 @@ export default function MapScreen() {
                     padding: 10,
                   }}
                 >
-                  {`${item.room}`}
+                  {`${item.properties.title}`}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -692,7 +1325,7 @@ export default function MapScreen() {
         showsTraffic={true}
         showsIndoors={true}
       >
-        <Marker
+        {/* <Marker
           coordinate={{ latitude, longitude }}
           draggable
           onDragEnd={(e: { nativeEvent: { coordinate: any } }) => {
@@ -703,9 +1336,9 @@ export default function MapScreen() {
                 e.nativeEvent.coordinate.longitude
             );
           }}
-        ></Marker>
+        ></Marker> */}
 
-        {roomIdentifier(selectRoom.latitude, selectRoom.longitude)}
+        {roomIdentifier(selectRoom.geometry.coordinates[1], selectRoom.geometry.coordinates[0])}
         {mapOverlay(location.altitude, isEnabled)}
       </MapView>
       <View
