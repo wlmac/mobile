@@ -19,7 +19,7 @@ export default function Changelog({ back }: { back: Function }) {
                 </View>
             ))}
             <View style={{justifyContent: 'space-between', height: 100}}>
-                <TouchableOpacity style={[styles.button, { backgroundColor: btnBgColor }]} onPress={() => { back(false) }}>
+                <TouchableOpacity style={[styles.button, { backgroundColor: btnBgColor }]} onPress={() => { back(-1) }}>
                     <Text> Back </Text>
                 </TouchableOpacity>
             </View>
