@@ -35,7 +35,7 @@
       "package": "com.maclyonsden.mobile",
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyAs7wslGwGn6csQG5v-TztbSCj2Tis-HUo"
+          "apiKey": "API key here"
         }
       }
     },
