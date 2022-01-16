@@ -47,6 +47,7 @@
     "expo-permissions": "^13.1.0",
     "expo-splash-screen": "~0.14.1",
     "expo-status-bar": "^1.2.0",
+    "expo-system-ui": "^1.1.0",
     "expo-web-browser": "^10.1.0",
     "lodash.filter": "^4.6.0",
     "punycode": "^2.1.1",
