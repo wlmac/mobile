@@ -24,10 +24,6 @@ export type HomeParamList = {
   HomeScreen: undefined;
 };
 
-export type NotifsParamList = {
-  NotifsScreen: undefined;
-};
-
 export type AnnouncementParamList = {
   AnnouncementScreen: undefined;
 };

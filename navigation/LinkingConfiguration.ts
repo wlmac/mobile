@@ -17,9 +17,9 @@ export default {
               HomeScreen: 'one',
             },
           },
-          Notifs: {
+          Announcements: {
             screens: {
-              NotifsScreen: 'two',
+              AnnouncementScreen: 'two',
             },
           },
           Calendar: {
