@@ -32,25 +32,21 @@ export default function AnnouncementScreen() {
     const myA = React.useRef<ScrollView>(null);
     const fullA = React.useRef<ScrollView>(null);
 
-
-
+    const readData = async() => {
+        await AsyncStorage.getItem("@announcements").then((res:any) => {
+            setAnnouncements(JSON.parse(res));
+        });
+        await AsyncStorage.getItem("@myann").then((res:any) => {
+            setMyAnnouncements(JSON.parse(res));
+        });
+        toggleLoading(false);
+    }
+    
     // fetch data from API
     useEffect(() => {
-        AsyncStorage.getItem("@announcements").then((res:any) => {
-            res = JSON.parse(res);
-            setAnnouncements(res);
-        });
-    }, []);
-
-    useEffect(() => {
-        AsyncStorage.getItem("@myann").then((res:any) => {
-            res = JSON.parse(res);
-            setMyAnnouncements(res);
-            toggleLoading(false);
-        });
+        readData();
     }, []);
     
-
     return (
         <>
         {/* Loading Icon */}
@@ -61,7 +57,7 @@ export default function AnnouncementScreen() {
         {/* After Everything is Loaded */}
         <View style={!isLoading ? styles.container : {display: "none"}}>
             <Text style={fullAnnId == "-1" ? styles.header : {display: "none"}}>
-                {isFilter ? "My Feed" : "School Feed"}
+                {isFilter ? "My Feed" : "All Announcements"}
             </Text>
 
             {/* School Announcements */}
@@ -86,7 +82,7 @@ export default function AnnouncementScreen() {
             {/* Filter Announcements */}
             <View style={fullAnnId == "-1" ? styles.row : {display: "none"}}>
                 <Text style={{color: isFilter ?(useColorScheme() === "dark" ? "#434343ff" : "#b7b7b7ff") : (useColorScheme() === "light" ? "#434343ff" : "#b7b7b7ff"), fontFamily: 'poppins', paddingHorizontal: 8
-                }}>School </Text>
+                }}>All </Text>
                 <Switch style={styles.switch}
                     trackColor={{ false: "#b7b7b7ff", true: "#b7b7b7ff" }}
                     thumbColor={isFilter ? "#434343ff" : "#434343ff"}
@@ -103,8 +99,6 @@ export default function AnnouncementScreen() {
         </>
     );
 }
-
-
 
 
 

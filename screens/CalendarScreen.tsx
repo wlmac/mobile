@@ -181,7 +181,7 @@ export default function CalendarScreen() {
               ...eventDays.reduce((obj, eventDay) => {
                 obj[eventDay] = {
                   marked: true,
-                  dotColor: '#7b00bd',
+                  dotColor: '#6e9bc4',
                   selected: selectedDay.strform === eventDay,
                   disableTouchEvent: selectedDay.strform === eventDay,
                   selectedColor: '#fc1d00',
