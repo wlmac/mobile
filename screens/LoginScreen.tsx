@@ -9,6 +9,7 @@ import { Text, View } from '../components/Themed';
 import Colors from '../constants/Colors';
 import { RootStackParamList } from '../types';
 import cacheResources from '../lib/cacheResources';
+import requestNotifsPerms from '../lib/requestNotifsPerms';
 
 let state = {
   username: "",
@@ -27,6 +28,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
       if (val == "success") {
         updateLoginResText("Success! Preparing app...");
         cacheResources().then(() => {
+          requestNotifsPerms();
           navigation.replace('Root');
         })
       }
