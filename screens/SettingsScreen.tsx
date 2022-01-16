@@ -35,13 +35,13 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
       <ScrollView style={curView == 1 ? {marginHorizontal: 0} : { display: "none" }}>
         <Changelog back={setView}></Changelog>
       </ScrollView>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
       <TouchableOpacity style={curView == -1 ? [styles.button, { backgroundColor: btnBgColor }] : {display: "none"}} onPress={() => {setView(2)}}>
         <Text> About </Text>
       </TouchableOpacity>
       <TouchableOpacity style={curView == -1 ? [styles.button, { backgroundColor: btnBgColor }] : {display: "none"}} onPress={() => {setView(1)}}>
         <Text> View Changelog </Text>
       </TouchableOpacity>
+      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
       <TouchableOpacity style={curView == -1 ? styles.logoutButton : {display: "none"}} onPress={logout}>
         <Text> Logout </Text>
       </TouchableOpacity>
