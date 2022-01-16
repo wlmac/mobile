@@ -28,7 +28,8 @@
     "ios": {
       "supportsTablet": true, 
       "bundleIdentifier": "com.maclyonsden.metropolis",
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "googleServicesFile": "./ios/GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
@@ -46,7 +47,8 @@
           "apiKey": "API key here"
         }
       },
-      "versionCode": 1
+      "versionCode": 1,
+      "googleServicesFile": "./android/google-services.json"
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
