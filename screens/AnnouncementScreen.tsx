@@ -57,7 +57,7 @@ export default function AnnouncementScreen() {
         {/* After Everything is Loaded */}
         <View style={!isLoading ? styles.container : {display: "none"}}>
             <Text style={fullAnnId == "-1" ? styles.header : {display: "none"}}>
-                {isFilter ? "My Feed" : "School Feed"}
+                {isFilter ? "My Feed" : "All Announcements"}
             </Text>
 
             {/* School Announcements */}
@@ -82,7 +82,7 @@ export default function AnnouncementScreen() {
             {/* Filter Announcements */}
             <View style={fullAnnId == "-1" ? styles.row : {display: "none"}}>
                 <Text style={{color: isFilter ?(useColorScheme() === "dark" ? "#434343ff" : "#b7b7b7ff") : (useColorScheme() === "light" ? "#434343ff" : "#b7b7b7ff"), fontFamily: 'poppins', paddingHorizontal: 8
-                }}>School </Text>
+                }}>All </Text>
                 <Switch style={styles.switch}
                     trackColor={{ false: "#b7b7b7ff", true: "#b7b7b7ff" }}
                     thumbColor={isFilter ? "#434343ff" : "#434343ff"}
