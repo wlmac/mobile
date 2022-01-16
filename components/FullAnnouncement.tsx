@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, Image } from 'react-native';
+import { StyleSheet, Image, Linking } from 'react-native';
 import { Text, View } from '../components/Themed';
 import Markdown from 'react-native-markdown-display';
 import useColorScheme from '../hooks/useColorScheme';
@@ -61,10 +61,11 @@ function annDetails(org: string, orgIcon: string, author: string, timeStamp: str
 function previewText(text: string) {
     return (
         <View style={styles.text}>
-            <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark}>{text}</Markdown>
+            <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true}>{text}</Markdown>
         </View>
     )
 }
+
 
 // ----- STYLES -----
 const styles = StyleSheet.create({
