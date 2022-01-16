@@ -6,6 +6,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { Text, View } from '../components/Themed';
 import { RootStackParamList } from '../types';
 import Changelog from '../components/Changelog';
+import About from '../components/About';
 
 export default function SettingsScreen({ navigation }: { navigation: StackNavigationProp<RootStackParamList, 'Root'> }) {
   const [curView, setCurView] = React.useState(-1);
@@ -28,10 +29,16 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
   }
   return (
     <View style={styles.container}>
+      <ScrollView style={curView == 2 ? {marginHorizontal: 0} : { display: "none" }}>
+        <About back={setView}></About>
+      </ScrollView>
       <ScrollView style={curView == 1 ? {marginHorizontal: 0} : { display: "none" }}>
         <Changelog back={setView}></Changelog>
       </ScrollView>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+      <TouchableOpacity style={curView == -1 ? [styles.button, { backgroundColor: btnBgColor }] : {display: "none"}} onPress={() => {setView(2)}}>
+        <Text> About </Text>
+      </TouchableOpacity>
       <TouchableOpacity style={curView == -1 ? [styles.button, { backgroundColor: btnBgColor }] : {display: "none"}} onPress={() => {setView(1)}}>
         <Text> View Changelog </Text>
       </TouchableOpacity>
