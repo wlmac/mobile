@@ -7,6 +7,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import * as React from 'react';
+import { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import messaging from '@react-native-firebase/messaging';
 
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
@@ -21,6 +24,26 @@ const BottomTab = createBottomTabNavigator<BottomTabParamList>();
 
 export default function BottomTabNavigator() {
   const colorScheme = useColorScheme();
+  let [notifs, updateDisplayNotifs] = useState(0);
+
+  function updateNotifs(num: number) {
+    updateDisplayNotifs(num);
+    AsyncStorage.setItem('@notifscount', num.toString()).catch();
+  }
+
+  useEffect(() => {
+    AsyncStorage.getItem('@notifscount').then(count => {
+      if(count) {
+        updateNotifs(parseInt(count));
+      }
+    });
+    try {
+      const unsubscribe = messaging().onMessage(async remoteMessage => {
+        updateNotifs(notifs + 1);
+      });
+      return unsubscribe;
+    } catch{}
+  }, [])
 
   return (
     <BottomTab.Navigator
@@ -36,9 +59,10 @@ export default function BottomTabNavigator() {
       />
       <BottomTab.Screen
         name="Announcements"
-        component={AnnouncementNavigator}
+        children={() => AnnouncementNavigator(notifs, updateNotifs)}
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="megaphone" color={color} />,
+          tabBarBadge: (notifs > 0) ? notifs : undefined,
         }}
       />
       <BottomTab.Screen
@@ -93,12 +117,12 @@ function HomeNavigator() {
 
 const AnnouncementStack = createStackNavigator<AnnouncementParamList>();
 
-function AnnouncementNavigator() {
+function AnnouncementNavigator(notifs: number, updateNotifs: Function) {
   return (
     <AnnouncementStack.Navigator>
       <AnnouncementStack.Screen
         name="AnnouncementScreen"
-        component={AnnouncementScreen}
+        children={() => AnnouncementScreen(notifs, updateNotifs)}
         options={{ headerTitle: () => { return null; }, headerShown: false }}
       />
     </AnnouncementStack.Navigator>

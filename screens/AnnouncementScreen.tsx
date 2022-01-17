@@ -7,7 +7,7 @@ import Announcement from '../components/Announcement';
 import FullAnnouncement from '../components/FullAnnouncement';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function AnnouncementScreen() {
+export default function AnnouncementScreen(notifs: number, updateNotifs: Function) {
     // stores announcements
     const [announcements, setAnnouncements] = useState([]);
     const [myAnnouncements, setMyAnnouncements] = useState([]);
@@ -45,6 +45,9 @@ export default function AnnouncementScreen() {
     // fetch data from API
     useEffect(() => {
         readData();
+        if(notifs > 0) {
+            updateNotifs(0);
+        }
     }, []);
     
     return (
