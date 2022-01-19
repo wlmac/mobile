@@ -30,8 +30,9 @@ export default function Changelog({ back }: { back: Function }) {
 
 const styles = StyleSheet.create({
     container: {
-        alignItems: 'center',
-        justifyContent: 'center',
+        flex:1,
+        marginVertical: 15,
+        marginHorizontal: 10,
     },
     changelog: {
         marginVertical: 30,

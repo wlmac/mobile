@@ -32,10 +32,10 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
   }
   return (
     <View style={styles.container}>
-      <ScrollView style={curView == 2 ? {marginHorizontal: 0} : { display: "none" }}>
+      <ScrollView style={curView == 2 ? {flex:1, width:"100%"} : { display: "none" }}>
         <About back={setView}></About>
       </ScrollView>
-      <ScrollView style={curView == 1 ? {marginHorizontal: 0} : { display: "none" }}>
+      <ScrollView style={curView == 1 ? {flex:1, width:"100%"} : { display: "none" }}>
         <Changelog back={setView}></Changelog>
       </ScrollView>
       <TouchableOpacity style={curView == -1 ? [styles.button, { backgroundColor: btnBgColor }] : {display: "none"}} onPress={() => {setView(2)}}>
