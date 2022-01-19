@@ -52,6 +52,7 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    marginHorizontal:6,
     alignItems: 'center',
     justifyContent: 'center',
   },

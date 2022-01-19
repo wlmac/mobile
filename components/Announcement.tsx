@@ -42,12 +42,16 @@ function createHeader(title: string) {
 function annDetails(org: string, orgIcon: string, author: string, timeStamp: string) {
     return (
         <View style={styles.details}>
-            <View style={[styles.iconShadow, {shadowColor: useColorScheme() === "light" ? "black" : "white"}]}>
-                <Image style={styles.orgIcon} source={{uri: orgIcon}}></Image>
+            <View style={styles.detailsHeading}>
+                <View style={[styles.iconShadow, {shadowColor: useColorScheme() === "light" ? "black" : "white"}]}>
+                    <Image style={styles.orgIcon} source={{uri: orgIcon}}></Image>
+                </View>
+                <Text style={[styles.clubName, {color: useColorScheme() === "light" ? lightC : darkC}]}>{org}</Text>
             </View>
-            <Text style={[styles.clubName, {color: useColorScheme() === "light" ? lightC : darkC}]}>{org}</Text>
-            <Text style={[styles.author, {color: useColorScheme() === "light" ? lightC : darkC}]}>{author}</Text>
-            <Text style={styles.timeStamp}>{new Date(timeStamp).toLocaleString("en-US", {timeZone: "EST"})}</Text>
+            <View style={styles.detailsSubheading}>
+                <Text style={styles.timeStamp}>{new Date(timeStamp).toLocaleString("en-US", {timeZone: "EST"})}</Text>
+                <Text style={[styles.author, {color: useColorScheme() === "light" ? lightC : darkC}]}>{author}</Text>
+            </View>
         </View>
     );
 }
@@ -57,7 +61,7 @@ function previewText(text: string) {
     const removeMd = require('remove-markdown');
     const plaintext = removeMd(text);
     return (
-        <Text style={styles.text}>{plaintext}</Text>
+        <Text style={styles.text} numberOfLines={5} >{plaintext}</Text>
     )
 }
 
@@ -66,6 +70,8 @@ const styles = StyleSheet.create({
     announcement: {
         marginVertical: 15,
         marginHorizontal: 10,
+        paddingTop: 5,
+        paddingHorizontal:12,
         shadowOffset: {width: 0, height: 1},
         shadowOpacity: 0.4,
     },
@@ -80,60 +86,63 @@ const styles = StyleSheet.create({
         overflow: "hidden",
         paddingVertical: 2,
         paddingHorizontal: 7,
-        marginHorizontal: 3,
         marginBottom: 5,
+        marginRight: 5,
         borderRadius: 5,
     },
     header: {
         fontSize: 20,
         fontWeight: "bold",
-        marginHorizontal: 20,
         marginTop: 5,
         marginBottom: 10,
     },
 
     details: {
-        flex: 1,
-        flexDirection: "row",
-        flexWrap: "wrap",
+        flex:1,
+    },
+    detailsHeading:{
+        width:"100%",
+        flexDirection:"row",
+        alignItems:"center",
+        paddingBottom:5,
+    },
+    detailsSubheading:{
+        flex:1,
     },
     iconShadow: {
+        width: 32,
+        height: 32,
         shadowOffset: {width: 0, height: 1},
         shadowOpacity: 0.4,
         shadowRadius: 2,
-        marginHorizontal: 8,
         borderRadius: 32/2,
     },
     orgIcon: {
-        display: "flex",
-        width: 32,
-        height: 32,
+        width:"100%",
+        height:"100%",
         borderRadius: 32/2,
     },
     text: {
         marginTop: 5,
-        paddingHorizontal: 10,
         paddingVertical: 5,
         overflow: "hidden",
         height: 100,
     },
     clubName: {
-        paddingTop: 7,
+        marginLeft:7,
+        flex:1,
         fontWeight: "bold",
     },
     author: {
-        paddingTop: 7,
-        paddingHorizontal: 5,
+        marginVertical:3,
         fontWeight: "bold",
     },
     timeStamp: {
-        paddingTop: 7,
-        paddingLeft: 10,
+        marginVertical:3,
         color: '#939393',
     },
     click: {
         marginTop: 5,
         marginBottom: 15,
-        marginHorizontal: 10,
     },
 });
