@@ -1,9 +1,8 @@
 import * as React from 'react';
-import { StyleSheet, Image, Linking } from 'react-native';
+import { StyleSheet, Image } from 'react-native';
 import { Text, View } from '../components/Themed';
 import Markdown from 'react-native-markdown-display';
 import useColorScheme from '../hooks/useColorScheme';
-import { ScrollView } from 'react-native-gesture-handler';
 
 var lightC = "#3a6a96";
 var darkC = "#42a4ff";
@@ -47,12 +46,16 @@ function createHeader(title: string) {
 function annDetails(org: string, orgIcon: string, author: string, timeStamp: string) {
     return (
         <View style={styles.details}>
-            <View style={[styles.iconShadow, {shadowColor: useColorScheme() === "light" ? "black" : "white"}]}>
-                <Image style={styles.orgIcon} source={{uri: orgIcon}}></Image>
+            <View style={styles.detailsHeading}>
+                <View style={[styles.iconShadow, {shadowColor: useColorScheme() === "light" ? "black" : "white"}]}>
+                    <Image style={styles.orgIcon} source={{uri: orgIcon}}></Image>
+                </View>
+                <Text style={[styles.clubName, {color: useColorScheme() === "light" ? lightC : darkC}]}>{org}</Text>
             </View>
-            <Text style={[styles.clubName, {color: useColorScheme() === "light" ? lightC : darkC}]}>{org}</Text>
-            <Text style={[styles.author, {color: useColorScheme() === "light" ? lightC : darkC}]}>{author}</Text>
-            <Text style={styles.timeStamp}>{new Date(timeStamp).toLocaleString("en-US", {timeZone: "EST"})}</Text>
+            <View style={styles.detailsSubheading}>
+                <Text style={styles.timeStamp}>{new Date(timeStamp).toLocaleString("en-US", {timeZone: "EST"})}</Text>
+                <Text style={[styles.author, {color: useColorScheme() === "light" ? lightC : darkC}]}>{author}</Text>
+            </View>
         </View>
     );
 }
@@ -100,8 +103,16 @@ const styles = StyleSheet.create({
     },
     details: {
         flex: 1,
-        flexDirection: "row",
-        flexWrap: "wrap",
+    },
+    detailsHeading:{
+        width:"100%",
+        flexDirection:"row",
+        alignItems:"center",
+        paddingBottom:5,
+        paddingLeft: 6,
+    },
+    detailsSubheading:{
+        flex:1,
     },
     iconShadow: {
         shadowOffset: {width: 0, height: 1},
@@ -131,13 +142,15 @@ const styles = StyleSheet.create({
     author: {
         fontSize: 18,
         paddingTop: 7,
-        paddingHorizontal: 5,
+        marginHorizontal: 5,
+        paddingHorizontal: 10,
         fontWeight: "bold",
     },
     timeStamp: {
         fontSize: 18,
         paddingTop: 7,
-        paddingLeft: 10,
+        marginHorizontal: 5,
+        paddingHorizontal: 10,
         color: '#939393',
     },
     click: {
