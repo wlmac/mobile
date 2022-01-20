@@ -11,12 +11,11 @@ import * as React from 'react';
 import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
 import HomeScreen from '../screens/HomeScreen';
-import NotifsScreen from '../screens/NotifsScreen';
 import AnnouncementScreen from '../screens/AnnouncementScreen';
 import CalendarScreen from '../screens/CalendarScreen';
 import MapScreen from '../screens/MapScreen';
 import SettingsScreen from '../screens/SettingsScreen';
-import { BottomTabParamList, HomeParamList, NotifsParamList, AnnouncementParamList, CalendarParamList, MapParamList, SettingsParamList } from '../types';
+import { BottomTabParamList, HomeParamList, AnnouncementParamList, CalendarParamList, MapParamList, SettingsParamList } from '../types';
 
 const BottomTab = createBottomTabNavigator<BottomTabParamList>();
 
@@ -36,18 +35,10 @@ export default function BottomTabNavigator() {
         }}
       />
       <BottomTab.Screen
-        name="Notifs"
-        component={NotifsNavigator}
-        options={{
-          tabBarIcon: ({ color }) => <TabBarIcon name="notifications" color={color} />,
-          headerTitle: "Notifications",
-        }}
-      />
-      <BottomTab.Screen
         name="Announcements"
         component={AnnouncementNavigator}
         options={{
-          tabBarIcon: ({ color }) => <TabBarIcon name="notifications" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="megaphone" color={color} />,
         }}
       />
       <BottomTab.Screen
@@ -97,20 +88,6 @@ function HomeNavigator() {
         options={{ headerTitle: () => { return null; }, headerShown: false }}
       />
     </HomeStack.Navigator>
-  );
-}
-
-const NotifsStack = createStackNavigator<NotifsParamList>();
-
-function NotifsNavigator() {
-  return (
-    <NotifsStack.Navigator>
-      <NotifsStack.Screen
-        name="NotifsScreen"
-        component={NotifsScreen}
-        options={{ headerTitle: () => { return null; }, headerShown: false }}
-      />
-    </NotifsStack.Navigator>
   );
 }
 
