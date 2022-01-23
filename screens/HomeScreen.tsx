@@ -3,6 +3,7 @@ import { StyleSheet, Image, useColorScheme, ImageBackground } from 'react-native
 
 import apiRequest from '../lib/apiRequest';
 import { Text, View } from '../components/Themed';
+import { ChangeLogModal } from '../components/Changelog';
 import config from '../config.json';
 import getSeason from '../lib/getSeason';
 
@@ -167,6 +168,7 @@ export default function HomeScreen() {
 
 
       {/* ---  Main Page Container ---*/} 
+      {ChangeLogModal()}
       </View>
 
       </ImageBackground>
