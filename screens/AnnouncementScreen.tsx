@@ -79,6 +79,15 @@ export default function AnnouncementScreen() {
                 <FullAnnouncement ann={announcements.find((e: any) => e.id == fullAnnId)} backToScroll={setFullAnnId}></FullAnnouncement>
             </ScrollView>
 
+            {/* Divider */}
+            <View
+                style={{
+                height: 3.5,
+                width: "100%",
+                backgroundColor: "#efefef",
+                }}
+            />
+
             {/* Filter Announcements */}
             <View style={fullAnnId == "-1" ? styles.row : {display: "none"}}>
                 <Text style={{color: isFilter ?(useColorScheme() === "dark" ? "#434343ff" : "#b7b7b7ff") : (useColorScheme() === "light" ? "#434343ff" : "#b7b7b7ff"), fontFamily: 'poppins', paddingHorizontal: 8

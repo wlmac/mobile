@@ -74,12 +74,13 @@ const styles = StyleSheet.create({
         paddingHorizontal:12,
         shadowOffset: {width: 0, height: 1},
         shadowOpacity: 0.4,
+        borderRadius: 15,
     },
     tags: {
         flex: 1,
         flexDirection: "row",
         flexWrap: "wrap",
-        marginTop: 5,
+        marginTop: 10,
     },
     tag: {
         color: "black",
@@ -89,12 +90,13 @@ const styles = StyleSheet.create({
         marginBottom: 5,
         marginRight: 5,
         borderRadius: 5,
+        fontSize: 13,
     },
     header: {
-        fontSize: 20,
+        fontSize: 24,
         fontWeight: "bold",
-        marginTop: 5,
         marginBottom: 10,
+        marginTop: 3,
     },
 
     details: {
@@ -132,6 +134,7 @@ const styles = StyleSheet.create({
         marginLeft:7,
         flex:1,
         fontWeight: "bold",
+        fontSize: 17,
     },
     author: {
         marginVertical:3,
