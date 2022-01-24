@@ -3,6 +3,7 @@ import React from 'react';
 import { StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 
 import { View, Text } from './Themed';
+import { Ionicons } from '@expo/vector-icons';
 
 let theme;
 
@@ -18,23 +19,20 @@ export function EventCard({ event } : { event: any }) {
 
   return (
     <View style={styles.eventCardContainer}>
-      
       <TouchableOpacity
         onPress={() => {setSelected(!selected)}}
       >
 
         <View style={styles.quickInfo}>
           {timeRange(event.start_date, event.end_date, color)}
-          <View style={[styles.info, {backgroundColor: theme === 'light' ? '#edebeb' : '#2e2e2e'}]}>
+          <View style={[styles.info, {backgroundColor: theme === 'light' ? '#f3f3f3' : '#2e2e2e'}]}>
             <Text style={[styles.titleText, {color: theme === 'light' ? '#000' : '#fff'}]}>{event.name}</Text>
             <Text style={styles.organizationText}>{event.organization.name}</Text>
             {/* display if selected is true*/}
             {selected && (
               <View style={styles.description}>
                 <View style={styles.separator} />
-
                 <View style={styles.description}>
-                
                   <Text style={{color: theme === 'light' ? '#000' : '#fff'}}>{event.description.length == 0 ? 'No description' : event.description}</Text>
                 </View>
               </View>
@@ -48,7 +46,20 @@ export function EventCard({ event } : { event: any }) {
                 ))}
               </View>
             )}
+            <View style={styles.separator} />
+            {/* caret to signify expanding of the description of an event*/}
+            {selected && (
+              <View style={styles.caret}>
+                <Ionicons name="chevron-up" size={20} color={theme === 'light' ? '#000' : '#fff'} />
+              </View>
+            )}
+            {!selected && (
+              <View style={styles.caret}>
+                <Ionicons name="chevron-down" size={20} color={theme === 'light' ? '#000' : '#fff'} />
+              </View>
+            )}
           </View>
+          
         </View>
       </TouchableOpacity>
     </View>
@@ -101,7 +112,6 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     justifyContent: 'center',
     marginVertical: '2%',
-    marginLeft: '-2%',
   },
   separator: {
     marginVertical: 6,
@@ -121,10 +131,10 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 5,
     borderBottomLeftRadius: 5,
     padding: 10,
-    width: '28%',
+    width: 101,
   },
   timeRangeText: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#000000',
   },
   info: {
@@ -133,7 +143,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 5,
     borderBottomRightRadius: 5,
     padding: 10,
-    width: '68%',
+    width: 236,
   },
   titleText: {
     fontSize: 20,
@@ -158,5 +168,10 @@ const styles = StyleSheet.create({
   tagText: {
     fontSize: 12,
     color: '#525252',
+  },
+  caret: {
+    backgroundColor: 'transparent',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
   }
 });
