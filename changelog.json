@@ -1,12 +1,7 @@
 [
     {
-        "version": "0.0.2",
-        "time": 1642208887502,
-        "changes": "Test changelog 2"
-    },
-    {
         "version": "0.0.1",
-        "time": 1642205877502,
-        "changes": "Test changelog 1"
+        "time": 1643162470274,
+        "changes": "Day 166 of developing Metropolis mobile. Debugging is painful. - Patrick"
     }
 ]

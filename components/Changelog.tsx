@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { ScrollView, StyleSheet, Button, TouchableOpacity, useColorScheme } from 'react-native';
+import Markdown from 'react-native-markdown-display';
 import { Text, View } from '../components/Themed';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Modal from "react-native-modal";
@@ -20,7 +21,7 @@ export default function Changelog({ back }: { back: Function }) {
                     <View key={key}>
                         <Text style={{ fontSize: 20, fontWeight: 'bold' }}> v{change.version} </Text>
                         <Text> {new Date(change.time).toLocaleString() + '\n'} </Text>
-                        <Text> {change.changes + '\n\n'} </Text>
+                        <View><Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true}>{change.changes + '\n\n'}</Markdown></View>
                     </View>
                 ))}
             </View>
@@ -80,7 +81,9 @@ export function ChangeLogModal() {
                     <Text style={styles.title}>What's New</Text>
                     <Text style={{ fontSize: 20, fontWeight: 'bold' }}> v{changelog[0].version} </Text>
                     <Text> {new Date(changelog[0].time).toLocaleString() + '\n'} </Text>
-                    <Text> {changelog[0].changes} </Text>
+                    <View>
+                        <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true}>{changelog[0].changes}</Markdown>
+                    </View>
                     <TouchableOpacity onPress={modalOff} style={styles.button}><Text>Close</Text></TouchableOpacity>
                 </View>
             </Modal>
@@ -95,5 +98,38 @@ const modalStyles = StyleSheet.create({
         alignItems: 'center',
         borderRadius: 4,
         borderColor: 'rgba(0, 0, 0, 0.1)',
+    }
+});
+
+const markdownStylesLight = StyleSheet.create({
+    body: {
+        color: "black",
+        backgroundColor: "white",
+        fontSize: 17,
+    },
+    link: {
+        color: "#018bcf",
+    },
+    image: {
+        minWidth: '90%',
+        margin: 10,
+    }
+});
+
+const markdownStylesDark = StyleSheet.create({
+    body: {
+        color: "white",
+        backgroundColor: "black",
+        fontSize: 17,
+    },
+    blockquote: {
+        backgroundColor: "black",
+    },
+    link: {
+        color: "#00abff",
+    },
+    image: {
+        minWidth: '90%',
+        margin: 10,
     }
 });
