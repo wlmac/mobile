@@ -35,7 +35,7 @@ export default function HomeScreen() {
       if (schedule && schedule[0]) {
         let displayedInfo = ``;
         for (let i = 0; i < schedule.length; i++) {
-          displayedInfo += `P${i + 1} - ${schedule[i].course} (${schedule[i].description.time})`;
+          displayedInfo += `${schedule[i].description.time}  |  ${schedule[i].course}`;
           for (let prop in schedule[i].time) {
             criticalTimes.push(((Date.parse(schedule[i].time[prop]) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000);
           }
@@ -106,12 +106,14 @@ export default function HomeScreen() {
   if (useColorScheme() === "light"){
     theme = {
       color: "#300",
+      websiteColor:"rgb(58, 106, 150)",
       tint: "transparent" 
     }
   }
   else {
     theme = {
       color: "white",
+      websiteColor:"rgb(58, 106, 150)",
       tint: "rgba(0, 0, 0, 0.3)"
     } 
   }
@@ -170,7 +172,6 @@ export default function HomeScreen() {
       {/* ---  Main Page Container ---*/} 
       {ChangeLogModal()}
       </View>
-
       </ImageBackground>
     </ImageBackground>
   );
