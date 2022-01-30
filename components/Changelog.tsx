@@ -19,8 +19,8 @@ export default function Changelog({ back }: { back: Function }) {
                 <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
                 {Object.entries(changelog).map(([key, change]) => (
                     <View key={key}>
-                        <Text style={{ fontSize: 20, fontWeight: 'bold' }}> v{change.version} </Text>
-                        <Text> {new Date(change.time).toLocaleString() + '\n'} </Text>
+                        <Text style={{ fontSize: 20, fontWeight: 'bold', color: useColorScheme() === "dark" ? '#348feb' : '#105fb0' }}> v{change.version} </Text>
+                        <Text style={{ color: useColorScheme() === "dark" ? '#cccccc' : '#555555', fontSize: 15 }}> {new Date(change.time).toLocaleString() + '\n'} </Text>
                         <View><Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true}>{change.changes + '\n\n'}</Markdown></View>
                     </View>
                 ))}
