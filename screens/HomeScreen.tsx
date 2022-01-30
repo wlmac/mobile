@@ -156,7 +156,7 @@ export default function HomeScreen() {
             <Text style={[styles.temperature, { color: theme.color }]}>{temp}</Text>
 
             {/* --- WEATHER DIVIDER --- */}
-            <View style={[styles.weatherDivider, { borderColor: theme.color }]} />
+            <View style={[styles.weatherDivider, { borderColor: 'rgb(58, 106, 150)' }]} />
 
             {/* --- WEATHER ICON --- */}
             <Image style={styles.logo} source={weatherIcon} />
@@ -246,6 +246,8 @@ const styles = StyleSheet.create({
   logo: {
     width: 60,
     height: 60,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderRadius: 20,
   },
 
   /*---------- MAIN INFO ----------*/
