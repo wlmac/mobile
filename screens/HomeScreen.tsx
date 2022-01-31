@@ -3,6 +3,7 @@ import { StyleSheet, Image, useColorScheme, ImageBackground } from 'react-native
 
 import apiRequest from '../lib/apiRequest';
 import { Text, View } from '../components/Themed';
+import { ChangeLogModal } from '../components/Changelog';
 import config from '../config.json';
 import getSeason from '../lib/getSeason';
 
@@ -10,7 +11,7 @@ let theme;
 
 export default function HomeScreen() {
 
-  let criticalTimes: number[];
+  let criticalTimes: any[];
   let time: number;
   let schedule: any;
   let dayOfTheWeek: number;
@@ -23,24 +24,37 @@ export default function HomeScreen() {
 
   let [course, updateCourse] = React.useState("Loading...");
   let [timeText, updateTimeText] = React.useState("Loading...");
+  let [nextCourse, updateNextCourse] = React.useState("");
 
   let [dataUploaded, updateDataUploaded] = React.useState(false);
 
   criticalTimes = [];
 
-  apiRequest(`/api/me/schedule?date=${(new Date()).toISOString().split('T')[0]}`, '', 'GET').then(res => {
+  apiRequest(`/api/me/schedule`, '', 'GET').then(res => {
     if (res.success) {
       schedule = JSON.parse(res.response);
       if (schedule && schedule[0]) {
         let displayedInfo = ``;
         for (let i = 0; i < schedule.length; i++) {
-          displayedInfo += `P${i + 1} - ${schedule[i].course} (${schedule[i].description.time})`;
-          for (let prop in schedule[i].time) {
-            criticalTimes.push(((Date.parse(schedule[i].time[prop]) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000);
+          displayedInfo += `${schedule[i].description.time}  |  ${schedule[i].course}`;
+          let timeobj = {
+            start: ((Date.parse(schedule[i].time.start) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
+            end: ((Date.parse(schedule[i].time.end) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
+            course: schedule[i].course
           }
+          criticalTimes.push(timeobj);
           if (i !== schedule.length - 1) {
             displayedInfo += `\n`;
           }
+        }
+        if (criticalTimes.length >= 2) { //if there are more than 2 courses, there must be a lunch in there somewhere, right?
+          let pindx = Math.floor(criticalTimes.length / 2.0) - 1;
+          let lunchobj = {
+            start: criticalTimes[pindx].end,
+            end: criticalTimes[pindx + 1].start,
+            course: 'LUNCH'
+          }
+          criticalTimes.splice(pindx + 1, 0, lunchobj);
         }
         updateTimeTable(displayedInfo);
         updateDataUploaded(true);
@@ -52,17 +66,20 @@ export default function HomeScreen() {
       }
     }
     else {
-      updateTimeTable(`Uh-oh, error occurred :(`);
+      updateCourse(`Currently Offline`);
+      updateTimeText('No internet');
+      updateTimeTable(`Could not connect to server!`);
     }
   }).catch(err => {
-    updateTimeTable(`Could not connect to server!`);
+    updateTimeTable(`Uh-oh, error occurred :(`);
   })
   getWeather().then((data) => {
     updateIcon(wIcons[data.weather_state_abbr]);
     updateTemp(`${data.the_temp}°`);
     updateWeather(data.weather_state_abbr);
   }).catch(() => {
-    updateTemp(`Couldn't fetch :(`);
+    updateTemp(`Unknown`);
+    updateIcon(require('../assets/images/nowifi.png'));
   })
 
   const determineTimeString = (presentTime: number, futureTime: number) => {
@@ -76,99 +93,115 @@ export default function HomeScreen() {
       dayOfTheWeek = new Date().getDay();
       const interval = setInterval(() => {
         time = Math.floor((Date.now() - new Date().setHours(0, 0, 0, 0)) / 60000);
-        if (criticalTimes.length ==  0) {}
-        else if (time >= criticalTimes[3] || dayOfTheWeek > 5) {
+        if (criticalTimes.length == 0) { }
+        else if (time >= criticalTimes[criticalTimes.length - 1].end || dayOfTheWeek > 5) {
           updateCourse(`SCHOOL DAY FINISHED`);
           updateTimeText(``);
+          updateNextCourse("");
         }
-        else if (time >= criticalTimes[2]) {
-          updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[3])}`);
-          updateCourse(schedule[1].course);
+        else if (time < criticalTimes[0].start) {
+          updateTimeText(`Starts in ${determineTimeString(time, criticalTimes[0].start)}`);
+          updateCourse(criticalTimes[0].course);
+          updateNextCourse("");
         }
-        else if (time >= criticalTimes[1]) {
-          updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[2])}`);
-          updateCourse(`LUNCH`);
+        else if (time >= criticalTimes[criticalTimes.length - 1].start && time < criticalTimes[criticalTimes.length - 1].end) {
+          updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[criticalTimes.length - 1].end)}`);
+          updateCourse(criticalTimes[criticalTimes.length - 1].course);
+          updateNextCourse("");
         }
-        else if (time >= criticalTimes[0]) {
-          updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[1])}`);
-          updateCourse(schedule[0].course);
-        }
-        else {
-          updateTimeText(`Starts in ${determineTimeString(time, criticalTimes[0])}`);
-          updateCourse(schedule[0].course);
+        else if (criticalTimes.length >= 2) {
+          for (let i: number = 0; i < criticalTimes.length - 1; i++) {
+            if (time >= criticalTimes[i].start && time < criticalTimes[i].end) {
+              updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[i].end)}`);
+              updateCourse(criticalTimes[i].course);
+              updateNextCourse(`Up next: ${criticalTimes[i + 1].course}`);
+              break;
+            }
+            else if (time < criticalTimes[i+1].start) {
+              updateTimeText(`Starts in ${determineTimeString(time, criticalTimes[i+1].start)}`);
+              updateCourse(criticalTimes[i+1].course);
+              updateNextCourse("");
+              break;
+            }
+          }
         }
       }, 1000);
       return () => clearInterval(interval);
     }
   }, [dataUploaded]);
 
-  if (useColorScheme() === "light"){
+  if (useColorScheme() === "light") {
     theme = {
       color: "#300",
-      tint: "transparent" 
+      websiteColor: "rgb(58, 106, 150)",
+      tint: "transparent"
     }
   }
   else {
     theme = {
       color: "white",
+      websiteColor: "rgb(58, 106, 150)",
       tint: "rgba(0, 0, 0, 0.3)"
-    } 
+    }
   }
 
   return (
     <ImageBackground source={seasonBase[season]} resizeMode="cover" style={styles.backgroundImage}>
       <ImageBackground source={wLayers[weather][season]} resizeMode="cover" style={styles.backgroundImage}>
 
-      {/* ---  Main Page Container ---*/} 
-      <View style={[styles.container,{backgroundColor: theme.tint}]}>
-
-        {/* ---WEATHER CONTAINER ---*/}
-        <View style={styles.weatherContainer}>
-
-          {/* --- TEMPERATURE --- */}
-          <Text style={[styles.temperature,{color: theme.color}]}>{temp}</Text>
-
-          {/* --- WEATHER DIVIDER --- */}
-          <View style={[styles.weatherDivider, {borderColor: theme.color}]}/>
-
-          {/* --- WEATHER ICON --- */}
-          <Image style={styles.logo} source={weatherIcon} />
+        {/* ---  Main Page Container ---*/}
+        <View style={[styles.container, { backgroundColor: theme.tint }]}>
 
           {/* ---WEATHER CONTAINER ---*/}
-        </View>
+          <View style={styles.weatherContainer}>
 
+            {/* --- TEMPERATURE --- */}
+            <Text style={[styles.temperature, { color: theme.color }]}>{temp}</Text>
 
+            {/* --- WEATHER DIVIDER --- */}
+            <View style={[styles.weatherDivider, { borderColor: 'rgb(58, 106, 150)' }]} />
 
-        {/* --- COURSE ---*/}
-        <Text style={[styles.course,{color: theme.color}]}>{course}</Text>
+            {/* --- WEATHER ICON --- */}
+            <Image style={styles.logo} source={weatherIcon} />
 
-        {/* --- TIME TEXT ---*/}
-        <Text style={[styles.timeText,{color: theme.color}]}>{timeText}</Text>
-
-
-
-        {/* --- TIME TABLE CONTAINER ---*/}
-        <View style={styles.timeTableContainer}>
-
-          {/* --- WEEK TEXT --- */}
-          <Text style={[styles.weekText,{color: theme.color}]}>Week</Text>
-
-          {/* --- COURSE CONTAINER --- */}
-          <View style={styles.courseContainer}>
-
-            {/* --- COURSE TEXT --- */}
-            <Text style={[styles.courseText,{color: theme.color}]}>{timetable}</Text>
-
-            {/* --- COURSE CONTAINER --- */}
+            {/* ---WEATHER CONTAINER ---*/}
           </View>
 
+
+
+          {/* --- COURSE ---*/}
+          <Text style={[styles.course, { color: theme.color }]}>{course}</Text>
+
+          {/* --- TIME TEXT ---*/}
+          <Text style={[styles.timeText, { color: theme.color }]}>{timeText}</Text>
+
+          {/* --- TIME TEXT ---*/}
+          <Text style={[styles.timeText, { color: theme.color }]}>{nextCourse}</Text>
+
+
+
           {/* --- TIME TABLE CONTAINER ---*/}
+          <View style={styles.timeTableContainer}>
+
+            {/* --- WEEK TEXT --- */}
+            <Text style={[styles.weekText, { color: theme.color }]}>Week</Text>
+
+            {/* --- COURSE CONTAINER --- */}
+            <View style={styles.courseContainer}>
+
+              {/* --- COURSE TEXT --- */}
+              <Text style={[styles.courseText, { color: theme.color }]}>{timetable}</Text>
+
+              {/* --- COURSE CONTAINER --- */}
+            </View>
+
+            {/* --- TIME TABLE CONTAINER ---*/}
+          </View>
+
+
+          {/* ---  Main Page Container ---*/}
+          {ChangeLogModal()}
         </View>
-
-
-      {/* ---  Main Page Container ---*/} 
-      </View>
-
       </ImageBackground>
     </ImageBackground>
   );
@@ -216,6 +249,8 @@ const styles = StyleSheet.create({
   logo: {
     width: 60,
     height: 60,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderRadius: 20,
   },
 
   /*---------- MAIN INFO ----------*/

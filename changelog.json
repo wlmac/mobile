@@ -1,12 +1,7 @@
 [
     {
-        "version": "0.0.2",
-        "time": 1642208887502,
-        "changes": "Test changelog 2"
-    },
-    {
         "version": "0.0.1",
-        "time": 1642205877502,
-        "changes": "Test changelog 1"
+        "time": 1643162470274,
+        "changes": "Welcome to Metropolis!\n\nThis is the very first prerelease for the Metropolis mobile app!\n\nHere are some of our core features to get you started: \n- **Home**: Access today's schedule and information! No more \"i forgor there's class today 💀\".\n- **Announcements**: Might be a good place to catch up on announcements from [our website](https://maclyonsden.com/announcements) because you've definitely paid attention to the morning announcements. \n**Calendar**: Enjoy frequently checking when the breaks start :yep:\n**Map**: Woke up in the middle of nowhere? Good luck, we can't help you with that. What we can help you with, is getting to your classes! Now you know exactly where to go to suffer for another period. \n**Settings**: Have a read through information about the app and the legal mumbo jumbo that you promise you won't just skip. Or read this again in the changelog, I won't mind ;)\n\nThanks for using our app! <3\n\\- Patrick, Project Metropolis"
     }
 ]

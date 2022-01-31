@@ -48,7 +48,7 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
       </TouchableOpacity>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
       <TouchableOpacity style={curView == -1 ? [styles.logoutButton, { backgroundColor: logoutBtnBgColor }] : {display: "none"}} onPress={logout}>
-        <Text > Log Out </Text>
+        <Text style={{color: "white"}}> Log Out </Text>
         <Ionicons name="exit-outline" size={18} color={iconColor} />
       </TouchableOpacity>
     </View>

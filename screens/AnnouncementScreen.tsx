@@ -1,11 +1,14 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { Switch, useColorScheme } from 'react-native';
+import { StyleProp, Switch, useColorScheme, ViewStyle } from 'react-native';
 import { StyleSheet, StatusBar, ScrollView, Image } from 'react-native';
 import { Text, View } from '../components/Themed';
 import Announcement from '../components/Announcement';
 import FullAnnouncement from '../components/FullAnnouncement';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as WebBrowser from 'expo-web-browser';
+
+import config from '../config.json';
 
 export default function AnnouncementScreen() {
     // stores announcements
@@ -26,6 +29,9 @@ export default function AnnouncementScreen() {
         setAnnId(id);
         fullA?.current?.scrollTo({x: 0, y: 0, animated: false});
     }
+    
+    //displayed info if nothing in feed
+    const [noMyFeed, togglenoMyFeedText] = useState("none");
 
     // scrollview reset to top on switch toggle
     const allA = React.useRef<ScrollView>(null);
@@ -40,6 +46,9 @@ export default function AnnouncementScreen() {
             setMyAnnouncements(JSON.parse(res));
         });
         toggleLoading(false);
+        if(myAnnouncements.length == 0) {
+            togglenoMyFeedText("flex");
+        }
     }
     
     // fetch data from API
@@ -72,12 +81,24 @@ export default function AnnouncementScreen() {
                 {Object.entries(myAnnouncements).map(([key, ann]) => (
                     <Announcement key={key} ann={ann} fullAnn={setFullAnnId}></Announcement>
                 ))}
+                <View style={{display: noMyFeed} as StyleProp<ViewStyle>}><Text style={{textAlign: 'center'}}>There is nothing in your feed. Join some 
+                <Text style={{color: 'rgb(51,102,187)'}} onPress={() => { WebBrowser.openBrowserAsync(config.server + '/clubs') }}>{' '}clubs{' '}</Text>
+                 to have their announcements show up here!</Text></View>
             </ScrollView>
 
             {/* Full Announcement */}
             <ScrollView ref={fullA} style={fullAnnId != "-1" ? styles.scrollView : {display: "none"}}>
                 <FullAnnouncement ann={announcements.find((e: any) => e.id == fullAnnId)} backToScroll={setFullAnnId}></FullAnnouncement>
             </ScrollView>
+
+            {/* Divider */}
+            <View
+                style={{
+                height: 3.5,
+                width: "100%",
+                backgroundColor: "#efefef",
+                }}
+            />
 
             {/* Filter Announcements */}
             <View style={fullAnnId == "-1" ? styles.row : {display: "none"}}>

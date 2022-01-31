@@ -3,6 +3,7 @@ import { StyleSheet, Image } from 'react-native';
 import { Text, View } from '../components/Themed';
 import Markdown from 'react-native-markdown-display';
 import useColorScheme from '../hooks/useColorScheme';
+const linkify = require('markdown-linkify'); //using require due to lack of type definitions
 
 var lightC = "#3a6a96";
 var darkC = "#42a4ff";
@@ -64,7 +65,7 @@ function annDetails(org: string, orgIcon: string, author: string, timeStamp: str
 function previewText(text: string) {
     return (
         <View style={styles.text}>
-            <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true}>{text}</Markdown>
+            <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true}>{linkify(text)}</Markdown>
         </View>
     )
 }
@@ -77,12 +78,13 @@ const styles = StyleSheet.create({
         marginHorizontal: 10,
         shadowOffset: {width: 0, height: 1},
         shadowOpacity: 0.4,
+        borderRadius: 15,
     },
     tags: {
         flex: 1,
         flexDirection: "row",
         flexWrap: "wrap",
-        marginTop: 10,
+        marginTop: 15,
         marginHorizontal: 5,
     },
     tag: {
@@ -93,12 +95,12 @@ const styles = StyleSheet.create({
         marginHorizontal: 3,
         marginBottom: 5,
         borderRadius: 5,
+        fontSize: 14,
     },
     header: {
         fontSize: 30,
         fontWeight: "bold",
         marginHorizontal: 20,
-        marginTop: 5,
         marginBottom: 10,
     },
     details: {
@@ -134,10 +136,11 @@ const styles = StyleSheet.create({
         paddingVertical: 5,
     },
     clubName: {
-        fontSize: 18,
-        paddingTop: 7,
+        fontSize: 20,
+        paddingTop: 0,
         paddingHorizontal: 5,
         fontWeight: "bold",
+        flex: 1
     },
     author: {
         fontSize: 18,

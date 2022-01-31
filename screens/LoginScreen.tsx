@@ -81,7 +81,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
       <View style={[styles.bottomContainer, {justifyContent: (determineAspectRatio() < 1 && keyboardUp)? "flex-start": "center" }]}>
 
         {/* ----LOG IN-----*/}
-        <Text style={styles.logIn}>Log In</Text>
+        <Text style={styles.logIn}>Welcome!</Text>
 
         {/* ----LOG IN UNDERLINE-----*/}
         <View style={styles.logInUnderline}/>
@@ -90,6 +90,8 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
         <TextInput
           style={styles.inputField}
           placeholder="Username"
+          autoCorrect={false}
+          autoComplete="username"
           placeholderTextColor="gray"
           onChangeText={(value) => state.username = value} />
 
@@ -114,7 +116,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
 
           <View style={styles.logInButton}>
             <TouchableOpacity style={styles.logInButton} onPress={loginPress}>
-              <Text> Login </Text>
+              <Text style={{color: "white"}}> Login </Text>
             </TouchableOpacity>
           </View>
 
@@ -122,7 +124,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
         <View style={styles.helpContainer}>
           <TouchableOpacity onPress={handleRegisterPress} style={styles.helpLink}>
             <Text style={styles.helpLinkText} lightColor={Colors.light.tint}>
-              Register Here
+              Register
             </Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={handleForgotPasswordPress} style={styles.helpLink}>
@@ -248,15 +250,15 @@ const styles = StyleSheet.create({
 
 
   helpContainer: {
+    width:elementWidth,
     marginTop: 15,
-    marginHorizontal: 20,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent:"space-around",
   },
 
   helpLink: {
     paddingVertical: 15,
-    paddingHorizontal: 5
   },
 
   helpLinkText: {

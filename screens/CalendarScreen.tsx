@@ -38,24 +38,13 @@ export default function CalendarScreen() {
   // get today's date
   const today: YMDDate = dateToYMD();
 
-  // selected date state
+  // states
   const [selectedDay, setSelectedDay] = useState(today);
-
-  // displayed date state
   const [displayedDate, setDisplayedDate] = useState(today);
-  
-  // current key state
   const [currentKey, setCurrentKey] = useState(new Date());
-
-  // data fetched state
   const [data, setData] = useState(undefined as any);
-
-  // event days state, use a set
   const [eventDays, setEventDays] = useState([] as any[]);
-
-  // events today state
   const [eventsToday, setEventsToday] = useState([] as any[]);
-
 
   // use effect on component load
   useEffect (() => {
@@ -159,7 +148,9 @@ export default function CalendarScreen() {
                 arrowColor: appTheme === 'dark' ? '#fff' : '#000',
                 disabledArrowColor: '#4a4a4a',
               
-                monthTextColor: appTheme === 'dark' ? '#fff' : '#000',
+                monthTextColor: appTheme === 'dark' ? '#348feb' : '#105fb0',
+                textMonthFontWeight: 'bold',
+                textMonthFontSize: 16,
               }
             }
             {...staticCalendarProps}
@@ -174,7 +165,7 @@ export default function CalendarScreen() {
               [selectedDay.strform]: {
                 selected: true,
                 disableTouchEvent: true,
-                selectedColor: '#fc1d00',
+                selectedColor: '#105fb0',
                 selectedTextColor: today.strform == selectedDay.strform ? '#f7c40c' : '#fff',
               },
 
@@ -184,7 +175,7 @@ export default function CalendarScreen() {
                   dotColor: '#6e9bc4',
                   selected: selectedDay.strform === eventDay,
                   disableTouchEvent: selectedDay.strform === eventDay,
-                  selectedColor: '#fc1d00',
+                  selectedColor: '#105fb0',
                   selectedTextColor: today.strform == selectedDay.strform ? '#f7c40c' : '#fff',
                 };
                 return obj;
@@ -259,7 +250,7 @@ export default function CalendarScreen() {
 
           // events today
           <View>
-            <Text style={[styles.eventsCountText, {color: appTheme === 'light' ? '#000' : '#fff'}]}>
+            <Text style={[styles.dateText, {color: appTheme === 'light' ? '#000' : '#fff'}]}>
               {YMDToLong(selectedDay)}
             </Text>
             {
@@ -269,7 +260,7 @@ export default function CalendarScreen() {
               <Text style={[styles.eventsCountText, {color: appTheme === 'light' ? '#000' : '#fff'}]}>No events today</Text>
               :
               // lists events
-              <View>
+              <View style={styles.eventCardsContainer}>
                 {Object.entries(eventsToday).map(([key, event]) => (
                   // reset key (resets component)
                   <EventCard key={key+new Date().toISOString()} event={event} />
@@ -394,6 +385,13 @@ const styles = StyleSheet.create({
     marginHorizontal: '2%',
   },
 
+  dateText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'left',
+    marginVertical: '3%',
+  },
+
   eventsCountText: {
     fontSize: 16,
     textAlign: 'left',
@@ -404,5 +402,12 @@ const styles = StyleSheet.create({
     marginLeft: '5%',
     alignItems: 'flex-start',
     justifyContent: 'flex-start',
-  }
+  },
+
+  eventCardsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent:'space-between',
+    marginTop: '2%',
+  },
 });

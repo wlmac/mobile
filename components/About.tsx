@@ -8,7 +8,7 @@ import config from '../config.json';
 
 export default function About({ back }: { back: Function }) {
     const btnBgColor = useColorScheme() === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
-    
+
     return (
         <View style={styles.container}>
             <Text style={styles.title}>
@@ -22,27 +22,32 @@ export default function About({ back }: { back: Function }) {
                         </Text>
                     </TouchableOpacity>
                     {'\n'}{'\n'}
-                    We operate in conjunction with the main site, providing features and functionality that aim to be consistent with the site. 
+                    We operate in conjunction with the main site, providing features and functionality that aim to be consistent with the site.
                     However, we are planning to update the app with more features exclusive to the mobile experience. You can view updates in the changelog.
                     {'\n'}{'\n'}
-                    By using this app, you consent to the privacy policy and terms of service as outlined on the site.
+                    By using this app, you consent to the {}
+                    <Text style={styles.link} onPress={() => { WebBrowser.openBrowserAsync(config.server + '/privacy') }}>
+                        privacy policy
+                    </Text> and <Text style={styles.link} onPress={() => { WebBrowser.openBrowserAsync(config.server + '/terms') }}>
+                        terms of service
+                    </Text> as outlined on the site.
                 </Text>
                 <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
                 <Text style={styles.subtitle}>
                     Credits
                 </Text>
-                <Text style={{marginBottom: 12}}>
-                    <Text style={{fontWeight: 'bold'}}>Lead Developer:</Text> Patrick Lin {'\n'}
-                    <Text style={{fontWeight: 'bold'}}>Other Developers:</Text> Aaron Zhu, Shane Chen, Aava Sapkota, Vlad Surdu {'\n'}
-                    <Text style={{fontWeight: 'bold'}}>Backend:</Text> Ken Shibata, Paul Lee {'\n'}
-                    <Text style={{fontWeight: 'bold'}}>Graphics and Design:</Text> Chelsea Wong, Justin Lu, Nicole Cui {'\n'}
-                    <Text style={{fontWeight: 'bold'}}>Support:</Text> Project Metropolis, SAC, WLMAC {'\n'} 
+                <Text style={{ marginBottom: 12 }}>
+                    <Text style={{ fontWeight: 'bold' }}>Lead Developer:</Text> Patrick Lin {'\n'}
+                    <Text style={{ fontWeight: 'bold' }}>Other Developers:</Text> Aaron Zhu, Shane Chen, Aava Sapkota, Vlad Surdu {'\n'}
+                    <Text style={{ fontWeight: 'bold' }}>Backend:</Text> Ken Shibata, Paul Lee {'\n'}
+                    <Text style={{ fontWeight: 'bold' }}>Graphics and Design:</Text> Chelsea Wong, Justin Lu, Nicole Cui {'\n'}
+                    <Text style={{ fontWeight: 'bold' }}>Support:</Text> Project Metropolis, SAC, WLMAC {'\n'}
                 </Text>
-                
+
                 <Text style={styles.subtitle}>
                     Contact
                 </Text>
-                <Text style={{marginBottom: 12}}>
+                <Text style={{ marginBottom: 12 }}>
                     Got a question, concern, or issue? Contact us using these methods! {'\n'}{'\n'}
                     <TouchableOpacity onPress={() => { Linking.openURL('mailto:hello@maclyonsden.com?subject=[App]%20Support%20Requested') }}>
                         <Text style={styles.link}>
