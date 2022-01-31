@@ -61,6 +61,7 @@ const styles = StyleSheet.create({
 });
 
 export function ChangeLogModal() {
+    const btnBgColor = useColorScheme() === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
     const [isModalVisible, setModalVisible] = React.useState(false);
     const modalOff = () => {
         setModalVisible(false);
@@ -76,16 +77,17 @@ export function ChangeLogModal() {
     return (
         <View>
             <Modal isVisible={isModalVisible}>
+                <ScrollView>
                 <View style={[modalStyles.content, { flex: 1 }]}>
                     <Ionicons size={30} style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignSelf: 'flex-end' }} name="close" color="white" onPress={modalOff} />
                     <Text style={styles.title}>What's New</Text>
                     <Text style={{ fontSize: 20, fontWeight: 'bold' }}> v{changelog[0].version} </Text>
                     <Text> {new Date(changelog[0].time).toLocaleString() + '\n'} </Text>
                     <View>
-                        <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true}>{changelog[0].changes}</Markdown>
+                        <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true}>{changelog[0].changes + '\n\n\n​\n\n\n​'}</Markdown> {/*The string at the end is a hacky solution to elongate markdown text such that the button renders correctly. Contains zero-width spaces.*/}
                     </View>
-                    <TouchableOpacity onPress={modalOff} style={styles.button}><Text>Close</Text></TouchableOpacity>
-                </View>
+                    <TouchableOpacity onPress={modalOff} style={[styles.button, { backgroundColor: btnBgColor }]}><Text>Close</Text></TouchableOpacity>
+                </View></ScrollView>
             </Modal>
         </View>
     )
