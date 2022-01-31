@@ -90,6 +90,8 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
         <TextInput
           style={styles.inputField}
           placeholder="Username"
+          autoCorrect={false}
+          autoComplete="username"
           placeholderTextColor="gray"
           onChangeText={(value) => state.username = value} />
 
