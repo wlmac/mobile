@@ -3,6 +3,7 @@ import { StyleSheet, Image } from 'react-native';
 import { Text, View } from '../components/Themed';
 import Markdown from 'react-native-markdown-display';
 import useColorScheme from '../hooks/useColorScheme';
+const linkify = require('markdown-linkify'); //using require due to lack of type definitions
 
 var lightC = "#3a6a96";
 var darkC = "#42a4ff";
@@ -64,7 +65,7 @@ function annDetails(org: string, orgIcon: string, author: string, timeStamp: str
 function previewText(text: string) {
     return (
         <View style={styles.text}>
-            <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true}>{text}</Markdown>
+            <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true}>{linkify(text)}</Markdown>
         </View>
     )
 }
