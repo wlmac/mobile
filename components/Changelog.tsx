@@ -74,6 +74,7 @@ export function ChangeLogModal() {
             }
         }).catch();
     }, [])
+    /*The string at the end is a hacky solution to elongate markdown text such that the button renders correctly. Contains zero-width spaces.*/
     return (
         <View>
             <Modal isVisible={isModalVisible}>
@@ -84,7 +85,7 @@ export function ChangeLogModal() {
                     <Text style={{ fontSize: 20, fontWeight: 'bold' }}> v{changelog[0].version} </Text>
                     <Text> {new Date(changelog[0].time).toLocaleString() + '\n'} </Text>
                     <View>
-                        <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true}>{changelog[0].changes + '\n\n\n​\n\n\n​'}</Markdown> {/*The string at the end is a hacky solution to elongate markdown text such that the button renders correctly. Contains zero-width spaces.*/}
+                        <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true}>{changelog[0].changes + '\n\n\n​\n\n\n​'}</Markdown>
                     </View>
                     <TouchableOpacity onPress={modalOff} style={[styles.button, { backgroundColor: btnBgColor }]}><Text>Close</Text></TouchableOpacity>
                 </View></ScrollView>
