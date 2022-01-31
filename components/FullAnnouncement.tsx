@@ -140,6 +140,7 @@ const styles = StyleSheet.create({
         paddingTop: 0,
         paddingHorizontal: 5,
         fontWeight: "bold",
+        flex: 1
     },
     author: {
         fontSize: 18,
