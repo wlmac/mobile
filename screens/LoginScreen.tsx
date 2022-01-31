@@ -114,7 +114,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
 
           <View style={styles.logInButton}>
             <TouchableOpacity style={styles.logInButton} onPress={loginPress}>
-              <Text> Login </Text>
+              <Text style={{color: "white"}}> Login </Text>
             </TouchableOpacity>
           </View>
 
