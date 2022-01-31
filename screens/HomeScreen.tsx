@@ -30,7 +30,7 @@ export default function HomeScreen() {
 
   criticalTimes = [];
 
-  apiRequest(`/api/me/schedule?date=${(new Date()).toISOString().split('T')[0]}`, '', 'GET').then(res => {
+  apiRequest(`/api/me/schedule`, '', 'GET').then(res => {
     if (res.success) {
       schedule = JSON.parse(res.response);
       if (schedule && schedule[0]) {
@@ -66,17 +66,20 @@ export default function HomeScreen() {
       }
     }
     else {
-      updateTimeTable(`Uh-oh, error occurred :(`);
+      updateCourse(`Currently Offline`);
+      updateTimeText('No internet');
+      updateTimeTable(`Could not connect to server!`);
     }
   }).catch(err => {
-    updateTimeTable(`Could not connect to server!`);
+    updateTimeTable(`Uh-oh, error occurred :(`);
   })
   getWeather().then((data) => {
     updateIcon(wIcons[data.weather_state_abbr]);
     updateTemp(`${data.the_temp}°`);
     updateWeather(data.weather_state_abbr);
   }).catch(() => {
-    updateTemp(`Couldn't fetch :(`);
+    updateTemp(`Unknown`);
+    updateIcon(require('../assets/images/nowifi.png'));
   })
 
   const determineTimeString = (presentTime: number, futureTime: number) => {
