@@ -79,15 +79,15 @@ export function ChangeLogModal() {
         <View>
             <Modal isVisible={isModalVisible}>
                 <ScrollView>
-                <View style={[modalStyles.content, { flex: 1 }]}>
+                <View style={[modalStyles.content, {flex: 1}]}>
                     <Ionicons size={30} style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignSelf: 'flex-end' }} name="close" color="white" onPress={modalOff} />
                     <Text style={styles.title}>What's New</Text>
                     <Text style={{ fontSize: 20, fontWeight: 'bold' }}> v{changelog[0].version} </Text>
                     <Text> {new Date(changelog[0].time).toLocaleString() + '\n'} </Text>
                     <View>
-                        <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true}>{changelog[0].changes + '\n\n\n​\n\n\n​'}</Markdown>
+                        <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true}>{changelog[0].changes}</Markdown>
                     </View>
-                    <TouchableOpacity onPress={modalOff} style={[styles.button, { backgroundColor: btnBgColor }]}><Text>Close</Text></TouchableOpacity>
+                    <TouchableOpacity onPress={modalOff} style={[modalStyles.button, { backgroundColor: btnBgColor }]}><Text>Close</Text></TouchableOpacity>
                 </View></ScrollView>
             </Modal>
         </View>
@@ -101,6 +101,13 @@ const modalStyles = StyleSheet.create({
         alignItems: 'center',
         borderRadius: 4,
         borderColor: 'rgba(0, 0, 0, 0.1)',
+    },
+    button: {
+        width: "100%",
+        borderRadius: 5,
+        alignItems: 'center',
+        padding: 10,
+        marginTop: 250,
     }
 });
 

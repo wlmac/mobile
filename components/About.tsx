@@ -15,7 +15,7 @@ export default function About({ back }: { back: Function }) {
                 About
             </Text>
             <View style={styles.container}>
-                <Text>The Metropolis app is the mobile app for
+                <Text>The Metropolis app is the mobile app for {' '}
                     <TouchableOpacity onPress={() => { WebBrowser.openBrowserAsync(config.server) }}>
                         <Text style={styles.link}>
                             {config.server}
