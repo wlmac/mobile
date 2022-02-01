@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   useColorScheme,
+  Alert
 } from "react-native";
 
 import MapView, { Marker, Overlay, PROVIDER_DEFAULT } from "react-native-maps";
@@ -13,6 +14,7 @@ import * as Location from "expo-location";
 import { Switch } from "react-native";
 import { TextInput } from "react-native";
 import filter from "lodash.filter";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const floorOne = require("../assets/images/FloorOne.png");
 const floorTwo = require("../assets/images/FloorTwo.png");
@@ -32,32 +34,48 @@ export default function MapScreen() {
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled((isEnabled) => !isEnabled);
   const [selectRoom, setSelectRoom] = useState({
-      type: "Feature",
-      geometry: {
-        type: "Point",
-        coordinates: [0, 0],
-      },
-      properties: {
-        title: "",
-        floor: 0,
-      },
-    },);
+    type: "Feature",
+    geometry: {
+      type: "Point",
+      coordinates: [0, 0],
+    },
+    properties: {
+      title: "",
+      floor: 0,
+    },
+  });
 
   useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        setErrorMsg("Permission to access location was denied");
-        return;
-      } else {
-        let location = await Location.getCurrentPositionAsync();
-        altitude = location.coords.altitude;
-        if (location.coords.altitude != null && location.coords.altitude > 147)
-          setIsEnabled(true);
-        else setIsEnabled(false);
+    AsyncStorage.getItem('@locationwarning').then(val => {
+      if (val && val == "viewed") {
+        requestPerms();
       }
-    })();
+      else {
+        Alert.alert('Allow Location Services', `Metropolis collects location data to enable the map feature. Your location is not transmitted off your device and will not be used when the app is in the background.`, 
+        [{ text: 'Deny', onPress: () => {
+          Alert.alert('Location denied', 'You can still use the map, however your position relative to the school cannot be shown. To re-enable this feature, simply restart the app and come back to this screen.', [{text: 'Ok', onPress: () => {}}], {cancelable: false});
+        } },
+        {text: 'Ok', onPress: () => {
+          AsyncStorage.setItem('@locationwarning', 'viewed');
+          requestPerms();
+        }}], { cancelable: false });
+      }
+    })
   }, []);
+
+  async function requestPerms(){
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== "granted") {
+      setErrorMsg("Permission to access location was denied");
+      return;
+    } else {
+      let location = await Location.getCurrentPositionAsync();
+      altitude = location.coords.altitude;
+      if (location.coords.altitude != null && location.coords.altitude > 147)
+        setIsEnabled(true);
+      else setIsEnabled(false);
+    }
+  };
 
   // --------------------------------------------------------
 
@@ -1215,7 +1233,7 @@ export default function MapScreen() {
     setState({ fullData: nextData, query: text });
   };
 
-  const contains = ({ type,geometry,properties }: any, query: any) => {
+  const contains = ({ type, geometry, properties }: any, query: any) => {
     if (properties.title.includes(query)) {
       return true;
     }
@@ -1266,8 +1284,8 @@ export default function MapScreen() {
         }}
       />
 
-        <View style={[styles.row2, {backgroundColor: useColorScheme()==="light"? "black": "white"}]}>
-        
+      <View style={[styles.row2, { backgroundColor: useColorScheme() === "light" ? "black" : "white" }]}>
+
         <FlatList
           style={{
             height:
@@ -1388,18 +1406,18 @@ export default function MapScreen() {
 }
 
 function mapOverlay(altitude: any, isEnabled: boolean) {
-  if (isEnabled ) {//|| altitude > 147
+  if (isEnabled) {//|| altitude > 147
     return (
       <Overlay
         image={floorTwo}
         bounds={[
           [43.752834542813886, -79.4626054388977],
           [43.7540593854649, -79.46087161319494],
-          
+
         ]}
       />
     );
-  } else if ( !isEnabled) {
+  } else if (!isEnabled) {
     return (
       <Overlay
         image={floorOne}
