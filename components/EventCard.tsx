@@ -26,14 +26,14 @@ export function EventCard({ event } : { event: any }) {
         <View style={styles.quickInfo}>
           {timeRange(event.start_date, event.end_date, color)}
           <View style={[styles.info, {backgroundColor: theme === 'light' ? '#f3f3f3' : '#2e2e2e'}]}>
-            <Text style={[styles.titleText, {color: theme === 'light' ? '#000' : '#fff'}]}>{event.name}</Text>
+            <Text style={[styles.titleText, {color: theme === 'light' ? '#404040' : '#fff'}]}>{event.name}</Text>
             <Text style={styles.organizationText}>{event.organization.name}</Text>
             {/* display if selected is true*/}
             {selected && (
               <View style={styles.description}>
                 <View style={styles.separator} />
                 <View style={styles.description}>
-                  <Text style={{color: theme === 'light' ? '#000' : '#fff'}}>{event.description.length == 0 ? 'No description' : event.description}</Text>
+                  <Text style={{color: theme === 'light' ? '#4f4f4f' : '#fff'}}>{event.description.length == 0 ? 'No description' : event.description}</Text>
                 </View>
               </View>
             )}
@@ -100,7 +100,7 @@ function timeRange(startDate: string, endDate: string, color: string) {
     <View style={[styles.timeRange, {backgroundColor: color}]}>
       <Text style={styles.timeRangeText}>{startDateYMD[0]}/{startDateYMD[1]}/{startDateYMD[2]}</Text>
       <Text style={styles.timeRangeText}>{startHour}:{startDateTime[1]}{startIsMorning?" AM":" PM"}</Text>
-      <Text style={[styles.timeRangeText, {fontSize: 10}, {color: '#383838'}]}>To</Text>
+      <Text style={[styles.timeRangeText, {fontSize: 11}, {color: '#383838'}]}>to</Text>
       <Text style={styles.timeRangeText}>{endDateYMD[0]}/{endDateYMD[1]}/{endDateYMD[2]}</Text>
       <Text style={styles.timeRangeText}>{endHour}:{endDateTime[1]}{endIsMorning?" AM":" PM"}</Text>
     </View>
@@ -132,10 +132,13 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 5,
     padding: 10,
     width: 101,
+    
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.4,
   },
   timeRangeText: {
     fontSize: 14,
-    color: '#000000',
+    color: '#404040',
   },
   info: {
     justifyContent: 'flex-start',
@@ -144,6 +147,9 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 5,
     padding: 10,
     width: 236,
+
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.4,
   },
   titleText: {
     fontSize: 20,
