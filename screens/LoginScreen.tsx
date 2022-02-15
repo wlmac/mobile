@@ -1,8 +1,9 @@
 import * as React from 'react';
-import { StyleSheet, TextInput, Button, Linking, TouchableOpacity, Image, useColorScheme, Platform, Keyboard, useWindowDimensions} from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity, Image, useColorScheme, Platform, Keyboard, useWindowDimensions} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
+import * as WebBrowser from 'expo-web-browser';
 
 import config from '../config.json';
 import { Text, View } from '../components/Themed';
@@ -268,11 +269,11 @@ const styles = StyleSheet.create({
 });
 
 function handleRegisterPress() {
-  Linking.openURL(`${config.server}/accounts/signup/?next=/`).catch(err => console.error("Couldn't load page", err));
+  WebBrowser.openBrowserAsync(`${config.server}/accounts/signup/?next=/`).catch(err => console.error("Couldn't load page", err));
 }
 
 function handleForgotPasswordPress() {
-  Linking.openURL(`${config.server}/accounts/password/reset/`).catch(err => console.error("Couldn't load page", err));
+  WebBrowser.openBrowserAsync(`${config.server}/accounts/password/reset/`).catch(err => console.error("Couldn't load page", err));
 }
 
 function login() {
