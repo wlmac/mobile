@@ -137,7 +137,7 @@ export default function CalendarScreen() {
                 textSectionTitleColor: appTheme === 'dark' ? '#fff' : '#000',
                 textSectionTitleDisabledColor: appTheme === 'dark' ? '#4a4a4a' : '#b8b8b8',
               
-                todayTextColor: '#d1a700',
+                todayTextColor: appTheme === 'dark' ? '#d1a700' : '#d49a13',
                 dayTextColor: appTheme === 'dark' ? '#fff' : '#000',
               
                 textDisabledColor: appTheme === 'dark' ? '#4a4a4a' : '#b8b8b8',

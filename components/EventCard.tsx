@@ -99,10 +99,16 @@ function timeRange(startDate: string, endDate: string, color: string) {
   return (
     <View style={[styles.timeRange, {backgroundColor: color}]}>
       <Text style={styles.timeRangeText}>{startDateYMD[0]}/{startDateYMD[1]}/{startDateYMD[2]}</Text>
-      <Text style={styles.timeRangeText}>{startHour}:{startDateTime[1]}{startIsMorning?" AM":" PM"}</Text>
+      {
+        !(startHour == 12 && startDateTime[1] == "00" && startIsMorning && endHour == 11 && endDateTime[1] == "59" && !endIsMorning) && 
+        <Text style={styles.timeRangeText}>{startHour}:{startDateTime[1]}{startIsMorning?" AM":" PM"}</Text>
+      }
       <Text style={[styles.timeRangeText, {fontSize: 11}, {color: '#383838'}]}>to</Text>
       <Text style={styles.timeRangeText}>{endDateYMD[0]}/{endDateYMD[1]}/{endDateYMD[2]}</Text>
-      <Text style={styles.timeRangeText}>{endHour}:{endDateTime[1]}{endIsMorning?" AM":" PM"}</Text>
+      {
+        !(startHour == 12 && startDateTime[1] == "00" && startIsMorning && endHour == 11 && endDateTime[1] == "59" && !endIsMorning) &&
+        <Text style={styles.timeRangeText}>{endHour}:{endDateTime[1]}{endIsMorning?" AM":" PM"}</Text>
+      }
     </View>
   );
 }
