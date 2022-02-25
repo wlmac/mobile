@@ -31,7 +31,7 @@ export default function AnnouncementScreen() {
     }
     
     //displayed info if nothing in feed
-    const [noMyFeed, togglenoMyFeedText] = useState("none");
+    const [noMyFeed, togglenoMyFeedText] = useState(false);
 
     // scrollview reset to top on switch toggle
     const allA = React.useRef<ScrollView>(null);
@@ -47,7 +47,7 @@ export default function AnnouncementScreen() {
         });
         toggleLoading(false);
         if(myAnnouncements.length == 0) {
-            togglenoMyFeedText("flex");
+            togglenoMyFeedText(true);
         }
     }
     
@@ -81,7 +81,7 @@ export default function AnnouncementScreen() {
                 {Object.entries(myAnnouncements).map(([key, ann]) => (
                     <Announcement key={key} ann={ann} fullAnn={setFullAnnId}></Announcement>
                 ))}
-                <View style={{display: noMyFeed} as StyleProp<ViewStyle>}><Text style={{textAlign: 'center'}}>There is nothing in your feed. Join some 
+                <View style={noMyFeed ? {display: "none"} : {display: "flex"}}><Text style={{textAlign: 'center'}}>There is nothing in your feed. Join some 
                 <Text style={{color: 'rgb(51,102,187)'}} onPress={() => { WebBrowser.openBrowserAsync(config.server + '/clubs') }}>{' '}clubs{' '}</Text>
                  to have their announcements show up here!</Text></View>
             </ScrollView>
@@ -102,8 +102,8 @@ export default function AnnouncementScreen() {
 
             {/* Filter Announcements */}
             <View style={fullAnnId == "-1" ? styles.row : {display: "none"}}>
-                <Text style={{color: isFilter ?(useColorScheme() === "dark" ? "#434343ff" : "#b7b7b7ff") : (useColorScheme() === "light" ? "#434343ff" : "#b7b7b7ff"), fontFamily: 'poppins', paddingHorizontal: 8
-                }}>All</Text>
+                <Text style={{color: isFilter ?(useColorScheme() === "dark" ? "#434343ff" : "#b7b7b7ff") : (useColorScheme() === "light" ? "#434343ff" : "#b7b7b7ff"), fontFamily: 'poppins', paddingHorizontal: 8, paddingTop: 5,
+                }}>All </Text>
                 <Switch style={styles.switch}
                     trackColor={{ false: "#b7b7b7ff", true: "#b7b7b7ff" }}
                     thumbColor={isFilter ? "#434343ff" : "#434343ff"}
@@ -114,7 +114,7 @@ export default function AnnouncementScreen() {
                     }}
                     value={isFilter}
                 />
-                <Text style={{color: isFilter ?(useColorScheme() === "light" ? "#434343ff" : "#b7b7b7ff") : (useColorScheme() === "dark" ? "#434343ff" : "#b7b7b7ff"), fontFamily: 'poppins', paddingHorizontal:12 }}>My </Text>
+                <Text style={{color: isFilter ?(useColorScheme() === "light" ? "#434343ff" : "#b7b7b7ff") : (useColorScheme() === "dark" ? "#434343ff" : "#b7b7b7ff"), fontFamily: 'poppins', paddingHorizontal:12, paddingTop: 5 }}>My </Text>
             </View>
         </View>
         </>
