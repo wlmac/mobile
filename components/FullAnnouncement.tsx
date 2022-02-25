@@ -26,7 +26,7 @@ export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToSc
 
             {/* View More Details */}
             <View style={styles.click} onStartShouldSetResponder={(e) => true} onResponderRelease={() => backToScroll("-1")}>
-                <Text style={[{color: useColorScheme() === "light" ? lightC : darkC}, {fontSize: 16}]}>{"<  Back to Announcements"}</Text>
+                <Text style={[{color: useColorScheme() === "light" ? lightC : darkC}, {fontSize: 16}]}>{"<  Return to Announcements"}</Text>
             </View>
         </View>
     );
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         flexWrap: "wrap",
         marginTop: 15,
-        marginHorizontal: 5,
+        marginHorizontal: 12,
     },
     tag: {
         color: "black",
@@ -93,14 +93,14 @@ const styles = StyleSheet.create({
         paddingVertical: 2,
         paddingHorizontal: 7,
         marginHorizontal: 3,
-        marginBottom: 5,
+        marginBottom: 10,
         borderRadius: 5,
         fontSize: 14,
     },
     header: {
         fontSize: 30,
         fontWeight: "bold",
-        marginHorizontal: 20,
+        marginHorizontal: 15,
         marginBottom: 10,
     },
     details: {
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
         shadowOffset: {width: 0, height: 1},
         shadowOpacity: 0.4,
         shadowRadius: 2,
-        marginHorizontal: 8,
+        marginHorizontal: 10,
         borderRadius: 38/2,
     },
     orgIcon: {
@@ -131,8 +131,7 @@ const styles = StyleSheet.create({
     },
     text: {
         marginTop: 5,
-        marginHorizontal: 5,
-        paddingHorizontal: 10,
+        paddingHorizontal: 15,
         paddingVertical: 5,
     },
     clubName: {
@@ -159,7 +158,7 @@ const styles = StyleSheet.create({
     click: {
         marginTop: 5,
         marginBottom: 15,
-        marginHorizontal: 10,
+        marginHorizontal: 20,
     },
 });
 
