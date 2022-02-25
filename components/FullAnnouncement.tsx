@@ -65,7 +65,7 @@ function annDetails(org: string, orgIcon: string, author: string, timeStamp: str
 function previewText(text: string) {
     return (
         <View style={styles.text}>
-            <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true}>{text}</Markdown>
+            <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true} defaultImageHandler="https://www.maclyonsden.com/">{text}</Markdown>
         </View>
     )
 }
