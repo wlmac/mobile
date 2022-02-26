@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     clubName: {
         fontSize: 20,
         paddingTop: 0,
-        paddingHorizontal: 5,
+        paddingRight: 15,
         fontWeight: "bold",
         flex: 1
     },
@@ -184,7 +184,7 @@ const markdownStylesDark = StyleSheet.create({
         fontSize: 17,
     },
     blockquote: {
-        backgroundColor: "black",
+        backgroundColor: "#3D3D3D",
     },
     link: {
         color: "#00abff",
@@ -192,5 +192,8 @@ const markdownStylesDark = StyleSheet.create({
     image: {
         minWidth: '90%',
         margin: 10,
-    }
+    },
+    code_inline: {
+        backgroundColor: '#3D3D3D',
+    },
 });
