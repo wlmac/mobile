@@ -27,7 +27,7 @@ export default function AnnouncementScreen() {
     const [fullAnnId, setAnnId] = useState("-1");
     function setFullAnnId(id: string) {
         setAnnId(id);
-        fullA?.current?.scrollTo({x: 0, y: 0, animated: false});
+        if (id == "-1") fullA?.current?.scrollTo({x: 0, y: 0, animated: false});
     }
     
     //displayed info if nothing in feed

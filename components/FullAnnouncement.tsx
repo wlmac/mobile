@@ -2,6 +2,7 @@ import * as React from 'react';
 import { StyleSheet, Image } from 'react-native';
 import { Text, View } from '../components/Themed';
 import Markdown from 'react-native-markdown-display';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 import useColorScheme from '../hooks/useColorScheme';
 const linkify = require('markdown-linkify'); //using require due to lack of type definitions
 
@@ -25,8 +26,10 @@ export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToSc
             {previewText(ann.body)}
 
             {/* View More Details */}
-            <View style={styles.click} onStartShouldSetResponder={(e) => true} onResponderRelease={() => backToScroll("-1")}>
-                <Text style={[{color: useColorScheme() === "light" ? lightC : darkC}, {fontSize: 16}]}>{"<  Return to Announcements"}</Text>
+            <View style={styles.click}>
+                <TouchableOpacity onPress={() => backToScroll("-1")}>
+                    <Text style={[{color: useColorScheme() === "light" ? lightC : darkC}, {fontSize: 16}]}>{"<  Return to Announcements"}</Text>
+                </TouchableOpacity>
             </View>
         </View>
     );

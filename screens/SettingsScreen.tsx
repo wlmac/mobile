@@ -22,6 +22,10 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
   const iconColor = useColorScheme() === "light" ? "rgb(64, 64, 64)" : "rgb(189, 189, 189)";
   const logoutBtnBgColor = useColorScheme() === "light" ? "rgb(17, 111, 207)" : "rgb(58, 106, 150)"; 
 
+  // scroll to top
+  const topChangeLog = React.useRef<ScrollView>(null);
+  const topAbout = React.useRef<ScrollView>(null);
+
   function setView(val: number) {
     setCurView(val);
   }
@@ -30,19 +34,20 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
       Alert.alert('Success', `Logged out successfully`, [{ text: 'Ok', onPress: () => navigation.replace('Login', { loginNeeded: true }) }], { cancelable: false });
     });
   }
+
   return (
     <View style={styles.container}>
-      <ScrollView style={curView == 2 ? {flex:1, width:"100%"} : { display: "none" }}>
+      <ScrollView ref={topAbout} style={curView == 2 ? {flex:1, width:"100%"} : { display: "none" }}>
         <About back={setView}></About>
       </ScrollView>
-      <ScrollView style={curView == 1 ? {flex:1, width:"100%"} : { display: "none" }}>
+      <ScrollView ref={topChangeLog} style={curView == 1 ? {flex:1, width:"100%"} : { display: "none" }}>
         <Changelog back={setView}></Changelog>
       </ScrollView>
-      <TouchableOpacity style={curView == -1 ? [styles.button, { backgroundColor: btnBgColor }] : {display: "none"}} onPress={() => {setView(2)}}>
+      <TouchableOpacity style={curView == -1 ? [styles.button, { backgroundColor: btnBgColor }] : {display: "none"}} onPress={() => {topAbout?.current?.scrollTo({x: 0, y: 0, animated: false}); setView(2)}}>
         <Text> About </Text>
         <Ionicons name="information-circle-outline" size={18} color={iconColor} />
       </TouchableOpacity>
-      <TouchableOpacity style={curView == -1 ? [styles.button, { backgroundColor: btnBgColor }] : {display: "none"}} onPress={() => {setView(1)}}>
+      <TouchableOpacity style={curView == -1 ? [styles.button, { backgroundColor: btnBgColor }] : {display: "none"}} onPress={() => {topChangeLog?.current?.scrollTo({x: 0, y: 0, animated: false}); setView(1)}}>
         <Text> View Changelog </Text>
         <Ionicons name="cog-outline" size={18} color={iconColor} />
       </TouchableOpacity>
