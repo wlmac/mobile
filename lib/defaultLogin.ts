@@ -25,9 +25,11 @@ export default function defaultLogin(): Promise<boolean> {
                             })
                         }).then((response) => response.json())
                             .then((json) => {
-                                if (json.access) {
+                                if (json.access && json.refresh) {
                                     AsyncStorage.setItem('@accesstoken', json.access).then(() => {
-                                        resolve(false);
+                                        AsyncStorage.setItem('@refreshtoken', json.refresh).then(() => {
+                                            resolve(false);
+                                        }).catch(err => resolve(true));
                                     }).catch(err => resolve(true));
                                 }
                                 else {

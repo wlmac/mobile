@@ -28,7 +28,10 @@
     "ios": {
       "supportsTablet": true, 
       "bundleIdentifier": "com.maclyonsden.metropolis",
-      "buildNumber": "1"
+      "buildNumber": "3",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app accesses location information to display location in respect to the school"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -37,16 +40,15 @@
       },
       "permissions": [
         "ACCESS_COARSE_LOCATION",
-        "ACCESS_BACKGROUND_LOCATION",
         "ACCESS_FINE_LOCATION"
       ],
       "package": "com.maclyonsden.metropolis",
       "config": {
         "googleMaps": {
-          "apiKey": "API key here"
+          "apiKey": "AIzaSyDlMV1-9-UWkPNjNGRjauuBJ9wSMYUQZQA"
         }
       },
-      "versionCode": 1
+      "versionCode": 6
     },
     "web": {
       "favicon": "./assets/images/favicon.png"

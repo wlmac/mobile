@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Modal from "react-native-modal";
 import Constants from 'expo-constants';
 import { Ionicons } from '@expo/vector-icons';
+import * as WebBrowser from 'expo-web-browser';
 
 import changelog from '../changelog.json';
 
@@ -21,7 +22,15 @@ export default function Changelog({ back }: { back: Function }) {
                     <View key={key}>
                         <Text style={{ fontSize: 20, fontWeight: 'bold', color: useColorScheme() === "dark" ? '#348feb' : '#105fb0' }}> v{change.version} </Text>
                         <Text style={{ color: useColorScheme() === "dark" ? '#cccccc' : '#555555', fontSize: 15 }}> {new Date(change.time).toLocaleString() + '\n'} </Text>
-                        <View><Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true}>{change.changes + '\n\n'}</Markdown></View>
+                        <View><Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={url => {
+                        if(url) {
+                            WebBrowser.openBrowserAsync(url);
+                            return false;
+                        }
+                        else {
+                            return true;
+                        }
+                    }}>{change.changes + '\n\n'}</Markdown></View>
                     </View>
                 ))}
             </View>

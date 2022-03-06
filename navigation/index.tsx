@@ -29,11 +29,22 @@ export default function Navigation({ colorScheme, loginNeeded }: { colorScheme: 
 const Stack = createStackNavigator<RootStackParamList>();
 
 function RootNavigator({ loginNeeded }: { loginNeeded: boolean }) {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Login" component={LoginScreen} initialParams={{ loginNeeded: loginNeeded }} />
-      <Stack.Screen name="Root" component={BottomTabNavigator} />
-      <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
-    </Stack.Navigator>
-  );
+  if (loginNeeded) {
+    return (
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Login" component={LoginScreen} initialParams={{ loginNeeded: loginNeeded }} />
+        <Stack.Screen name="Root" component={BottomTabNavigator} />
+        <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
+      </Stack.Navigator>
+    );
+  }
+  else {
+    return (
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Root" component={BottomTabNavigator} />
+        <Stack.Screen name="Login" component={LoginScreen} initialParams={{ loginNeeded: loginNeeded }} />
+        <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
+      </Stack.Navigator>
+    );
+  }
 }
