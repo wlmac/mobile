@@ -28,7 +28,7 @@
     "ios": {
       "supportsTablet": true, 
       "bundleIdentifier": "com.maclyonsden.metropolis",
-      "buildNumber": "2",
+      "buildNumber": "3",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "This app accesses location information to display location in respect to the school"
       }

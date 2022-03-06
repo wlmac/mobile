@@ -2,8 +2,8 @@ import * as React from 'react';
 import { StyleSheet, Image } from 'react-native';
 import { Text, View } from '../components/Themed';
 import Markdown from 'react-native-markdown-display';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 import useColorScheme from '../hooks/useColorScheme';
-import * as WebBrowser from 'expo-web-browser';
 const linkify = require('markdown-linkify'); //using require due to lack of type definitions
 
 var lightC = "#3a6a96";
@@ -26,8 +26,10 @@ export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToSc
             {previewText(ann.body)}
 
             {/* View More Details */}
-            <View style={styles.click} onStartShouldSetResponder={(e) => true} onResponderRelease={() => backToScroll("-1")}>
-                <Text style={[{color: useColorScheme() === "light" ? lightC : darkC}, {fontSize: 16}]}>{"<  Back to Announcements"}</Text>
+            <View style={styles.click}>
+                <TouchableOpacity onPress={() => backToScroll("-1")}>
+                    <Text style={[{color: useColorScheme() === "light" ? lightC : darkC}, {fontSize: 16}]}>{"<  Return to Announcements"}</Text>
+                </TouchableOpacity>
             </View>
         </View>
     );
@@ -66,15 +68,7 @@ function annDetails(org: string, orgIcon: string, author: string, timeStamp: str
 function previewText(text: string) {
     return (
         <View style={styles.text}>
-            <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={url => {
-                if(url) {
-                    WebBrowser.openBrowserAsync(url);
-                    return false;
-                }
-                else {
-                    return true;
-                }
-            }}>{linkify(text)}</Markdown>
+            <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true} defaultImageHandler="https://www.maclyonsden.com/">{text}</Markdown>
         </View>
     )
 }
@@ -94,7 +88,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         flexWrap: "wrap",
         marginTop: 15,
-        marginHorizontal: 5,
+        marginHorizontal: 12,
     },
     tag: {
         color: "black",
@@ -102,14 +96,14 @@ const styles = StyleSheet.create({
         paddingVertical: 2,
         paddingHorizontal: 7,
         marginHorizontal: 3,
-        marginBottom: 5,
+        marginBottom: 10,
         borderRadius: 5,
         fontSize: 14,
     },
     header: {
         fontSize: 30,
         fontWeight: "bold",
-        marginHorizontal: 20,
+        marginHorizontal: 15,
         marginBottom: 10,
     },
     details: {
@@ -129,7 +123,7 @@ const styles = StyleSheet.create({
         shadowOffset: {width: 0, height: 1},
         shadowOpacity: 0.4,
         shadowRadius: 2,
-        marginHorizontal: 8,
+        marginHorizontal: 10,
         borderRadius: 38/2,
     },
     orgIcon: {
@@ -140,14 +134,13 @@ const styles = StyleSheet.create({
     },
     text: {
         marginTop: 5,
-        marginHorizontal: 5,
-        paddingHorizontal: 10,
+        paddingHorizontal: 15,
         paddingVertical: 5,
     },
     clubName: {
         fontSize: 20,
         paddingTop: 0,
-        paddingHorizontal: 5,
+        paddingRight: 15,
         fontWeight: "bold",
         flex: 1
     },
@@ -168,7 +161,7 @@ const styles = StyleSheet.create({
     click: {
         marginTop: 5,
         marginBottom: 15,
-        marginHorizontal: 10,
+        marginHorizontal: 20,
     },
 });
 
@@ -194,7 +187,7 @@ const markdownStylesDark = StyleSheet.create({
         fontSize: 17,
     },
     blockquote: {
-        backgroundColor: "black",
+        backgroundColor: "#3D3D3D",
     },
     link: {
         color: "#00abff",
@@ -202,5 +195,8 @@ const markdownStylesDark = StyleSheet.create({
     image: {
         minWidth: '90%',
         margin: 10,
-    }
+    },
+    code_inline: {
+        backgroundColor: '#3D3D3D',
+    },
 });

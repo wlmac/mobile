@@ -132,12 +132,12 @@ export default function CalendarScreen() {
             theme = {
               {
                 backgroundColor: appTheme === 'dark' ? '#000' : '#fff',
-                calendarBackground: appTheme === 'dark' ? '#000' : '#fff',
+                calendarBackground: appTheme === 'dark' ? '#141414' : '#fafafa',
               
                 textSectionTitleColor: appTheme === 'dark' ? '#fff' : '#000',
                 textSectionTitleDisabledColor: appTheme === 'dark' ? '#4a4a4a' : '#b8b8b8',
               
-                todayTextColor: '#f7c40c',
+                todayTextColor: appTheme === 'dark' ? '#d1a700' : '#d49a13',
                 dayTextColor: appTheme === 'dark' ? '#fff' : '#000',
               
                 textDisabledColor: appTheme === 'dark' ? '#4a4a4a' : '#b8b8b8',
@@ -145,12 +145,14 @@ export default function CalendarScreen() {
                 dotColor: '#00adf5',
                 selectedDotColor: '#fff',
               
-                arrowColor: appTheme === 'dark' ? '#fff' : '#000',
+                arrowColor: appTheme === 'dark' ? '#fff' : '#0a2945',
                 disabledArrowColor: '#4a4a4a',
               
                 monthTextColor: appTheme === 'dark' ? '#348feb' : '#105fb0',
                 textMonthFontWeight: 'bold',
                 textMonthFontSize: 16,
+
+                textDayHeaderFontWeight: 'bold',
               }
             }
             {...staticCalendarProps}
@@ -212,6 +214,8 @@ export default function CalendarScreen() {
           />
         </View>
         
+        <View style={{backgroundColor: appTheme === 'dark' ? '#0c0c0c' : '#fdfdfd', height: 5}}></View>
+        
         {/* --- Return to today button, disabled when selected day or displayed month isn't on the month ---*/}
         <View style={styles.returnToToday}>
           <TouchableOpacity
@@ -257,7 +261,7 @@ export default function CalendarScreen() {
               eventsToday.length === 0
               ?
               // if there's no events, display `no events`
-              <Text style={[styles.eventsCountText, {color: appTheme === 'light' ? '#000' : '#fff'}]}>No events today</Text>
+              <Text style={[styles.eventsCountText, {color: appTheme === 'light' ? '#000' : '#fff'}]}>No events on this day</Text>
               :
               // lists events
               <View style={styles.eventCardsContainer}>
@@ -357,7 +361,7 @@ const styles = StyleSheet.create({
   },
 
   separator: {
-    marginVertical: '5%',
+    marginVertical: '4%',
     height: 1,
     width: '80%',
     alignItems: 'center',
@@ -374,7 +378,7 @@ const styles = StyleSheet.create({
   },
 
   returnToToday: {
-    marginTop: '2%',
+    marginTop: '3%',
     alignItems: 'flex-end',
     width: '95%',
   },

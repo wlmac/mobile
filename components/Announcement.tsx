@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { StyleSheet, Image } from 'react-native';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Text, View } from '../components/Themed';
 import useColorScheme from '../hooks/useColorScheme';
 
@@ -20,8 +21,10 @@ export default function Announcement({ann, fullAnn}:{ann: any, fullAnn: Function
             {previewText(ann.body)}
 
             {/* View More Details */}
-            <View style={styles.click} onStartShouldSetResponder={(e) => true} onResponderRelease={() => fullAnn(ann.id)}>
-                <Text style={[{color: useColorScheme() === "light" ? lightC : darkC}]}>{"See announcement  >"}</Text>
+            <View style={styles.click}>
+                <TouchableOpacity onPress={() => fullAnn(ann.id)}>
+                    <Text style={[{color: useColorScheme() === "light" ? lightC : darkC}]}>{"See announcement  >"}</Text>
+                </TouchableOpacity>
             </View>
         </View>
     );
