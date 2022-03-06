@@ -4,7 +4,7 @@ import { Text, View } from '../components/Themed';
 import Markdown, { MarkdownIt } from 'react-native-markdown-display';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import useColorScheme from '../hooks/useColorScheme';
-const linkify = require('markdown-linkify'); //using require due to lack of type definitions
+import * as WebBrowser from 'expo-web-browser';
 
 var lightC = "#3a6a96";
 var darkC = "#42a4ff";
