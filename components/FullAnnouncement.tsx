@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { StyleSheet, Image } from 'react-native';
 import { Text, View } from '../components/Themed';
-import Markdown from 'react-native-markdown-display';
+import Markdown, { MarkdownIt } from 'react-native-markdown-display';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import useColorScheme from '../hooks/useColorScheme';
 const linkify = require('markdown-linkify'); //using require due to lack of type definitions
@@ -68,7 +68,15 @@ function annDetails(org: string, orgIcon: string, author: string, timeStamp: str
 function previewText(text: string) {
     return (
         <View style={styles.text}>
-            <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true} defaultImageHandler="https://www.maclyonsden.com/">{text}</Markdown>
+            <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={url => {
+                if(url) {
+                    WebBrowser.openBrowserAsync(url);
+                    return false;
+                }
+                else {
+                    return true;
+                }
+            }} markdownit={MarkdownIt({linkify: true, typographer: true})} defaultImageHandler="https://www.maclyonsden.com/">{text}</Markdown>
         </View>
     )
 }
