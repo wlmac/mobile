@@ -80,16 +80,15 @@ export function ChangeLogModal() {
         AsyncStorage.getItem('@changelogseenver').then(val => {
             if ((!val || val !== Constants.manifest?.version) && changelog[0].version === Constants.manifest?.version) {
                 setModalVisible(true);
-            }
+            } 
         }).catch();
     }, [])
     /*The string at the end is a hacky solution to elongate markdown text such that the button renders correctly. Contains zero-width spaces.*/
     return (
-        <View>
-            <Modal isVisible={isModalVisible}>
-                <ScrollView>
-                <View style={[modalStyles.content, {flex: 1}]}>
-                    <Ionicons size={30} style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignSelf: 'flex-end' }} name="close" color="white" onPress={modalOff} />
+        <Modal isVisible={isModalVisible} style={[modalStyles.content, {flex: 1}]}>
+            <ScrollView style={{backgroundColor: useColorScheme() === "light" ? "white" : "black"}}>
+                <View style={{padding:10}}>
+                    <Ionicons size={30} style={{ position: 'absolute', right: 0, top: 0}} name="close" color="white" onPress={modalOff} />
                     <Text style={styles.title}>What's New</Text>
                     <Text style={{ fontSize: 20, fontWeight: 'bold' }}> v{changelog[0].version} </Text>
                     <Text> {new Date(changelog[0].time).toLocaleString() + '\n'} </Text>
@@ -97,15 +96,15 @@ export function ChangeLogModal() {
                         <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true}>{changelog[0].changes}</Markdown>
                     </View>
                     <TouchableOpacity onPress={modalOff} style={[modalStyles.button, { backgroundColor: btnBgColor }]}><Text>Close</Text></TouchableOpacity>
-                </View></ScrollView>
-            </Modal>
-        </View>
+                </View>
+            </ScrollView>
+        </Modal>
     )
 }
 
 const modalStyles = StyleSheet.create({
     content: {
-        padding: 22,
+        padding: 15,
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 4,
@@ -116,7 +115,7 @@ const modalStyles = StyleSheet.create({
         borderRadius: 5,
         alignItems: 'center',
         padding: 10,
-        marginTop: 250,
+        marginTop: 10,
     }
 });
 
