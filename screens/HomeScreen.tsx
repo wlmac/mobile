@@ -36,7 +36,17 @@ export default function HomeScreen() {
       if (schedule && schedule[0]) {
         let displayedInfo = ``;
         for (let i = 0; i < schedule.length; i++) {
-          displayedInfo += `${schedule[i].description.time}  |  ${schedule[i].course}`;
+          let space;
+          if (i==0 || i == 2){
+            space = " ";
+          }
+          else if(i == 1){
+            space = "  ";
+          }
+          else{
+            space = "";
+          }
+          displayedInfo += `${schedule[i].description.time}${space}  |  ${schedule[i].course}`;
           let timeobj = {
             start: ((Date.parse(schedule[i].time.start) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
             end: ((Date.parse(schedule[i].time.end) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
@@ -83,9 +93,11 @@ export default function HomeScreen() {
   })
 
   const determineTimeString = (presentTime: number, futureTime: number) => {
-    return futureTime - presentTime >= 10 ?
-      `${Math.floor((futureTime - presentTime) / 60)}:${(futureTime - presentTime) % 60}` :
-      `${Math.floor((futureTime - presentTime) / 60)}:0${(futureTime - presentTime) % 60}`
+    const difference = futureTime - presentTime;
+    const hours = Math.floor(difference/60) + "";
+    const minutes = difference % 60 + "";
+    
+    return `${hours}h ${minutes}min`;
   }
 
   React.useEffect(() => {

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ScrollView, StyleSheet, Button, TouchableOpacity, useColorScheme } from 'react-native';
+import { ScrollView, StyleSheet, Button, TouchableOpacity, useColorScheme, TouchableWithoutFeedback } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 import { Text, View } from '../components/Themed';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         alignItems: 'center',
         padding: 10,
-        marginTop: 'auto'
+        marginTop: 'auto',
     }
 });
 
@@ -85,37 +85,50 @@ export function ChangeLogModal() {
     }, [])
     /*The string at the end is a hacky solution to elongate markdown text such that the button renders correctly. Contains zero-width spaces.*/
     return (
-        <Modal isVisible={isModalVisible} style={[modalStyles.content, {flex: 1}]}>
-            <ScrollView style={{backgroundColor: useColorScheme() === "light" ? "white" : "black"}}>
-                <View style={{padding:10}}>
-                    <Ionicons size={30} style={{ position: 'absolute', right: 0, top: 0}} name="close" color="white" onPress={modalOff} />
-                    <Text style={styles.title}>What's New</Text>
-                    <Text style={{ fontSize: 20, fontWeight: 'bold' }}> v{changelog[0].version} </Text>
-                    <Text> {new Date(changelog[0].time).toLocaleString() + '\n'} </Text>
-                    <View>
-                        <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true}>{changelog[0].changes}</Markdown>
-                    </View>
-                    <TouchableOpacity onPress={modalOff} style={[modalStyles.button, { backgroundColor: btnBgColor }]}><Text>Close</Text></TouchableOpacity>
-                </View>
-            </ScrollView>
+        <Modal isVisible={isModalVisible} style={modalStyles.modal}>
+            <View style={modalStyles.wrapper}>
+                <ScrollView style={{backgroundColor: useColorScheme() === "light" ? "white" : "black"}} contentContainerStyle={modalStyles.scrollView}>
+                        <Ionicons size={30} style={{ position: 'absolute', right: 0, top: 0}} name="close" color="white" onPress={modalOff} />
+                        <Text style={styles.title}>What's New</Text>
+                        <Text style={{ fontSize: 20, fontWeight: 'bold' }}> v{changelog[0].version} </Text>
+                        <Text> {new Date(changelog[0].time).toLocaleString() + '\n'} </Text>
+                        <View>
+                            <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true}>{changelog[0].changes}</Markdown>
+                        </View>
+                        <TouchableOpacity onPress={modalOff} style={[modalStyles.button, { backgroundColor: btnBgColor }]}><Text>Close</Text></TouchableOpacity>
+                </ScrollView>
+            </View>
         </Modal>
     )
 }
 
 const modalStyles = StyleSheet.create({
-    content: {
-        padding: 15,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 4,
-        borderColor: 'rgba(0, 0, 0, 0.1)',
+    modal: {
+        position: "absolute",
+        top:0,
+        left:0,
+        bottom:0,
+        right:0,
+        justifyContent: "center",
+        alignItems:"center",
+    },
+    wrapper:{
+        width:"90%",
+        maxWidth: 500,
+        maxHeight:"70%",
+        justifyContent: "center",
+        alignItems:"center",
+    },
+    scrollView:{
+        alignItems: "center",
+        padding: 20,
     },
     button: {
         width: "100%",
         borderRadius: 5,
         alignItems: 'center',
         padding: 10,
-        marginTop: 10,
+        marginTop: 20,
     }
 });
 
