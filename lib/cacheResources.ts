@@ -20,10 +20,13 @@ export async function storeApiCalls(): Promise<void> {
     // organizations
     await apiRequest('/api/organizations?format=json', '', 'GET').then((res) => {
         if (res.success) {
-            JSON.parse(res.response).forEach((org: any) => {
-                orgName[org.id] = org.name;
-                orgIcon[org.id] = org.icon;
-            });
+            let jsonres = JSON.parse(res.response);
+            if(jsonres.results) {
+                jsonres.results.forEach((org: any) => {
+                    orgName[org.id] = org.name;
+                    orgIcon[org.id] = org.icon;
+                });
+            }
             //console.log('organization cache done');
         } else {
             //console.log("organization cache failed");
@@ -43,7 +46,10 @@ export async function storeApiCalls(): Promise<void> {
     // announcements
     await apiRequest('/api/announcements?format=json', '', 'GET').then((res) => {
         if (res.success) {
-            announcements = JSON.parse(res.response);
+            let jsonres = JSON.parse(res.response);
+            if(jsonres.results) {
+                announcements = jsonres.results;
+            }
             //console.log('announcement cache done');
         } else {
             //console.log("announcement cache failed");
