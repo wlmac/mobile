@@ -100,6 +100,11 @@ export default function CalendarScreen() {
   }, [data]);
 
 
+  // use effect on color scheme change
+  useEffect (() => {
+    setCurrentKey(new Date());
+  }, [appTheme]);
+
   // update events on day change using useeffect
   useEffect(() => {
     if (data) {
@@ -229,7 +234,7 @@ export default function CalendarScreen() {
             <Text style={[styles.returnToTodayText, 
               {color: appTheme === 'light'
               ? 
-              displayedDate.strform == today.strform ? '#8b8b8b' : '#000'
+              displayedDate.strform == today.strform ? '#b3b3b3' : '#000'
               : 
               displayedDate.strform == today.strform ? '#4a4a4a' : '#fff'
               }]}>
@@ -261,7 +266,7 @@ export default function CalendarScreen() {
               eventsToday.length === 0
               ?
               // if there's no events, display `no events`
-              <Text style={[styles.eventsCountText, {color: appTheme === 'light' ? '#000' : '#fff'}]}>No events on this day</Text>
+              <Text style={[styles.eventsCountText, {color: appTheme === 'light' ? '#000' : '#fff'}]}>No events on this day{appTheme}</Text>
               :
               // lists events
               <View style={styles.eventCardsContainer}>

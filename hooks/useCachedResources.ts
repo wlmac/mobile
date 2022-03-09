@@ -5,7 +5,12 @@ import * as React from 'react';
 import defaultLogin from '../lib/defaultLogin';
 import cacheResources from '../lib/cacheResources';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useColorScheme } from 'react-native';
+
 export default function useCachedResources() {
+  const colorScheme = useColorScheme();
+
   const [isLoadingComplete, setLoadingComplete] = React.useState(false);
   const [loginNeeded, setDefaultLoginDone] = React.useState(false);
 
@@ -20,6 +25,15 @@ export default function useCachedResources() {
             cacheResources();
           }
         })
+
+        await AsyncStorage.getItem("@scheme").then((scheme: any) => {
+          
+          if (!scheme) {
+            console.log("Scheme is being set");
+            AsyncStorage.setItem("@scheme", colorScheme as string);
+          } else console.log("Scheme: " + scheme);
+        });
+
         // Load fonts
         await Font.loadAsync({
           ...Ionicons.font,
