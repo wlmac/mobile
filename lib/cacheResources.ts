@@ -21,8 +21,8 @@ export async function storeApiCalls(): Promise<void> {
     await apiRequest('/api/organizations?format=json', '', 'GET').then((res) => {
         if (res.success) {
             let jsonres = JSON.parse(res.response);
-            if(jsonres.results) {
-                jsonres.results.forEach((org: any) => {
+            if(jsonres && Array.isArray(jsonres)) {
+                jsonres.forEach((org: any) => {
                     orgName[org.id] = org.name;
                     orgIcon[org.id] = org.icon;
                 });
@@ -47,8 +47,8 @@ export async function storeApiCalls(): Promise<void> {
     await apiRequest('/api/announcements?format=json', '', 'GET').then((res) => {
         if (res.success) {
             let jsonres = JSON.parse(res.response);
-            if(jsonres.results) {
-                announcements = jsonres.results;
+            if(jsonres && Array.isArray(jsonres)) {
+                announcements = jsonres;
             }
             //console.log('announcement cache done');
         } else {
