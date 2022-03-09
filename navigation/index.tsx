@@ -14,11 +14,28 @@ import { RootStackParamList } from '../types';
 import BottomTabNavigator from './BottomTabNavigator';
 import LinkingConfiguration from './LinkingConfiguration';
 
+const LightTheme = {
+  dark: false,
+  colors: {
+    ...DefaultTheme.colors,
+    card: '#105fb0',
+    text: '#f2f2f2',
+  },
+};
+
+const CustomDarkTheme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    card: '#1b1b1b',
+  },
+};
+
 export default function Navigation({ colorScheme, loginNeeded }: { colorScheme: ColorSchemeName, loginNeeded: boolean }) {
   return (
     <NavigationContainer
       linking={LinkingConfiguration}
-      theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      theme={colorScheme === 'dark' ? CustomDarkTheme : LightTheme}>
       <RootNavigator loginNeeded={loginNeeded} />
     </NavigationContainer>
   );

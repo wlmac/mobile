@@ -137,7 +137,7 @@ export default function CalendarScreen() {
             theme = {
               {
                 backgroundColor: appTheme === 'dark' ? '#000' : '#fff',
-                calendarBackground: appTheme === 'dark' ? '#141414' : '#fafafa',
+                calendarBackground: appTheme === 'dark' ? '#141414' : '#efefef',
               
                 textSectionTitleColor: appTheme === 'dark' ? '#fff' : '#000',
                 textSectionTitleDisabledColor: appTheme === 'dark' ? '#4a4a4a' : '#b8b8b8',
@@ -219,7 +219,7 @@ export default function CalendarScreen() {
           />
         </View>
         
-        <View style={{backgroundColor: appTheme === 'dark' ? '#0c0c0c' : '#fdfdfd', height: 5}}></View>
+        <View style={{backgroundColor: appTheme === 'dark' ? '#0c0c0c' : '#f4f4f4', height: 5}}></View>
         
         {/* --- Return to today button, disabled when selected day or displayed month isn't on the month ---*/}
         <View style={styles.returnToToday}>
