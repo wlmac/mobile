@@ -4,7 +4,6 @@ import {
   FlatList,
   StyleSheet,
   TouchableOpacity,
-  useColorScheme,
 } from "react-native";
 
 import MapView, { Marker, Overlay, PROVIDER_DEFAULT } from "react-native-maps";
@@ -13,6 +12,7 @@ import * as Location from "expo-location";
 import { Switch } from "react-native";
 import { TextInput } from "react-native";
 import filter from "lodash.filter";
+import useColorScheme from "../hooks/useColorScheme";
 
 const floorOne = require("../assets/images/FloorOne.png");
 const floorTwo = require("../assets/images/FloorTwo.png");

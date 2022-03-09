@@ -1,12 +1,14 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { StyleProp, Switch, useColorScheme, ViewStyle } from 'react-native';
+import { StyleProp, Switch, ViewStyle } from 'react-native';
 import { StyleSheet, StatusBar, ScrollView, Image } from 'react-native';
 import { Text, View } from '../components/Themed';
 import Announcement from '../components/Announcement';
 import FullAnnouncement from '../components/FullAnnouncement';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as WebBrowser from 'expo-web-browser';
+
+import useColorScheme from '../hooks/useColorScheme';
 
 import config from '../config.json';
 

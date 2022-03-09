@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { StyleSheet, Image, useColorScheme, ImageBackground } from 'react-native';
+import { StyleSheet, Image, ImageBackground } from 'react-native';
+import useColorScheme from '../hooks/useColorScheme';
 
 import apiRequest from '../lib/apiRequest';
 import { Text, View } from '../components/Themed';

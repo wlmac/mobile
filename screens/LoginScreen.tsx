@@ -1,9 +1,10 @@
 import * as React from 'react';
-import { StyleSheet, TextInput, TouchableOpacity, Image, useColorScheme, Platform, Keyboard, useWindowDimensions} from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity, Image, Platform, Keyboard, useWindowDimensions} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import * as WebBrowser from 'expo-web-browser';
+import useColorScheme from '../hooks/useColorScheme';
 
 import config from '../config.json';
 import { Text, View } from '../components/Themed';
