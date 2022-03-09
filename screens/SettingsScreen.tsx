@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { ScrollView, StyleSheet, Alert, TouchableOpacity, useColorScheme } from 'react-native';
+import { ScrollView, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
 
@@ -8,6 +8,7 @@ import { RootStackParamList } from '../types';
 import Changelog from '../components/Changelog';
 import About from '../components/About';
 import { Ionicons } from '@expo/vector-icons';
+import useColorScheme, { updateColourScheme } from '../hooks/useColorScheme';
 
 export default function SettingsScreen({ navigation }: { navigation: StackNavigationProp<RootStackParamList, 'Root'> }) {
   const [curView, setCurView] = React.useState(-1);
@@ -24,7 +25,7 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
   // use effect to change color scheme
   useEffect(() => {
     console.log(colorScheme);
-    AsyncStorage.setItem("@scheme", colorScheme as string).then(() => {
+    updateColourScheme(colorScheme as string).then(() => {
       console.log("Color scheme saved");
     }).catch((err) => {
       console.log(err);
