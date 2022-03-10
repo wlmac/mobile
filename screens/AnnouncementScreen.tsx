@@ -8,6 +8,7 @@ import FullAnnouncement from '../components/FullAnnouncement';
 import * as WebBrowser from 'expo-web-browser';
 import apiRequest from '../lib/apiRequest';
 import config from '../config.json';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function AnnouncementScreen() {
     const loadNum = 5; // # announcements to load at a time
@@ -15,12 +16,11 @@ export default function AnnouncementScreen() {
     // stores announcements
     const [announcements, setAnnouncements] = useState([]);
     const [myAnnouncements, setMyAnnouncements] = useState([]);
-    const [orgs, setOrgs] = useState(new Array(1000).fill({name: "", icon: ""}));
-    
+    const [orgs, setOrgs] = useState([]);
+
     const addOrgs = (id: number, name: String, icon: String) => {
         let tmp = orgs;
-        tmp[id].name = name;
-        tmp[id].icon = icon;
+        tmp[id] = {name: name, icon: icon};
         setOrgs(tmp);
     }
 
@@ -69,16 +69,12 @@ export default function AnnouncementScreen() {
 
     const onStartup = async() => {
         // club name + club icon API requests
-        await apiRequest('/api/organizations?format=json', '', 'GET').then((res) => {
-            if (res.success) {
-                let jsonres = JSON.parse(res.response);
-                if(jsonres && Array.isArray(jsonres)) {
-                    jsonres.forEach((org: any) => {
-                        addOrgs(org.id, org.name, org.icon);
-                    });
-                }
-            }
+        await AsyncStorage.getItem("@orgs").then((res:any) => {
+            //console.log(JSON.parse(res));
+            setOrgs(JSON.parse(res));
+            console.log(orgs);
         });
+        //console.log(orgs);
 
         await loadAnnResults();
         await loadMyResults();
