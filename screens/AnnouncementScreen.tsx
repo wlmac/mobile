@@ -1,22 +1,35 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { StyleProp, Switch, useColorScheme, ViewStyle } from 'react-native';
+import { Switch, useColorScheme } from 'react-native';
 import { StyleSheet, StatusBar, ScrollView, Image } from 'react-native';
 import { Text, View } from '../components/Themed';
 import Announcement from '../components/Announcement';
 import FullAnnouncement from '../components/FullAnnouncement';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as WebBrowser from 'expo-web-browser';
-
+import apiRequest from '../lib/apiRequest';
 import config from '../config.json';
 
 export default function AnnouncementScreen() {
+    const loadNum = 5;
+
     // stores announcements
     const [announcements, setAnnouncements] = useState([]);
     const [myAnnouncements, setMyAnnouncements] = useState([]);
+    const [orgs, setOrgs] = useState(new Array(1000).fill({name: "", icon: ""}));
     
+    const addOrgs = (id: number, name: String, icon: String) => {
+        let tmp = orgs;
+        tmp[id].name = name;
+        tmp[id].icon = icon;
+        setOrgs(tmp);
+    }
+
+
+    const [nextAnnSet, setNextAnnSet] = useState(0);
+
     // loading
     const [isLoading, toggleLoading] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
     const loadingIcon = require('../assets/images/loading.gif');
 
     // toggle between my feed and school feed
@@ -38,24 +51,78 @@ export default function AnnouncementScreen() {
     const myA = React.useRef<ScrollView>(null);
     const fullA = React.useRef<ScrollView>(null);
 
-    const readData = async() => {
-        await AsyncStorage.getItem("@announcements").then((res:any) => {
-            setAnnouncements(JSON.parse(res));
+    function isCloseToBottom({layoutMeasurement, contentOffset, contentSize}: any): boolean {
+        return layoutMeasurement.height + contentOffset.y >= contentSize.height - 5;
+    }
+
+    const onStartup = async() => {
+        await apiRequest('/api/organizations?format=json', '', 'GET').then((res) => {
+            if (res.success) {
+                let jsonres = JSON.parse(res.response);
+                if(jsonres && Array.isArray(jsonres)) {
+                    jsonres.forEach((org: any) => {
+                        addOrgs(org.id, org.name, org.icon);
+                    });
+                }
+            }
         });
-        await AsyncStorage.getItem("@myann").then((res:any) => {
-            setMyAnnouncements(JSON.parse(res));
-        });
-        toggleLoading(false);
+
+        await loadAnnResults();
         if(myAnnouncements.length == 0) {
             togglenoMyFeedText(true);
         }
     }
+
+    // load more "all announcements"
+    const loadAnnResults = async() => {
+        if (loadingMore) return;
+        setLoadingMore(true);
+        var jsonres;
+        await apiRequest(`/api/announcements?format=json&limit=${loadNum}&offset=${nextAnnSet}`, '', 'GET').then((res) => {
+            if (res.success) {
+                jsonres = JSON.parse(res.response).results;
+                jsonres.forEach((item: any) => {
+                    let orgId = item.organization.id; // gets the organization id
+                    item.icon = orgs[orgId].icon;
+                    item.name = orgs[orgId].name;
+                });
+                setAnnouncements(announcements.concat(jsonres));
+                setNextAnnSet(nextAnnSet + loadNum);
+            }
+        });
+
+        setLoadingMore(false);
+        toggleLoading(false);
+    }
+
+    // load more "my announcements"
+    const loadMyResults = async() => {
+        if (loadingMore) return;
+        setLoadingMore(true);
+        var jsonres;
+        await apiRequest(`/api/announcements?format=json&limit=${loadNum}&offset=${nextAnnSet}`, '', 'GET').then((res) => {
+            if (res.success) {
+                jsonres = JSON.parse(res.response).results;
+                jsonres.forEach((item: any) => {
+                    let orgId = item.organization.id; // gets the organization id
+                    item.icon = orgs[orgId].icon;
+                    item.name = orgs[orgId].name;
+                });
+                setAnnouncements(announcements.concat(jsonres));
+                setNextAnnSet(nextAnnSet + loadNum);
+            }
+        });
+
+        setLoadingMore(false);
+        toggleLoading(false);
+    }
     
     // fetch data from API
     useEffect(() => {
-        readData();
+        onStartup();
     }, []);
     
+
     return (
         <>
         {/* Loading Icon */}
@@ -70,10 +137,19 @@ export default function AnnouncementScreen() {
             </Text>
 
             {/* School Announcements */}
-            <ScrollView ref={allA} style={!isFilter && fullAnnId == "-1" ? styles.scrollView : {display: "none"}}>
-                {Object.entries(announcements).map(([key, ann]) => (
-                    <Announcement key={key} ann={ann} fullAnn={setFullAnnId}></Announcement>
-                ))}
+            <ScrollView 
+                ref={allA} 
+                style={!isFilter && fullAnnId == "-1" ? styles.scrollView : {display: "none"}}
+                onScroll={({nativeEvent}) => {
+                    if (isCloseToBottom(nativeEvent)) {
+                        loadAnnResults();
+                    }
+                }}
+                scrollEventThrottle={0}
+                >
+                    {Object.entries(announcements).map(([key, ann]) => (
+                        <Announcement key={key} ann={ann} fullAnn={setFullAnnId}></Announcement>
+                    ))}
             </ScrollView>
 
             {/* My Feed Announcement */}
