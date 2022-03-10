@@ -56,7 +56,16 @@ export default function AnnouncementScreen() {
     function isCloseToBottom({layoutMeasurement, contentOffset, contentSize}: any): boolean {
         return layoutMeasurement.height + contentOffset.y >= contentSize.height - 5;
     }
-    
+
+    // doesn't work properly for some reason :sob:
+    // // handle to name
+    // await apiRequest(`/api/user/${item.author.slug}?format=json`, '', 'GET').then((res) => {
+    //     if (res.success) {
+    //         let json = JSON.parse(res.response);
+    //         item.author.slug = json.first_name + " " + json.last_name;
+    //     }
+    // });
+
 
     const onStartup = async() => {
         // club name + club icon API requests
@@ -104,7 +113,7 @@ export default function AnnouncementScreen() {
     const loadMyResults = async() => {
         if (loadingMore) return;
         setLoadingMore(true);
-        await apiRequest(`/api/announcements?format=json&limit=${loadNum}&offset=${nextMySet}`, '', 'GET').then((res) => {
+        await apiRequest(`/api/announcements/feed?format=json&limit=${loadNum}&offset=${nextMySet}`, '', 'GET').then((res) => {
             if (res.success) {
                 let jsonres = JSON.parse(res.response).results;
                 jsonres.forEach((item: any) => {
