@@ -12,19 +12,34 @@ import NotFoundScreen from '../screens/NotFoundScreen';
 import LoginScreen from '../screens/LoginScreen';
 import { RootStackParamList } from '../types';
 import BottomTabNavigator from './BottomTabNavigator';
-import LinkingConfiguration from './LinkingConfiguration';
 
 import useColorScheme from '../hooks/useColorScheme';
 
 export const ThemeContext = React.createContext({});
+
+const LightTheme = {
+  dark: false,
+  colors: {
+    ...DefaultTheme.colors,
+    card: '#105fb0',
+    text: '#f2f2f2',
+  },
+};
+
+const CustomDarkTheme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    card: '#1b1b1b',
+  },
+};
 
 export default function Navigation({ loginNeeded }: { loginNeeded: boolean }) {
   let [colorScheme, updateNavScheme] = React.useState(useColorScheme());
   return (
     <ThemeContext.Provider value={{currentNavScheme: colorScheme, updateNavScheme: updateNavScheme}}>
       <NavigationContainer
-        //linking={LinkingConfiguration}
-        theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        theme={colorScheme === 'dark' ? CustomDarkTheme : LightTheme}>
         <RootNavigator loginNeeded={loginNeeded} />
       </NavigationContainer>
     </ThemeContext.Provider>
