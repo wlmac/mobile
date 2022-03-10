@@ -10,7 +10,6 @@ import Navigation from './navigation';
 
 export default function App() {
   const startupHook = useCachedResources();
-  const colorScheme = useColorScheme();
 
   Device.getDeviceTypeAsync().then(type => {
     if(type == 2) {
@@ -25,7 +24,7 @@ export default function App() {
   } else {
     return (
       <SafeAreaProvider>
-        <Navigation colorScheme={colorScheme} loginNeeded={startupHook.loginNeeded} />
+        <Navigation loginNeeded={startupHook.loginNeeded} />
         <StatusBar />
       </SafeAreaProvider>
     );

@@ -14,13 +14,20 @@ import { RootStackParamList } from '../types';
 import BottomTabNavigator from './BottomTabNavigator';
 import LinkingConfiguration from './LinkingConfiguration';
 
-export default function Navigation({ colorScheme, loginNeeded }: { colorScheme: ColorSchemeName, loginNeeded: boolean }) {
+import useColorScheme from '../hooks/useColorScheme';
+
+export const ThemeContext = React.createContext({});
+
+export default function Navigation({ loginNeeded }: { loginNeeded: boolean }) {
+  let [colorScheme, updateNavScheme] = React.useState(useColorScheme());
   return (
-    <NavigationContainer
-      linking={LinkingConfiguration}
-      theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <RootNavigator loginNeeded={loginNeeded} />
-    </NavigationContainer>
+    <ThemeContext.Provider value={{currentNavScheme: colorScheme, updateNavScheme: updateNavScheme}}>
+      <NavigationContainer
+        //linking={LinkingConfiguration}
+        theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <RootNavigator loginNeeded={loginNeeded} />
+      </NavigationContainer>
+    </ThemeContext.Provider>
   );
 }
 

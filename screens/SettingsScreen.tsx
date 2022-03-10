@@ -9,6 +9,7 @@ import Changelog from '../components/Changelog';
 import About from '../components/About';
 import { Ionicons } from '@expo/vector-icons';
 import useColorScheme, { updateColourScheme } from '../hooks/useColorScheme';
+import * as Navigation from '../navigation';
 
 export default function SettingsScreen({ navigation }: { navigation: StackNavigationProp<RootStackParamList, 'Root'> }) {
   const [curView, setCurView] = React.useState(-1);
@@ -22,11 +23,18 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
 
   const [colorScheme, setColorScheme] = useState(useColorScheme());
 
+  const themeContext = React.useContext(Navigation.ThemeContext);
+
   // use effect to change color scheme
   useEffect(() => {
     console.log(colorScheme);
     updateColourScheme(colorScheme as string).then(() => {
       console.log("Color scheme saved");
+      //@ts-ignore (no state function was set when context was instantiated in navigation, causing the warning)
+      if(themeContext.updateNavScheme) {
+        //@ts-ignore
+        themeContext.updateNavScheme(colorScheme);
+      }
     }).catch((err) => {
       console.log(err);
     });
