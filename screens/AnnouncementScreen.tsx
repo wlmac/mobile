@@ -70,9 +70,10 @@ export default function AnnouncementScreen() {
     const onStartup = async() => {
         // club name + club icon API requests
         await AsyncStorage.getItem("@orgs").then((res:any) => {
-            //console.log(JSON.parse(res));
-            setOrgs(JSON.parse(res));
-            console.log(orgs);
+            let jsonres = JSON.parse(res);
+            for (let i = 0; i < jsonres.length; i += 1) {
+                if (jsonres[i] != null) addOrgs(i, jsonres[i].name, jsonres[i].icon);
+            }
         });
         //console.log(orgs);
 
