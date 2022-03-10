@@ -10,7 +10,7 @@ import apiRequest from '../lib/apiRequest';
 import config from '../config.json';
 
 export default function AnnouncementScreen() {
-    const loadNum = 5;
+    const loadNum = 5; // # announcements to load at a time
 
     // stores announcements
     const [announcements, setAnnouncements] = useState([]);
@@ -24,12 +24,13 @@ export default function AnnouncementScreen() {
         setOrgs(tmp);
     }
 
-
+    // tracking how many announcements have been loaded
     const [nextAnnSet, setNextAnnSet] = useState(0);
+    const [nextMySet, setNextMySet] = useState(0);
 
     // loading
-    const [isLoading, toggleLoading] = useState(true);
-    const [loadingMore, setLoadingMore] = useState(false);
+    const [isLoading, toggleLoading] = useState(true); // initial loading
+    const [loadingMore, setLoadingMore] = useState(false); // loading more for lazy
     const loadingIcon = require('../assets/images/loading.gif');
 
     // toggle between my feed and school feed
@@ -51,11 +52,14 @@ export default function AnnouncementScreen() {
     const myA = React.useRef<ScrollView>(null);
     const fullA = React.useRef<ScrollView>(null);
 
+    // lazy loading check if user at bottom
     function isCloseToBottom({layoutMeasurement, contentOffset, contentSize}: any): boolean {
         return layoutMeasurement.height + contentOffset.y >= contentSize.height - 5;
     }
+    
 
     const onStartup = async() => {
+        // club name + club icon API requests
         await apiRequest('/api/organizations?format=json', '', 'GET').then((res) => {
             if (res.success) {
                 let jsonres = JSON.parse(res.response);
@@ -68,19 +72,21 @@ export default function AnnouncementScreen() {
         });
 
         await loadAnnResults();
+        await loadMyResults();
+
         if(myAnnouncements.length == 0) {
             togglenoMyFeedText(true);
         }
+        toggleLoading(false);
     }
 
     // load more "all announcements"
     const loadAnnResults = async() => {
         if (loadingMore) return;
         setLoadingMore(true);
-        var jsonres;
         await apiRequest(`/api/announcements?format=json&limit=${loadNum}&offset=${nextAnnSet}`, '', 'GET').then((res) => {
             if (res.success) {
-                jsonres = JSON.parse(res.response).results;
+                let jsonres = JSON.parse(res.response).results;
                 jsonres.forEach((item: any) => {
                     let orgId = item.organization.id; // gets the organization id
                     item.icon = orgs[orgId].icon;
@@ -92,29 +98,26 @@ export default function AnnouncementScreen() {
         });
 
         setLoadingMore(false);
-        toggleLoading(false);
     }
 
     // load more "my announcements"
     const loadMyResults = async() => {
         if (loadingMore) return;
         setLoadingMore(true);
-        var jsonres;
-        await apiRequest(`/api/announcements?format=json&limit=${loadNum}&offset=${nextAnnSet}`, '', 'GET').then((res) => {
+        await apiRequest(`/api/announcements?format=json&limit=${loadNum}&offset=${nextMySet}`, '', 'GET').then((res) => {
             if (res.success) {
-                jsonres = JSON.parse(res.response).results;
+                let jsonres = JSON.parse(res.response).results;
                 jsonres.forEach((item: any) => {
                     let orgId = item.organization.id; // gets the organization id
                     item.icon = orgs[orgId].icon;
                     item.name = orgs[orgId].name;
                 });
-                setAnnouncements(announcements.concat(jsonres));
-                setNextAnnSet(nextAnnSet + loadNum);
+                setMyAnnouncements(myAnnouncements.concat(jsonres));
+                setNextMySet(nextMySet + loadNum);
             }
         });
 
         setLoadingMore(false);
-        toggleLoading(false);
     }
     
     // fetch data from API
@@ -153,13 +156,24 @@ export default function AnnouncementScreen() {
             </ScrollView>
 
             {/* My Feed Announcement */}
-            <ScrollView ref={myA} style={isFilter && fullAnnId == "-1" ? styles.scrollView : {display: "none"}}>
+            <ScrollView 
+                ref={myA} 
+                style={isFilter && fullAnnId == "-1" ? styles.scrollView : {display: "none"}}
+                onScroll={({nativeEvent}) => {
+                    if (isCloseToBottom(nativeEvent)) {
+                        loadMyResults();
+                    }
+                }}
+                scrollEventThrottle={0}
+            >
                 {Object.entries(myAnnouncements).map(([key, ann]) => (
                     <Announcement key={key} ann={ann} fullAnn={setFullAnnId}></Announcement>
                 ))}
-                <View style={noMyFeed ? {display: "none"} : {display: "flex"}}><Text style={{textAlign: 'center'}}>There is nothing in your feed. Join some 
-                <Text style={{color: 'rgb(51,102,187)'}} onPress={() => { WebBrowser.openBrowserAsync(config.server + '/clubs') }}>{' '}clubs{' '}</Text>
-                 to have their announcements show up here!</Text></View>
+                <View style={noMyFeed ? {display: "none"} : {display: "flex"}}>     
+                    <Text style={{textAlign: 'center'}}>There is nothing in your feed. Join some 
+                        <Text style={{color: 'rgb(51,102,187)'}} onPress={() => { WebBrowser.openBrowserAsync(config.server + '/clubs') }}>{' '}clubs{' '}</Text>
+                    to have their announcements show up here!</Text>
+                 </View>
             </ScrollView>
 
             {/* Full Announcement */}
