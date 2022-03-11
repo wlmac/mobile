@@ -13,6 +13,10 @@ import useColorScheme from '../hooks/useColorScheme';
 import config from '../config.json';
 
 export default function AnnouncementScreen() {
+
+    // get color scheme
+    let colorScheme = useColorScheme();
+
     // stores announcements
     const [announcements, setAnnouncements] = useState([]);
     const [myAnnouncements, setMyAnnouncements] = useState([]);
@@ -66,7 +70,7 @@ export default function AnnouncementScreen() {
         </View>
 
         {/* After Everything is Loaded */}
-        <View style={!isLoading ? styles.container : {display: "none"}}>
+        <View style={!isLoading ? [styles.container, {backgroundColor: (colorScheme === "dark" ? "#252525" : "#e0e0e0")}] : {display: "none"}}>
             <Text style={fullAnnId == "-1" ? styles.header : {display: "none"}}>
                 {isFilter ? "My Announcements" : "All Announcements"}
             </Text>
@@ -103,12 +107,12 @@ export default function AnnouncementScreen() {
             />
 
             {/* Filter Announcements */}
-            <View style={fullAnnId == "-1" ? styles.row : {display: "none"}}>
-                <Text style={{color: isFilter ?(useColorScheme() === "dark" ? "#434343ff" : "#b7b7b7ff") : (useColorScheme() === "light" ? "#434343ff" : "#b7b7b7ff"), fontFamily: 'poppins', paddingHorizontal: 8, paddingTop: 5,
+            <View style={[fullAnnId == "-1" ? styles.row : {display: "none"}, {backgroundColor: colorScheme === 'light' ? '#e0e0e0' : '#252525',}]}>
+                <Text style={{color: isFilter ?(useColorScheme() === "dark" ? "#434343" : "#a8a8a8") : (useColorScheme() === "light" ? "#434343" : "#a8a8a8"), fontFamily: 'poppins', paddingHorizontal: 8, paddingTop: 5,
                 }}>All </Text>
                 <Switch style={styles.switch}
-                    trackColor={{ false: "#b7b7b7ff", true: "#b7b7b7ff" }}
-                    thumbColor={isFilter ? "#434343ff" : "#434343ff"}
+                    trackColor={{ false: "#555555", true: "#828282" }}
+                    thumbColor={isFilter ? "#444444" : "#444444"}
                     onValueChange={() => {
                         toggleSwitch();
                         allA?.current?.scrollTo({x: 0, y: 0, animated: false});
@@ -116,7 +120,8 @@ export default function AnnouncementScreen() {
                     }}
                     value={isFilter}
                 />
-                <Text style={{color: isFilter ?(useColorScheme() === "light" ? "#434343ff" : "#b7b7b7ff") : (useColorScheme() === "dark" ? "#434343ff" : "#b7b7b7ff"), fontFamily: 'poppins', paddingHorizontal:12, paddingTop: 5 }}>My </Text>
+                <Text style={{color: isFilter ?(useColorScheme() === "light" ? "#434343" : "#a8a8a8") : (useColorScheme() === "dark" ? "#434343" : "#a8a8a8"), fontFamily: 'poppins', paddingHorizontal:12, paddingTop: 5 
+                }}>My </Text>
             </View>
         </View>
         </>

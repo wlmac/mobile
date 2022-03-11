@@ -30,7 +30,7 @@ const daysInMonth = [-1, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 export default function CalendarScreen() {
 
   // get theme
-  let colorScheme = useColorScheme();
+  const colorScheme = useColorScheme();
 
   // get today's date
   const today: YMDDate = dateToYMD();

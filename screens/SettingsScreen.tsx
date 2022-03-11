@@ -74,7 +74,7 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
         }
       }}>
         <Text> Appearance: {colorScheme} </Text>
-        <Ionicons name="information-circle-outline" size={18} color={iconColor} />
+        <Ionicons name="color-palette-outline" size={18} color={iconColor} />
       </TouchableOpacity>
 
       <TouchableOpacity style={curView == -1 ? [styles.button, { backgroundColor: btnBgColor }] : {display: "none"}} onPress={() => {topAbout?.current?.scrollTo({x: 0, y: 0, animated: false}); setView(2)}}>
