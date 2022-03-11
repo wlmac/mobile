@@ -1,9 +1,11 @@
 import React from 'react';
 
-import { StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 
 import { View, Text } from './Themed';
 import { Ionicons } from '@expo/vector-icons';
+
+import useColorScheme from '../hooks/useColorScheme';
 
 let theme;
 

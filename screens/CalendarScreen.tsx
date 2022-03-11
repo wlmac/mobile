@@ -26,14 +26,11 @@ const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Frida
 // required to calculate date difference
 const daysInMonth = [-1, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
-// dark or light mode
-let appTheme: string;
-
 // calendar screen
 export default function CalendarScreen() {
 
   // get theme
-  appTheme = useColorScheme();
+  let colorScheme = useColorScheme();
 
   // get today's date
   const today: YMDDate = dateToYMD();
@@ -103,7 +100,7 @@ export default function CalendarScreen() {
   // use effect on color scheme change
   useEffect (() => {
     setCurrentKey(new Date());
-  }, [appTheme]);
+  }, [colorScheme]);
 
   // update events on day change using useeffect
   useEffect(() => {
@@ -136,24 +133,24 @@ export default function CalendarScreen() {
             key={currentKey.toISOString()}
             theme = {
               {
-                backgroundColor: appTheme === 'dark' ? '#000' : '#fff',
-                calendarBackground: appTheme === 'dark' ? '#141414' : '#efefef',
+                backgroundColor: colorScheme === 'dark' ? '#000' : '#fff',
+                calendarBackground: colorScheme === 'dark' ? '#141414' : '#efefef',
               
-                textSectionTitleColor: appTheme === 'dark' ? '#fff' : '#000',
-                textSectionTitleDisabledColor: appTheme === 'dark' ? '#4a4a4a' : '#b8b8b8',
+                textSectionTitleColor: colorScheme === 'dark' ? '#fff' : '#000',
+                textSectionTitleDisabledColor: colorScheme === 'dark' ? '#4a4a4a' : '#b8b8b8',
               
-                todayTextColor: appTheme === 'dark' ? '#d1a700' : '#d49a13',
-                dayTextColor: appTheme === 'dark' ? '#fff' : '#000',
+                todayTextColor: colorScheme === 'dark' ? '#d1a700' : '#d49a13',
+                dayTextColor: colorScheme === 'dark' ? '#fff' : '#000',
               
-                textDisabledColor: appTheme === 'dark' ? '#4a4a4a' : '#b8b8b8',
+                textDisabledColor: colorScheme === 'dark' ? '#4a4a4a' : '#b8b8b8',
               
                 dotColor: '#00adf5',
                 selectedDotColor: '#fff',
               
-                arrowColor: appTheme === 'dark' ? '#fff' : '#0a2945',
+                arrowColor: colorScheme === 'dark' ? '#fff' : '#0a2945',
                 disabledArrowColor: '#4a4a4a',
               
-                monthTextColor: appTheme === 'dark' ? '#348feb' : '#105fb0',
+                monthTextColor: colorScheme === 'dark' ? '#348feb' : '#105fb0',
                 textMonthFontWeight: 'bold',
                 textMonthFontSize: 16,
 
@@ -219,7 +216,7 @@ export default function CalendarScreen() {
           />
         </View>
         
-        <View style={{backgroundColor: appTheme === 'dark' ? '#0c0c0c' : '#f4f4f4', height: 5}}></View>
+        <View style={{backgroundColor: colorScheme === 'dark' ? '#0c0c0c' : '#f4f4f4', height: 5}}></View>
         
         {/* --- Return to today button, disabled when selected day or displayed month isn't on the month ---*/}
         <View style={styles.returnToToday}>
@@ -232,7 +229,7 @@ export default function CalendarScreen() {
             }}
           >
             <Text style={[styles.returnToTodayText, 
-              {color: appTheme === 'light'
+              {color: colorScheme === 'light'
               ? 
               displayedDate.strform == today.strform ? '#b3b3b3' : '#000'
               : 
@@ -259,14 +256,14 @@ export default function CalendarScreen() {
 
           // events today
           <View>
-            <Text style={[styles.dateText, {color: appTheme === 'light' ? '#000' : '#fff'}]}>
+            <Text style={[styles.dateText, {color: colorScheme === 'light' ? '#000' : '#fff'}]}>
               {YMDToLong(selectedDay)}
             </Text>
             {
               eventsToday.length === 0
               ?
               // if there's no events, display `no events`
-              <Text style={[styles.eventsCountText, {color: appTheme === 'light' ? '#000' : '#fff'}]}>No events on this day{appTheme}</Text>
+              <Text style={[styles.eventsCountText, {color: colorScheme === 'light' ? '#000' : '#fff'}]}>No events on this day{colorScheme}</Text>
               :
               // lists events
               <View style={styles.eventCardsContainer}>

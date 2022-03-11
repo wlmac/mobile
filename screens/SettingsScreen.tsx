@@ -27,9 +27,7 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
 
   // use effect to change color scheme
   useEffect(() => {
-    console.log(colorScheme);
     updateColourScheme(colorScheme as string).then(() => {
-      console.log("Color scheme saved");
       //@ts-ignore (no state function was set when context was instantiated in navigation, causing the warning)
       if(themeContext.updateNavScheme) {
         //@ts-ignore
