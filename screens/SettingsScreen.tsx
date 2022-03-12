@@ -38,9 +38,9 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
     });
   }, [colorScheme]);
 
-  const btnBgColor = useColorScheme() === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
-  const iconColor = useColorScheme() === "light" ? "rgb(64, 64, 64)" : "rgb(189, 189, 189)";
-  const logoutBtnBgColor = useColorScheme() === "light" ? "rgb(17, 111, 207)" : "rgb(58, 106, 150)"; 
+  const btnBgColor = colorScheme === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
+  const iconColor = colorScheme === "light" ? "rgb(64, 64, 64)" : "rgb(189, 189, 189)";
+  const logoutBtnBgColor = '#073763'; //useColorScheme() === "light" ? "rgb(17, 111, 207)" : "rgb(58, 106, 150)"; 
 
   // scroll to top
   const topChangeLog = React.useRef<ScrollView>(null);
@@ -56,7 +56,7 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {backgroundColor: colorScheme === 'light' ? '#e0e0e0' : '#252525'}]}>
       <ScrollView ref={topAbout} style={curView == 2 ? {flex:1, width:"100%"} : { display: "none" }}>
         <About back={setView}></About>
       </ScrollView>
@@ -67,11 +67,8 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
       <TouchableOpacity 
       style={curView == -1 ? [styles.button, { backgroundColor: btnBgColor }] : {display: "none"}} 
       onPress={() => {
-        if (colorScheme === 'dark') {
-          setColorScheme('light');
-        } else {
-          setColorScheme('dark');
-        }
+        if (colorScheme === 'dark') setColorScheme('light');
+        else setColorScheme('dark');
       }}>
         <Text> Appearance: {colorScheme} </Text>
         <Ionicons name="color-palette-outline" size={18} color={iconColor} />
@@ -85,10 +82,10 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
         <Text> View Changelog </Text>
         <Ionicons name="cog-outline" size={18} color={iconColor} />
       </TouchableOpacity>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+      <View style={styles.separator} lightColor="#adadad" darkColor="rgba(255,255,255,0.1)" />
       <TouchableOpacity style={curView == -1 ? [styles.logoutButton, { backgroundColor: logoutBtnBgColor }] : {display: "none"}} onPress={logout}>
         <Text style={{color: "white"}}> Log Out </Text>
-        <Ionicons name="exit-outline" size={18} color={iconColor} />
+        <Ionicons name="exit-outline" size={18} color={'#e2e2e2'} />
       </TouchableOpacity>
     </View>
   );
@@ -97,7 +94,6 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginHorizontal:6,
     alignItems: 'center',
     justifyContent: 'center',
   },

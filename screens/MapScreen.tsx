@@ -1243,15 +1243,17 @@ export default function MapScreen() {
 
   // -------------------------------------------
 
+  const colorScheme = useColorScheme();
+
   return (
     <View style={styles.container}>
       {/* ---- SEARCH BAR --- */}
       <TextInput
         style={[
           styles.searchBar,
-          { color: useColorScheme() === "light" ? "black" : "white" },
+          { backgroundColor: colorScheme === "dark" ? "#1c1c1c" : "#e0e0e0" },
         ]}
-        placeholderTextColor={useColorScheme() === "light" ? "black" : "white"}
+        placeholderTextColor={colorScheme === "light" ? "#1c1c1c" : "#e0e0e0"}
         placeholder="Search"
         onChangeText={(text) => handleSearch(text)}
         defaultValue={text}
@@ -1261,12 +1263,12 @@ export default function MapScreen() {
         style={{
           height: 1,
           width: "86%",
-          backgroundColor: useColorScheme() === "light" ? "black" : "white",
+          backgroundColor: colorScheme === "light" ? "#1c1c1c" : "#e0e0e0",
           marginBottom: state.query.length > 0 ? 5 : -1,
         }}
       />
 
-        <View style={[styles.row2, {backgroundColor: useColorScheme()==="light"? "black": "white"}]}>
+        <View style={[styles.row2, {backgroundColor: colorScheme==="light"? "#1c1c1c": "#e0e0e0"}]}>
         
         <FlatList
           style={{
@@ -1306,7 +1308,7 @@ export default function MapScreen() {
         style={{
           height: 3.5,
           width: "100%",
-          backgroundColor: "#efefef",
+          backgroundColor: colorScheme === "dark" ? "#252525" : "#d4d4d4",
         }}
       />
       <MapView
@@ -1354,13 +1356,13 @@ export default function MapScreen() {
         style={{
           height: 3.5,
           width: "100%",
-          backgroundColor: "#efefef",
+          backgroundColor: colorScheme === "dark" ? "#252525" : "#d4d4d4",
         }}
       />
-      <View style={styles.row}>
+      <View style={[styles.row, {backgroundColor: colorScheme === "dark" ? "#1c1c1c" : "#e0e0e0"}]}>
         <Text
           style={{
-            color: isEnabled ? "#b7b7b7ff" : "#434343ff",
+            color: isEnabled ? (colorScheme === "dark" ? "#434343" : "#a8a8a8") : (colorScheme === "light" ? "#434343" : "#a8a8a8"),
             fontFamily: "poppins",
             paddingHorizontal: 8,
           }}
@@ -1368,14 +1370,14 @@ export default function MapScreen() {
           Floor One
         </Text>
         <Switch
-          trackColor={{ false: "#b7b7b7ff", true: "#b7b7b7ff" }}
-          thumbColor={isEnabled ? "#434343ff" : "#434343ff"}
+          trackColor={{ false: "#555555", true: "#828282" }}
+          thumbColor={isEnabled ? "#444444" : "#444444"}
           onValueChange={toggleSwitch}
           value={isEnabled}
         />
         <Text
           style={{
-            color: isEnabled ? "#434343ff" : "#b7b7b7ff",
+            color: !isEnabled ? (colorScheme === "dark" ? "#434343" : "#a8a8a8") : (colorScheme === "light" ? "#434343" : "#a8a8a8"),
             fontFamily: "poppins",
             paddingHorizontal: 8,
           }}
@@ -1446,9 +1448,10 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: "row",
+    justifyContent: "center",
     // flexWrap: "wrap",
-    paddingHorizontal: 8,
-    paddingVertical: 20,
+    width: '100%',
+    paddingVertical: 15,
   },
   row2: {
     flexDirection: "row",

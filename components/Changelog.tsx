@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ScrollView, StyleSheet, Button, TouchableOpacity, useColorScheme, TouchableWithoutFeedback } from 'react-native';
+import { ScrollView, StyleSheet, Button, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 import { Text, View } from '../components/Themed';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -7,22 +7,25 @@ import Modal from "react-native-modal";
 import Constants from 'expo-constants';
 import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
-
+import useColorScheme, { updateColourScheme } from '../hooks/useColorScheme';
 import changelog from '../changelog.json';
 
 export default function Changelog({ back }: { back: Function }) {
-    const btnBgColor = useColorScheme() === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
+
+    const colorScheme = useColorScheme();
+    const btnBgColor = colorScheme === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
 
     return (
-        <View style={styles.container}>
-            <View style={styles.changelog}>
+        <View style={[styles.container, {backgroundColor: colorScheme === 'light' ? '#e0e0e0' : '#252525'}]}>
+            <View style={[styles.changelog, {backgroundColor: colorScheme === 'light' ? '#e0e0e0' : '#252525'}]}>
                 <Text style={styles.title}> Changelog </Text>
-                <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+                <View style={styles.separator} lightColor="#adadad" darkColor="rgba(255,255,255,0.1)" />
                 {Object.entries(changelog).map(([key, change]) => (
-                    <View key={key}>
-                        <Text style={{ fontSize: 20, fontWeight: 'bold', color: useColorScheme() === "dark" ? '#348feb' : '#105fb0' }}> v{change.version} </Text>
-                        <Text style={{ color: useColorScheme() === "dark" ? '#cccccc' : '#555555', fontSize: 15 }}> {new Date(change.time).toLocaleString() + '\n'} </Text>
-                        <View><Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={url => {
+                    <View key={key} style={{backgroundColor: colorScheme === 'light' ? '#e0e0e0' : '#252525'}}>
+                        <Text style={{ fontSize: 20, fontWeight: 'bold', color: colorScheme === "dark" ? '#348feb' : '#105fb0' }}> v{change.version} </Text>
+                        <Text style={{ color: colorScheme === "dark" ? '#cccccc' : '#555555', fontSize: 15 }}> {new Date(change.time).toLocaleString() + '\n'} </Text>
+                        <View style={{backgroundColor: colorScheme === 'light' ? '#e0e0e0' : '#252525'}}>
+                            <Markdown style={colorScheme === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={url => {
                         if(url) {
                             WebBrowser.openBrowserAsync(url);
                             return false;
@@ -70,7 +73,8 @@ const styles = StyleSheet.create({
 });
 
 export function ChangeLogModal() {
-    const btnBgColor = useColorScheme() === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
+    const colorScheme = useColorScheme();
+    const btnBgColor = colorScheme === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
     const [isModalVisible, setModalVisible] = React.useState(false);
     const modalOff = () => {
         setModalVisible(false);
@@ -87,13 +91,13 @@ export function ChangeLogModal() {
     return (
         <Modal isVisible={isModalVisible} style={modalStyles.modal}>
             <View style={modalStyles.wrapper}>
-                <ScrollView style={{backgroundColor: useColorScheme() === "light" ? "white" : "black"}} contentContainerStyle={modalStyles.scrollView}>
+                <ScrollView style={{backgroundColor: colorScheme === "light" ? "white" : "black"}} contentContainerStyle={modalStyles.scrollView}>
                         <Ionicons size={30} style={{ position: 'absolute', right: 0, top: 0}} name="close" color="white" onPress={modalOff} />
                         <Text style={styles.title}>What's New</Text>
                         <Text style={{ fontSize: 20, fontWeight: 'bold' }}> v{changelog[0].version} </Text>
                         <Text> {new Date(changelog[0].time).toLocaleString() + '\n'} </Text>
                         <View>
-                            <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true}>{changelog[0].changes}</Markdown>
+                            <Markdown style={colorScheme === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true}>{changelog[0].changes}</Markdown>
                         </View>
                         <TouchableOpacity onPress={modalOff} style={[modalStyles.button, { backgroundColor: btnBgColor }]}><Text>Close</Text></TouchableOpacity>
                 </ScrollView>
@@ -135,7 +139,7 @@ const modalStyles = StyleSheet.create({
 const markdownStylesLight = StyleSheet.create({
     body: {
         color: "black",
-        backgroundColor: "white",
+        backgroundColor: '#e0e0e0',
         fontSize: 17,
     },
     link: {
@@ -150,7 +154,7 @@ const markdownStylesLight = StyleSheet.create({
 const markdownStylesDark = StyleSheet.create({
     body: {
         color: "white",
-        backgroundColor: "black",
+        backgroundColor: '#252525',
         fontSize: 17,
     },
     blockquote: {

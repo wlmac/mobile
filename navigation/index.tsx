@@ -30,7 +30,7 @@ const CustomDarkTheme = {
   ...DarkTheme,
   colors: {
     ...DarkTheme.colors,
-    card: '#1b1b1b',
+    card: '#161616',
   },
 };
 
