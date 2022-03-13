@@ -122,7 +122,7 @@ export default function CalendarScreen() {
   }, [selectedDay]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {backgroundColor: colorScheme === 'dark' ? '#252525' : '#e0e0e0'}]}>
       <ScrollView>
         
         {/* --- Calendar wrapper ---*/}
@@ -134,7 +134,7 @@ export default function CalendarScreen() {
             theme = {
               {
                 backgroundColor: colorScheme === 'dark' ? '#000' : '#fff',
-                calendarBackground: colorScheme === 'dark' ? '#141414' : '#efefef',
+                calendarBackground: colorScheme === 'dark' ? '#161616' : '#f0f0f0',
               
                 textSectionTitleColor: colorScheme === 'dark' ? '#fff' : '#000',
                 textSectionTitleDisabledColor: colorScheme === 'dark' ? '#4a4a4a' : '#b8b8b8',
@@ -216,10 +216,10 @@ export default function CalendarScreen() {
           />
         </View>
         
-        <View style={{backgroundColor: colorScheme === 'dark' ? '#0c0c0c' : '#f4f4f4', height: 5}}></View>
+        <View style={{backgroundColor: colorScheme === 'dark' ? '#1c1c1c' : '#e6e6e6', height: 10}}></View>
         
         {/* --- Return to today button, disabled when selected day or displayed month isn't on the month ---*/}
-        <View style={styles.returnToToday}>
+        <View style={[styles.returnToToday, {backgroundColor: colorScheme === 'dark' ? '#252525' : '#e0e0e0'}]}>
           <TouchableOpacity
             disabled={displayedDate.strform == today.strform}
             onPress={() => {
@@ -240,12 +240,12 @@ export default function CalendarScreen() {
           </TouchableOpacity>
         </View> 
 
-        <View style={styles.container}>
-          <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+        <View style={[styles.container, {backgroundColor: colorScheme === 'dark' ? '#252525' : '#e0e0e0'}]}>
+        <View style={styles.separator} lightColor="#adadad" darkColor="rgba(255,255,255,0.1)" />
         </View>
         
         {/* --- Event list title ---*/}
-        <View style={styles.eventsTitle}>
+        <View style={[styles.eventsTitle, {backgroundColor: colorScheme === 'dark' ? '#252525' : '#e0e0e0'}]}>
           
           {
           // if the data is null, there is an error
@@ -255,7 +255,7 @@ export default function CalendarScreen() {
           : 
 
           // events today
-          <View>
+          <View style={{backgroundColor: colorScheme === 'dark' ? '#252525' : '#e0e0e0'}}>
             <Text style={[styles.dateText, {color: colorScheme === 'light' ? '#000' : '#fff'}]}>
               {YMDToLong(selectedDay)}
             </Text>
@@ -263,10 +263,10 @@ export default function CalendarScreen() {
               eventsToday.length === 0
               ?
               // if there's no events, display `no events`
-              <Text style={[styles.eventsCountText, {color: colorScheme === 'light' ? '#000' : '#fff'}]}>No events on this day{colorScheme}</Text>
+              <Text style={[styles.eventsCountText, {color: colorScheme === 'light' ? '#000' : '#fff'}]}>No events on this day</Text>
               :
               // lists events
-              <View style={styles.eventCardsContainer}>
+              <View style={[styles.eventCardsContainer, {backgroundColor: colorScheme === 'dark' ? '#252525' : '#e0e0e0'}]}>
                 {Object.entries(eventsToday).map(([key, event]) => (
                   // reset key (resets component)
                   <EventCard key={key+new Date().toISOString()} event={event} />
@@ -278,8 +278,8 @@ export default function CalendarScreen() {
 
         </View>
 
-        <View style={styles.container}>
-          <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+        <View style={[styles.container, {backgroundColor: colorScheme === 'dark' ? '#252525' : '#e0e0e0'}]}>
+          <View style={styles.separator} lightColor="#adadad" darkColor="rgba(255,255,255,0.1)" />
         </View>
 
       </ScrollView>
