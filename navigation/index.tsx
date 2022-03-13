@@ -21,7 +21,7 @@ const LightTheme = {
   dark: false,
   colors: {
     ...DefaultTheme.colors,
-    card: '#105fb0',
+    card: '#295faa',
     text: '#f2f2f2',
   },
 };

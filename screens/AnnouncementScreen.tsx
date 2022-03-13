@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { StyleProp, Switch, ViewStyle } from 'react-native';
+import { ColorPropType, StyleProp, Switch, ViewStyle } from 'react-native';
 import { StyleSheet, StatusBar, ScrollView, Image } from 'react-native';
 import { Text, View } from '../components/Themed';
 import Announcement from '../components/Announcement';
@@ -102,12 +102,12 @@ export default function AnnouncementScreen() {
                 style={{
                 height: 3.5,
                 width: "100%",
-                backgroundColor: "#efefef",
+                backgroundColor: colorScheme === "dark" ? "#1c1c1c" : "#d4d4d4",
                 }}
             />
 
             {/* Filter Announcements */}
-            <View style={[fullAnnId == "-1" ? styles.row : {display: "none"}, {backgroundColor: colorScheme === 'light' ? '#e0e0e0' : '#252525',}]}>
+            <View style={[fullAnnId == "-1" ? styles.row : {display: "none"}, {backgroundColor: colorScheme === 'dark' ? "#252525" : "#e0e0e0",}]}>
                 <Text style={{color: isFilter ?(useColorScheme() === "dark" ? "#434343" : "#a8a8a8") : (useColorScheme() === "light" ? "#434343" : "#a8a8a8"), fontFamily: 'poppins', paddingHorizontal: 8, paddingTop: 5,
                 }}>All </Text>
                 <Switch style={styles.switch}
