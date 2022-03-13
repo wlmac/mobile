@@ -1251,7 +1251,8 @@ export default function MapScreen() {
       <TextInput
         style={[
           styles.searchBar,
-          { backgroundColor: colorScheme === "dark" ? "#1c1c1c" : "#e0e0e0" },
+          { backgroundColor: colorScheme === "dark" ? "#1c1c1c" : "#e0e0e0",
+            color: colorScheme === "dark" ? "#e0e0e0" : "#1c1c1c" },
         ]}
         placeholderTextColor={colorScheme === "light" ? "#1c1c1c" : "#e0e0e0"}
         placeholder="Search"
@@ -1261,17 +1262,16 @@ export default function MapScreen() {
 
       <View
         style={{
-          height: 1,
           width: "86%",
-          backgroundColor: colorScheme === "light" ? "#1c1c1c" : "#e0e0e0",
-          marginBottom: state.query.length > 0 ? 5 : -1,
+          backgroundColor: 'transparent',
         }}
       />
 
-        <View style={[styles.row2, {backgroundColor: colorScheme==="light"? "#1c1c1c": "#e0e0e0"}]}>
+        <View style={[styles.row2, {backgroundColor: colorScheme === "dark"? "#252525" : "#e6e6e6"}]}>
         
         <FlatList
           style={{
+            backgroundColor: colorScheme === "dark" ? "#252525" : "#e6e6e6",
             height:
               state.query.length > 0
                 ? state.fullData.length * 40 > 150
@@ -1285,6 +1285,8 @@ export default function MapScreen() {
             <TouchableOpacity onPress={() => reset(item)}>
               <View
                 style={{
+                  width: '100%',
+                  backgroundColor: colorScheme === "dark" ? "#252525" : "#e6e6e6",
                   flexDirection: "row",
                   alignItems: "center",
                 }}
