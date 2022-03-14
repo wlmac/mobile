@@ -12,38 +12,30 @@ export default async function cacheResources(): Promise<void> {
 export async function storeApiCalls(): Promise<void> {
     var announcements: Object[] = [];
     var myAnnouncements: Object[] = [];
-    var orgName: { [id: number]: string } = {};
-    var orgIcon: { [id: number]: string } = {};
-    var myOrgs: Object[] = [];
-
+    var orgs: Object[] = new Array(1000);
 
     // organizations
     await apiRequest('/api/organizations?format=json', '', 'GET').then((res) => {
         if (res.success) {
-            JSON.parse(res.response).forEach((org: any) => {
-                orgName[org.id] = org.name;
-                orgIcon[org.id] = org.icon;
-            });
+            let jsonres = JSON.parse(res.response);
+            if(jsonres && Array.isArray(jsonres)) {
+                jsonres.forEach((org: any) => {
+                    orgs[org.id] = {name: org.name, icon: org.icon};
+                });
+            }
             //console.log('organization cache done');
         } else {
             //console.log("organization cache failed");
         }
     });
 
-    // my organizations
-    await apiRequest('/api/me?format=json', '', 'GET').then((res) => {
-        if (res.success) {
-            myOrgs = JSON.parse(res.response).organizations;
-            //console.log("my orgs cache done");
-        } else {
-            //console.log("my orgs cache failed");
-        }
-    });
-
-    // announcements
+    // all announcements
     await apiRequest('/api/announcements?format=json', '', 'GET').then((res) => {
         if (res.success) {
-            announcements = JSON.parse(res.response);
+            let jsonres = JSON.parse(res.response);
+            if(jsonres && Array.isArray(jsonres)) {
+                announcements = jsonres;
+            }
             //console.log('announcement cache done');
         } else {
             //console.log("announcement cache failed");
@@ -58,16 +50,7 @@ export async function storeApiCalls(): Promise<void> {
         }
     });
 
-    // my announcements
-    announcements.forEach((item: any) => {
-        let orgId = item.organization.id; // gets the organization id
-        item.icon = orgIcon[orgId];
-        item.name = orgName[orgId];
-        if (myOrgs.includes(orgName[orgId])) { // checks against the user's organization list
-            myAnnouncements.push(item);
-        }
-    });
-
     AsyncStorage.setItem("@announcements", JSON.stringify(announcements));
     AsyncStorage.setItem("@myann", JSON.stringify(myAnnouncements));
+    AsyncStorage.setItem("@orgs", JSON.stringify(orgs));
 }

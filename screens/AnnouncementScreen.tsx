@@ -5,24 +5,36 @@ import { StyleSheet, StatusBar, ScrollView, Image } from 'react-native';
 import { Text, View } from '../components/Themed';
 import Announcement from '../components/Announcement';
 import FullAnnouncement from '../components/FullAnnouncement';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as WebBrowser from 'expo-web-browser';
 
 import useColorScheme from '../hooks/useColorScheme';
-
+import apiRequest from '../lib/apiRequest';
 import config from '../config.json';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function AnnouncementScreen() {
-
     // get color scheme
     let colorScheme = useColorScheme();
+    const loadNum = 5; // # announcements to load at a time
 
     // stores announcements
     const [announcements, setAnnouncements] = useState([]);
     const [myAnnouncements, setMyAnnouncements] = useState([]);
-    
+    const [orgs, setOrgs] = useState([]);
+
+    const addOrgs = (id: number, name: String, icon: String) => {
+        let tmp = orgs;
+        tmp[id] = {name: name, icon: icon};
+        setOrgs(tmp);
+    }
+
+    // tracking how many announcements have been loaded
+    const [nextAnnSet, setNextAnnSet] = useState(0);
+    const [nextMySet, setNextMySet] = useState(0);
+
     // loading
-    const [isLoading, toggleLoading] = useState(true);
+    const [isLoading, toggleLoading] = useState(true); // initial loading
+    const [loadingMore, setLoadingMore] = useState(false); // loading more for lazy
     const loadingIcon = require('../assets/images/loading.gif');
 
     // toggle between my feed and school feed
@@ -44,24 +56,86 @@ export default function AnnouncementScreen() {
     const myA = React.useRef<ScrollView>(null);
     const fullA = React.useRef<ScrollView>(null);
 
-    const readData = async() => {
-        await AsyncStorage.getItem("@announcements").then((res:any) => {
-            setAnnouncements(JSON.parse(res));
+    // lazy loading check if user at bottom
+    function isCloseToBottom({layoutMeasurement, contentOffset, contentSize}: any): boolean {
+        return layoutMeasurement.height + contentOffset.y >= contentSize.height - 5;
+    }
+
+    // doesn't work properly for some reason :sob:
+    // // handle to name
+    // await apiRequest(`/api/user/${item.author.slug}?format=json`, '', 'GET').then((res) => {
+    //     if (res.success) {
+    //         let json = JSON.parse(res.response);
+    //         item.author.slug = json.first_name + " " + json.last_name;
+    //     }
+    // });
+
+
+    const onStartup = async() => {
+        // club name + club icon API requests
+        await AsyncStorage.getItem("@orgs").then((res:any) => {
+            let jsonres = JSON.parse(res);
+            for (let i = 0; i < jsonres.length; i += 1) {
+                if (jsonres[i] != null) addOrgs(i, jsonres[i].name, jsonres[i].icon);
+            }
         });
-        await AsyncStorage.getItem("@myann").then((res:any) => {
-            setMyAnnouncements(JSON.parse(res));
-        });
-        toggleLoading(false);
+        //console.log(orgs);
+
+        await loadAnnResults();
+        await loadMyResults();
+
         if(myAnnouncements.length == 0) {
             togglenoMyFeedText(true);
         }
+        toggleLoading(false);
+    }
+
+    // load more "all announcements"
+    const loadAnnResults = async() => {
+        if (loadingMore) return;
+        setLoadingMore(true);
+        await apiRequest(`/api/announcements?format=json&limit=${loadNum}&offset=${nextAnnSet}`, '', 'GET').then((res) => {
+            if (res.success) {
+                let jsonres = JSON.parse(res.response).results;
+                jsonres.forEach((item: any) => {
+                    let orgId = item.organization.id; // gets the organization id
+                    item.icon = orgs[orgId].icon;
+                    item.name = orgs[orgId].name;
+                });
+                setAnnouncements(announcements.concat(jsonres));
+                setNextAnnSet(nextAnnSet + loadNum);
+            }
+        });
+
+        setLoadingMore(false);
+    }
+
+    // load more "my announcements"
+    const loadMyResults = async() => {
+        if (loadingMore) return;
+        setLoadingMore(true);
+        await apiRequest(`/api/announcements/feed?format=json&limit=${loadNum}&offset=${nextMySet}`, '', 'GET').then((res) => {
+            if (res.success) {
+                let jsonres = JSON.parse(res.response).results;
+                jsonres.forEach((item: any) => {
+                    let orgId = item.organization.id; // gets the organization id
+                    item.icon = orgs[orgId].icon;
+                    item.name = orgs[orgId].name;
+                });
+                setMyAnnouncements(myAnnouncements.concat(jsonres));
+                setNextMySet(nextMySet + loadNum);
+            }
+        });
+
+        setLoadingMore(false);
     }
     
     // fetch data from API
     useEffect(() => {
-        readData();
+        onStartup();
     }, []);
     
+
     return (
         <>
         {/* Loading Icon */}
@@ -76,20 +150,40 @@ export default function AnnouncementScreen() {
             </Text>
 
             {/* School Announcements */}
-            <ScrollView ref={allA} style={!isFilter && fullAnnId == "-1" ? styles.scrollView : {display: "none"}}>
-                {Object.entries(announcements).map(([key, ann]) => (
-                    <Announcement key={key} ann={ann} fullAnn={setFullAnnId}></Announcement>
-                ))}
+            <ScrollView 
+                ref={allA} 
+                style={!isFilter && fullAnnId == "-1" ? styles.scrollView : {display: "none"}}
+                onScroll={({nativeEvent}) => {
+                    if (isCloseToBottom(nativeEvent)) {
+                        loadAnnResults();
+                    }
+                }}
+                scrollEventThrottle={0}
+                >
+                    {Object.entries(announcements).map(([key, ann]) => (
+                        <Announcement key={key} ann={ann} fullAnn={setFullAnnId}></Announcement>
+                    ))}
             </ScrollView>
 
             {/* My Feed Announcement */}
-            <ScrollView ref={myA} style={isFilter && fullAnnId == "-1" ? styles.scrollView : {display: "none"}}>
+            <ScrollView 
+                ref={myA} 
+                style={isFilter && fullAnnId == "-1" ? styles.scrollView : {display: "none"}}
+                onScroll={({nativeEvent}) => {
+                    if (isCloseToBottom(nativeEvent)) {
+                        loadMyResults();
+                    }
+                }}
+                scrollEventThrottle={0}
+            >
                 {Object.entries(myAnnouncements).map(([key, ann]) => (
                     <Announcement key={key} ann={ann} fullAnn={setFullAnnId}></Announcement>
                 ))}
-                <View style={noMyFeed ? {display: "none"} : {display: "flex"}}><Text style={{textAlign: 'center'}}>There is nothing in your feed. Join some 
-                <Text style={{color: 'rgb(51,102,187)'}} onPress={() => { WebBrowser.openBrowserAsync(config.server + '/clubs') }}>{' '}clubs{' '}</Text>
-                 to have their announcements show up here!</Text></View>
+                <View style={noMyFeed ? {display: "none"} : {display: "flex"}}>     
+                    <Text style={{textAlign: 'center'}}>There is nothing in your feed. Join some 
+                        <Text style={{color: 'rgb(51,102,187)'}} onPress={() => { WebBrowser.openBrowserAsync(config.server + '/clubs') }}>{' '}clubs{' '}</Text>
+                    to have their announcements show up here!</Text>
+                 </View>
             </ScrollView>
 
             {/* Full Announcement */}
