@@ -27,6 +27,8 @@ export default function HomeScreen() {
   let [timeText, updateTimeText] = React.useState("Loading...");
   let [nextCourse, updateNextCourse] = React.useState("");
 
+let [dayHomepage, updateHomePage] = React.useState("No School!");
+
   let [dataUploaded, updateDataUploaded] = React.useState(false);
 
   criticalTimes = [];
@@ -35,6 +37,7 @@ export default function HomeScreen() {
     if (res.success) {
       schedule = JSON.parse(res.response);
       if (schedule && schedule[0]) {
+        updateHomePage(`${schedule[0].cycle}`);
         let displayedInfo = ``;
         for (let i = 0; i < schedule.length; i++) {
           displayedInfo += `${schedule[i].description.time}${' '.repeat(Math.max(20 - schedule[i].description.time.length, 0))} |  ${schedule[i].course}`;
@@ -189,7 +192,7 @@ export default function HomeScreen() {
           <View style={styles.timeTableContainer}>
 
             {/* --- WEEK TEXT --- */}
-            <Text style={[styles.weekText, { color: theme.color1 }]}>Week</Text>
+            <Text style={[styles.weekText, { color: theme.color1 }]}>{dayHomepage}</Text>
 
             {/* --- COURSE CONTAINER --- */}
             <View style={styles.courseContainer}>
