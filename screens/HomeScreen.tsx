@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { StyleSheet, Image, useColorScheme, ImageBackground } from 'react-native';
+import { StyleSheet, Image, ImageBackground } from 'react-native';
+import useColorScheme from '../hooks/useColorScheme';
 
 import apiRequest from '../lib/apiRequest';
 import { Text, View } from '../components/Themed';
@@ -144,14 +145,16 @@ export default function HomeScreen() {
 
   if (useColorScheme() === "light") {
     theme = {
-      color: "#300",
+      color1: "#005C99",
+      color2: "#003D66",
       websiteColor: "rgb(58, 106, 150)",
       tint: "transparent"
     }
   }
   else {
     theme = {
-      color: "white",
+      color1: "#e6e6e6",
+      color2: '#e0e0e0',
       websiteColor: "rgb(58, 106, 150)",
       tint: "rgba(0, 0, 0, 0.3)"
     }
@@ -168,7 +171,7 @@ export default function HomeScreen() {
           <View style={styles.weatherContainer}>
 
             {/* --- TEMPERATURE --- */}
-            <Text style={[styles.temperature, { color: theme.color }]}>{temp}</Text>
+            <Text style={[styles.temperature, { color: theme.color1 }]}>{temp}</Text>
 
             {/* --- WEATHER DIVIDER --- */}
             <View style={[styles.weatherDivider, { borderColor: 'rgb(58, 106, 150)' }]} />
@@ -182,13 +185,13 @@ export default function HomeScreen() {
 
 
           {/* --- COURSE ---*/}
-          <Text style={[styles.course, { color: theme.color }]}>{course}</Text>
+          <Text style={[styles.course, { color: theme.color2 }]}>{course}</Text>
 
           {/* --- TIME TEXT ---*/}
-          <Text style={[styles.timeText, { color: theme.color }]}>{timeText}</Text>
+          <Text style={[styles.timeText, { color: theme.color2 }]}>{timeText}</Text>
 
           {/* --- TIME TEXT ---*/}
-          <Text style={[styles.timeText, { color: theme.color }]}>{nextCourse}</Text>
+          <Text style={[styles.timeText, { color: theme.color2 }]}>{nextCourse}</Text>
 
 
 
@@ -196,13 +199,13 @@ export default function HomeScreen() {
           <View style={styles.timeTableContainer}>
 
             {/* --- WEEK TEXT --- */}
-            <Text style={[styles.weekText, { color: theme.color }]}>Week</Text>
+            <Text style={[styles.weekText, { color: theme.color1 }]}>Week</Text>
 
             {/* --- COURSE CONTAINER --- */}
             <View style={styles.courseContainer}>
 
               {/* --- COURSE TEXT --- */}
-              <Text style={[styles.courseText, { color: theme.color }]}>{timetable}</Text>
+              <Text style={[styles.courseText, { color: theme.color1 }]}>{timetable}</Text>
 
               {/* --- COURSE CONTAINER --- */}
             </View>

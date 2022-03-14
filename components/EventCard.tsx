@@ -1,9 +1,11 @@
 import React from 'react';
 
-import { StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 
 import { View, Text } from './Themed';
 import { Ionicons } from '@expo/vector-icons';
+
+import useColorScheme from '../hooks/useColorScheme';
 
 let theme;
 
@@ -17,15 +19,16 @@ export function EventCard({ event } : { event: any }) {
   // selected state
   const [selected, setSelected] = React.useState(false);
 
+
   return (
-    <View style={styles.eventCardContainer}>
+    <View style={[styles.eventCardContainer, {backgroundColor: theme === 'dark' ? '#252525' : '#e0e0e0'}]}>
       <TouchableOpacity
         onPress={() => {setSelected(!selected)}}
       >
 
-        <View style={styles.quickInfo}>
+        <View style={[styles.quickInfo, {backgroundColor: 'transparent'}]}>
           {timeRange(event.start_date, event.end_date, color)}
-          <View style={[styles.info, {backgroundColor: theme === 'light' ? '#f3f3f3' : '#2e2e2e'}]}>
+          <View style={[styles.info, {backgroundColor: theme === 'light' ? '#f3f3f3' : '#1c1c1c'}]}>
             <Text style={[styles.titleText, {color: theme === 'light' ? '#404040' : '#fff'}]}>{event.name}</Text>
             <Text style={styles.organizationText}>{event.organization.name}</Text>
             {/* display if selected is true*/}

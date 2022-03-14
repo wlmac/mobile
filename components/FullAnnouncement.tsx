@@ -12,9 +12,12 @@ export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToSc
     if (ann == undefined) { // prevent errors
         return(<></>);
     }
+
+    const colorScheme = useColorScheme();
+
     return (
-        <View style={[styles.announcement, {shadowColor: useColorScheme() === "light" ? "black" : "white"}]} onStartShouldSetResponder={(e) => true} onResponderRelease={() => backToScroll(ann.id)}>
-            <View style={styles.tags}>
+        <View style={[styles.announcement, {backgroundColor: colorScheme === 'light' ? '#ededed' : '#1c1c1c', shadowColor: colorScheme === 'light' ? '#1c1c1c' : '#e6e6e6'}]} onStartShouldSetResponder={(e) => true} onResponderRelease={() => backToScroll(ann.id)}>
+            <View style={[styles.tags, {backgroundColor: colorScheme === 'light' ? '#ededed' : '#1c1c1c'}]}>
                 {Object.entries(ann.tags).map(([key, tag]) => (
                     createTag(key, tag)
                 ))}
@@ -22,11 +25,11 @@ export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToSc
 
             {createHeader(ann.title)}
             
-            {annDetails(ann.name, ann.icon, ann.author.slug, ann.created_date)}
+            {annDetails(ann.name, ann.icon, ann.author.slug, ann.created_date, colorScheme)}
             {previewText(ann.body)}
 
             {/* View More Details */}
-            <View style={styles.click}>
+            <View style={[styles.click, {backgroundColor: colorScheme === 'light' ? '#ededed' : '#1c1c1c'}]}>
                 <TouchableOpacity onPress={() => backToScroll("-1")}>
                     <Text style={[{color: useColorScheme() === "light" ? lightC : darkC}, {fontSize: 16}]}>{"<  Return to Announcements"}</Text>
                 </TouchableOpacity>
@@ -47,18 +50,18 @@ function createHeader(title: string) {
     );
 }
 
-function annDetails(org: string, orgIcon: string, author: string, timeStamp: string) {
+function annDetails(org: string, orgIcon: string, author: string, timeStamp: string, colorScheme: string) {
     return (
-        <View style={styles.details}>
-            <View style={styles.detailsHeading}>
-                <View style={[styles.iconShadow, {shadowColor: useColorScheme() === "light" ? "black" : "white"}]}>
+        <View style={[styles.details, {backgroundColor: colorScheme === 'light' ? '#ededed' : '#1c1c1c'}]}>
+            <View style={[styles.detailsHeading, {backgroundColor: colorScheme === 'light' ? '#ededed' : '#1c1c1c'}]}>
+                <View style={[styles.iconShadow, {backgroundColor: colorScheme === 'light' ? '#ededed' : '#1c1c1c'}]}>
                     <Image style={styles.orgIcon} source={{uri: orgIcon}}></Image>
                 </View>
-                <Text style={[styles.clubName, {color: useColorScheme() === "light" ? lightC : darkC}]}>{org}</Text>
+                <Text style={[styles.clubName, {color: colorScheme === "light" ? lightC : darkC}]}>{org}</Text>
             </View>
-            <View style={styles.detailsSubheading}>
+            <View style={[styles.detailsSubheading, {backgroundColor: colorScheme === 'light' ? '#ededed' : '#1c1c1c'}]}>
                 <Text style={styles.timeStamp}>{new Date(timeStamp).toLocaleString("en-US", {timeZone: "EST"})}</Text>
-                <Text style={[styles.author, {color: useColorScheme() === "light" ? lightC : darkC}]}>{author}</Text>
+                <Text style={[styles.author, {color: colorScheme === "light" ? lightC : darkC}]}>{author}</Text>
             </View>
         </View>
     );
@@ -66,9 +69,12 @@ function annDetails(org: string, orgIcon: string, author: string, timeStamp: str
 
 // markdown to plaintext
 function previewText(text: string) {
+
+    const colorScheme = useColorScheme();
+
     return (
-        <View style={styles.text}>
-            <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={url => {
+        <View style={[styles.text, {backgroundColor: colorScheme === 'light' ? '#ededed' : '#1c1c1c'}]}>
+            <Markdown style={colorScheme === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={url => {
                 if(url) {
                     WebBrowser.openBrowserAsync(url);
                     return false;
@@ -89,7 +95,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 10,
         shadowOffset: {width: 0, height: 1},
         shadowOpacity: 0.4,
-        borderRadius: 15,
+        borderRadius: 5,
     },
     tags: {
         flex: 1,
@@ -176,7 +182,7 @@ const styles = StyleSheet.create({
 const markdownStylesLight = StyleSheet.create({
     body: {
         color: "black",
-        backgroundColor: "white",
+        backgroundColor: "#ededed",
         fontSize: 17,
     },
     link: {
@@ -191,7 +197,7 @@ const markdownStylesLight = StyleSheet.create({
 const markdownStylesDark = StyleSheet.create({
     body: {
         color: "white",
-        backgroundColor: "black",
+        backgroundColor: '#1c1c1c',
         fontSize: 17,
     },
     blockquote: {
