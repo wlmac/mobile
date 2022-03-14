@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { ColorPropType, StyleProp, Switch, ViewStyle } from 'react-native';
+import { StyleProp, Switch, ViewStyle } from 'react-native';
 import { StyleSheet, StatusBar, ScrollView, Image } from 'react-native';
 import { Text, View } from '../components/Themed';
 import Announcement from '../components/Announcement';

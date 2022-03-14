@@ -6,7 +6,6 @@
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import * as React from 'react';
-import { ColorSchemeName } from 'react-native';
 
 import NotFoundScreen from '../screens/NotFoundScreen';
 import LoginScreen from '../screens/LoginScreen';
@@ -21,7 +20,7 @@ const LightTheme = {
   dark: false,
   colors: {
     ...DefaultTheme.colors,
-    card: '#295faa',
+    card: '#073763',
     text: '#f2f2f2',
   },
 };
