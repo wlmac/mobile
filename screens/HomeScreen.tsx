@@ -37,17 +37,7 @@ export default function HomeScreen() {
       if (schedule && schedule[0]) {
         let displayedInfo = ``;
         for (let i = 0; i < schedule.length; i++) {
-          let space;
-          if (i==0 || i == 2){
-            space = " ";
-          }
-          else if(i == 1){
-            space = "  ";
-          }
-          else{
-            space = "";
-          }
-          displayedInfo += `${schedule[i].description.time}${space}  |  ${schedule[i].course}`;
+          displayedInfo += `${schedule[i].description.time}${' '.repeat(Math.max(20 - schedule[i].description.time.length, 0))} |  ${schedule[i].course}`;
           let timeobj = {
             start: ((Date.parse(schedule[i].time.start) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
             end: ((Date.parse(schedule[i].time.end) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
