@@ -27,7 +27,7 @@ export default function HomeScreen() {
   let [timeText, updateTimeText] = React.useState("Loading...");
   let [nextCourse, updateNextCourse] = React.useState("");
 
-let [dayHomepage, updateHomePage] = React.useState("No School!");
+  let [dayHomepage, updateHomePage] = React.useState("No School!");
 
   let [dataUploaded, updateDataUploaded] = React.useState(false);
 
@@ -40,6 +40,9 @@ let [dayHomepage, updateHomePage] = React.useState("No School!");
         updateHomePage(`${schedule[0].cycle}`);
         let displayedInfo = ``;
         for (let i = 0; i < schedule.length; i++) {
+          if (schedule[i].course == null) {
+            schedule[i].course = "Period " + (i + 1);
+          }
           displayedInfo += `${schedule[i].description.time}${' '.repeat(Math.max(20 - schedule[i].description.time.length, 0))} |  ${schedule[i].course}`;
           let timeobj = {
             start: ((Date.parse(schedule[i].time.start) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
@@ -85,6 +88,7 @@ let [dayHomepage, updateHomePage] = React.useState("No School!");
     updateTemp(`Unknown`);
     updateIcon(require('../assets/images/nowifi.png'));
   })
+
 
   const determineTimeString = (presentTime: number, futureTime: number) => {
     const difference = futureTime - presentTime;
