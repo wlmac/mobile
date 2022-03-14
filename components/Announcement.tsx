@@ -12,8 +12,8 @@ export default function Announcement({ann, fullAnn}:{ann: any, fullAnn: Function
     const colorScheme = useColorScheme();
 
     return (
-        <View style={[styles.announcement, {backgroundColor: colorScheme === 'light' ? '#e6e6e6' : '#1c1c1c', shadowColor: colorScheme === 'light' ? '#1c1c1c' : '#e6e6e6'}]}>
-            <View style={[styles.tags, {backgroundColor: colorScheme === 'light' ? '#e6e6e6' : '#1c1c1c'}]}>
+        <View style={[styles.announcement, {backgroundColor: colorScheme === 'light' ? '#ededed' : '#1c1c1c', shadowColor: colorScheme === 'light' ? '#1c1c1c' : '#e6e6e6'}]}>
+            <View style={[styles.tags, {backgroundColor: colorScheme === 'light' ? '#ededed' : '#1c1c1c'}]}>
                 {Object.entries(ann.tags).map(([key, tag]) => (
                     createTag(key, tag)
                 ))}
@@ -25,7 +25,7 @@ export default function Announcement({ann, fullAnn}:{ann: any, fullAnn: Function
             {previewText(ann.body)}
 
             {/* View More Details */}
-            <View style={[styles.click, {backgroundColor: colorScheme === 'light' ? '#e6e6e6' : '#1c1c1c'}]}>
+            <View style={[styles.click, {backgroundColor: colorScheme === 'light' ? '#ededed' : '#1c1c1c'}]}>
                 <TouchableOpacity onPress={() => fullAnn(ann.id)}>
                     <Text style={[{color: colorScheme === "light" ? lightC : darkC}]}>{"See announcement  >"}</Text>
                 </TouchableOpacity>
@@ -50,13 +50,13 @@ function annDetails(org: string, orgIcon: string, author: string, timeStamp: str
 
     return (
         <View style={styles.details}>
-            <View style={[styles.detailsHeading, {backgroundColor: colorScheme === 'light' ? '#e6e6e6' : '#1c1c1c'}]}>
+            <View style={[styles.detailsHeading, {backgroundColor: colorScheme === 'light' ? '#ededed' : '#1c1c1c'}]}>
                 <View style={[styles.iconShadow, {shadowColor: colorScheme === "light" ? "black" : "white"}]}>
                     <Image style={styles.orgIcon} source={{uri: orgIcon}}></Image>
                 </View>
                 <Text style={[styles.clubName, {color: colorScheme === "light" ? lightC : darkC}]}>{org}</Text>
             </View>
-            <View style={[styles.detailsSubheading, {backgroundColor: colorScheme === 'light' ? '#e6e6e6' : '#1c1c1c'}]}>
+            <View style={[styles.detailsSubheading, {backgroundColor: colorScheme === 'light' ? '#ededed' : '#1c1c1c'}]}>
                 <Text style={styles.timeStamp}>{new Date(timeStamp).toLocaleString("en-US", {timeZone: "EST"})}</Text>
                 <Text style={[styles.author, {color: colorScheme === "light" ? lightC : darkC}]}>{author}</Text>
             </View>
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
         paddingHorizontal:12,
         shadowOffset: {width: 0, height: 1},
         shadowOpacity: 0.4,
-        borderRadius: 15,
+        borderRadius: 5,
     },
     tags: {
         flex: 1,
