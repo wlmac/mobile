@@ -1332,7 +1332,7 @@ export default function MapScreen() {
         mapType="standard"
         zoomEnabled={true}
         pitchEnabled={true}
-        // showsUserLocation={true}
+        showsUserLocation={true}
         // followsUserLocation={true}
         showsCompass={true}
         showsBuildings={true}
