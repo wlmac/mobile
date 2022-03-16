@@ -28,7 +28,7 @@ export default function AnnouncementScreen() {
         setOrgs(tmp);
     }
 
-    // tracking how many announcements have been loaded
+    // tracking how many announcements have been load
     const [nextAnnSet, setNextAnnSet] = useState(0);
     const [nextMySet, setNextMySet] = useState(0);
 
