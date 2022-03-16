@@ -2,6 +2,7 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import {
   FlatList,
+  Platform,
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
@@ -1368,6 +1369,7 @@ export default function MapScreen() {
             color: isEnabled ? (colorScheme === "dark" ? "#434343" : "#a8a8a8") : (colorScheme === "light" ? "#434343" : "#a8a8a8"),
             fontFamily: "poppins",
             paddingHorizontal: 8,
+            paddingVertical: Platform.OS === 'ios' ? 0 : 10
           }}
         >
           Floor One
@@ -1383,6 +1385,7 @@ export default function MapScreen() {
             color: !isEnabled ? (colorScheme === "dark" ? "#434343" : "#a8a8a8") : (colorScheme === "light" ? "#434343" : "#a8a8a8"),
             fontFamily: "poppins",
             paddingHorizontal: 8,
+            paddingVertical: Platform.OS === 'ios' ? 1 : 10
           }}
         >
           Floor Two
