@@ -28,7 +28,7 @@ export default function AnnouncementScreen() {
         setOrgs(tmp);
     }
 
-    // tracking how many announcements have been load
+    // tracking how many announcements have been loaded
     const [nextAnnSet, setNextAnnSet] = useState(0);
     const [nextMySet, setNextMySet] = useState(0);
 
@@ -144,7 +144,7 @@ export default function AnnouncementScreen() {
         </View>
 
         {/* After Everything is Loaded */}
-        <View style={!isLoading ? [styles.container, {backgroundColor: (colorScheme === "dark" ? "#252525" : "#e0e0e0")}] : {display: "none"}}>
+        <View style={!isLoading ? [styles.container, {backgroundColor: (colorScheme === "dark" ? "#252525" : "#eaeaea")}] : {display: "none"}}>
             <Text style={fullAnnId == "-1" ? styles.header : {display: "none"}}>
                 {isFilter ? "My Announcements" : "All Announcements"}
             </Text>
@@ -201,7 +201,7 @@ export default function AnnouncementScreen() {
             />
 
             {/* Filter Announcements */}
-            <View style={[fullAnnId == "-1" ? styles.row : {display: "none"}, {backgroundColor: colorScheme === 'dark' ? "#252525" : "#e0e0e0",}]}>
+            <View style={[fullAnnId == "-1" ? styles.row : {display: "none"}, {backgroundColor: colorScheme === 'dark' ? "#252525" : "#eaeaea",}]}>
                 <Text style={{color: isFilter ?(useColorScheme() === "dark" ? "#434343" : "#a8a8a8") : (useColorScheme() === "light" ? "#434343" : "#a8a8a8"), fontFamily: 'poppins', paddingHorizontal: 8, paddingTop: 5,
                 }}>All </Text>
                 <Switch style={styles.switch}
