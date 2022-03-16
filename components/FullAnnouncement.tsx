@@ -16,8 +16,8 @@ export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToSc
     const colorScheme = useColorScheme();
 
     return (
-        <View style={[styles.announcement, {backgroundColor: colorScheme === 'light' ? '#ededed' : '#1c1c1c', shadowColor: colorScheme === 'light' ? '#1c1c1c' : '#e6e6e6'}]} onStartShouldSetResponder={(e) => true} onResponderRelease={() => backToScroll(ann.id)}>
-            <View style={[styles.tags, {backgroundColor: colorScheme === 'light' ? '#ededed' : '#1c1c1c'}]}>
+        <View style={[styles.announcement, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c', shadowColor: colorScheme === 'light' ? '#1c1c1c' : '#e6e6e6'}]} onStartShouldSetResponder={(e) => true} onResponderRelease={() => backToScroll(ann.id)}>
+            <View style={[styles.tags, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
                 {Object.entries(ann.tags).map(([key, tag]) => (
                     createTag(key, tag)
                 ))}
@@ -29,7 +29,7 @@ export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToSc
             {previewText(ann.body)}
 
             {/* View More Details */}
-            <View style={[styles.click, {backgroundColor: colorScheme === 'light' ? '#ededed' : '#1c1c1c'}]}>
+            <View style={[styles.click, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
                 <TouchableOpacity onPress={() => backToScroll("-1")}>
                     <Text style={[{color: useColorScheme() === "light" ? lightC : darkC}, {fontSize: 16}]}>{"<  Return to Announcements"}</Text>
                 </TouchableOpacity>
@@ -52,14 +52,14 @@ function createHeader(title: string) {
 
 function annDetails(org: string, orgIcon: string, author: string, timeStamp: string, colorScheme: string) {
     return (
-        <View style={[styles.details, {backgroundColor: colorScheme === 'light' ? '#ededed' : '#1c1c1c'}]}>
-            <View style={[styles.detailsHeading, {backgroundColor: colorScheme === 'light' ? '#ededed' : '#1c1c1c'}]}>
-                <View style={[styles.iconShadow, {backgroundColor: colorScheme === 'light' ? '#ededed' : '#1c1c1c'}]}>
+        <View style={[styles.details, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
+            <View style={[styles.detailsHeading, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
+                <View style={[styles.iconShadow, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
                     <Image style={styles.orgIcon} source={{uri: orgIcon}}></Image>
                 </View>
                 <Text style={[styles.clubName, {color: colorScheme === "light" ? lightC : darkC}]}>{org}</Text>
             </View>
-            <View style={[styles.detailsSubheading, {backgroundColor: colorScheme === 'light' ? '#ededed' : '#1c1c1c'}]}>
+            <View style={[styles.detailsSubheading, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
                 <Text style={styles.timeStamp}>{new Date(timeStamp).toLocaleString("en-US", {timeZone: "EST"})}</Text>
                 <Text style={[styles.author, {color: colorScheme === "light" ? lightC : darkC}]}>{author}</Text>
             </View>
@@ -73,7 +73,7 @@ function previewText(text: string) {
     const colorScheme = useColorScheme();
 
     return (
-        <View style={[styles.text, {backgroundColor: colorScheme === 'light' ? '#ededed' : '#1c1c1c'}]}>
+        <View style={[styles.text, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
             <Markdown style={colorScheme === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={url => {
                 if(url) {
                     WebBrowser.openBrowserAsync(url);
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
 const markdownStylesLight = StyleSheet.create({
     body: {
         color: "black",
-        backgroundColor: "#ededed",
+        backgroundColor: "#f7f7f7",
         fontSize: 17,
     },
     link: {
