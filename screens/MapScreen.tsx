@@ -45,6 +45,7 @@ export default function MapScreen() {
 
   useEffect(() => {
     (async () => {
+
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
         setErrorMsg("Permission to access location was denied");
@@ -1331,8 +1332,8 @@ export default function MapScreen() {
         mapType="standard"
         zoomEnabled={true}
         pitchEnabled={true}
-        showsUserLocation={true}
-        followsUserLocation={true}
+        // showsUserLocation={true}
+        // followsUserLocation={true}
         showsCompass={true}
         showsBuildings={true}
         showsTraffic={true}
