@@ -33,7 +33,7 @@ export default function HomeScreen() {
 
   criticalTimes = [];
 
-  apiRequest(`/api/me/schedule?date=2022-03-11`, '', 'GET').then(res => {
+  apiRequest(`/api/me/schedule`, '', 'GET').then(res => {
     if (res.success) {
       schedule = JSON.parse(res.response);
       if (schedule && schedule[0]) {
