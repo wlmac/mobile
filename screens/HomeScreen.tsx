@@ -33,7 +33,7 @@ export default function HomeScreen() {
 
   criticalTimes = [];
 
-  apiRequest(`/api/me/schedule`, '', 'GET').then(res => {
+  apiRequest(`/api/me/schedule?date=2022-03-11`, '', 'GET').then(res => {
     if (res.success) {
       schedule = JSON.parse(res.response);
       if (schedule && schedule[0]) {
@@ -88,7 +88,7 @@ export default function HomeScreen() {
     updateTemp(`Unknown`);
     updateIcon(require('../assets/images/nowifi.png'));
   })
-
+  
 
   const determineTimeString = (presentTime: number, futureTime: number) => {
     const difference = futureTime - presentTime;
@@ -109,30 +109,18 @@ export default function HomeScreen() {
           updateTimeText(``);
           updateNextCourse("");
         }
-        else if (time < criticalTimes[0].start) {
-          updateTimeText(`Starts in ${determineTimeString(time, criticalTimes[0].start)}`);
-          updateCourse(criticalTimes[0].course);
-          updateNextCourse("");
-        }
-        else if (time >= criticalTimes[criticalTimes.length - 1].start && time < criticalTimes[criticalTimes.length - 1].end) {
-          updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[criticalTimes.length - 1].end)}`);
-          updateCourse(criticalTimes[criticalTimes.length - 1].course);
-          updateNextCourse("");
-        }
-        else if (criticalTimes.length >= 2) {
-          for (let i: number = 0; i < criticalTimes.length - 1; i++) {
+        else {
+          for (let i: number = 0; i < criticalTimes.length; i++) {
             if (time >= criticalTimes[i].start && time < criticalTimes[i].end) {
               updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[i].end)}`);
               updateCourse(criticalTimes[i].course);
-              updateNextCourse(`Up next: ${criticalTimes[i + 1].course}`);
+              if (i != criticalTimes.length - 1) {
+                updateNextCourse(`Up next: ${criticalTimes[i + 1].course}`);
+              } else {
+                updateNextCourse("");
+              }
               break;
-            }
-            else if (time < criticalTimes[i+1].start) {
-              updateTimeText(`Starts in ${determineTimeString(time, criticalTimes[i+1].start)}`);
-              updateCourse(criticalTimes[i+1].course);
-              updateNextCourse("");
-              break;
-            }
+            } 
           }
         }
       }, 1000);
