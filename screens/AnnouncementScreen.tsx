@@ -75,11 +75,12 @@ export default function AnnouncementScreen() {
         // club name + club icon API requests
         await AsyncStorage.getItem("@orgs").then((res:any) => {
             let jsonres = JSON.parse(res);
-            for (let i = 0; i < jsonres.length; i += 1) {
-                if (jsonres[i] != null) addOrgs(i, jsonres[i].name, jsonres[i].icon);
+            if (jsonres && Array.isArray(jsonres)) {
+                for (let i = 0; i < jsonres.length; i += 1) {
+                    if (jsonres[i] != null) addOrgs(i, jsonres[i].name, jsonres[i].icon);
+                }
             }
         });
-        //console.log(orgs);
 
         await loadAnnResults();
         await loadMyResults();
@@ -94,19 +95,29 @@ export default function AnnouncementScreen() {
     const loadAnnResults = async() => {
         if (loadingMore) return;
         setLoadingMore(true);
-        await apiRequest(`/api/announcements?format=json&limit=${loadNum}&offset=${nextAnnSet}`, '', 'GET').then((res) => {
-            if (res.success) {
-                let jsonres = JSON.parse(res.response).results;
-                jsonres.forEach((item: any) => {
-                    let orgId = item.organization.id; // gets the organization id
-                    item.icon = orgs[orgId].icon;
-                    item.name = orgs[orgId].name;
-                });
-                setAnnouncements(announcements.concat(jsonres));
-                setNextAnnSet(nextAnnSet + loadNum);
-            }
-        });
-
+        var success: boolean = false;
+        var counter: number = 0;
+        while (!success && counter < 3) {
+            counter += 1;
+            await apiRequest(`/api/announcements?format=json&limit=${loadNum}&offset=${nextAnnSet}`, '', 'GET').then((res) => {
+                if (res.success) {
+                    try {
+                        let jsonres = JSON.parse(res.response).results;
+                        if (jsonres && Array.isArray(jsonres)) {
+                            jsonres.forEach((item: any) => {
+                                let orgId = item.organization.id; // gets the organization id
+                                item.icon = orgs[orgId].icon;
+                                item.name = orgs[orgId].name;
+                            });
+                            success = true;
+                            setAnnouncements(announcements.concat(jsonres));
+                            setNextAnnSet(nextAnnSet + loadNum);
+                        }
+                    } catch (_e) {}
+                }
+            });
+        }
+        if (!success && counter == 3) console.log("All Announcements API Not Working");
         setLoadingMore(false);
     }
 
@@ -114,19 +125,27 @@ export default function AnnouncementScreen() {
     const loadMyResults = async() => {
         if (loadingMore) return;
         setLoadingMore(true);
-        await apiRequest(`/api/announcements/feed?format=json&limit=${loadNum}&offset=${nextMySet}`, '', 'GET').then((res) => {
-            if (res.success) {
-                let jsonres = JSON.parse(res.response).results;
-                jsonres.forEach((item: any) => {
-                    let orgId = item.organization.id; // gets the organization id
-                    item.icon = orgs[orgId].icon;
-                    item.name = orgs[orgId].name;
-                });
-                setMyAnnouncements(myAnnouncements.concat(jsonres));
-                setNextMySet(nextMySet + loadNum);
-            }
-        });
-
+        var success: boolean = false;
+        var counter: number = 0;
+        while (!success && counter < 3) {
+            counter += 1;
+            await apiRequest(`/api/announcements/feed?format=json&limit=${loadNum}&offset=${nextMySet}`, '', 'GET').then((res) => {
+                if (res.success) {
+                    let jsonres = JSON.parse(res.response).results;
+                    if (jsonres && Array.isArray(jsonres)) {
+                        jsonres.forEach((item: any) => {
+                            let orgId = item.organization.id; // gets the organization id
+                            item.icon = orgs[orgId].icon;
+                            item.name = orgs[orgId].name;
+                        });
+                        success = true;
+                        setMyAnnouncements(myAnnouncements.concat(jsonres));
+                        setNextMySet(nextMySet + loadNum);
+                    }
+                }
+            });
+        }
+        if (!success && counter == 3) console.log("My Announcements API Not Working");
         setLoadingMore(false);
     }
     
