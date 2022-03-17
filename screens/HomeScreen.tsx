@@ -110,18 +110,25 @@ export default function HomeScreen() {
           updateNextCourse("");
         }
         else {
-          for (let i: number = 0; i < criticalTimes.length; i++) {
-            if (time >= criticalTimes[i].start && time < criticalTimes[i].end) {
-              updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[i].end)}`);
-              updateCourse(criticalTimes[i].course);
-              if (i != criticalTimes.length - 1) {
-                updateNextCourse(`Up next: ${criticalTimes[i + 1].course}`);
-              } else {
-                updateNextCourse("");
-              }
-              break;
-            } 
+          if (time < criticalTimes[0].start) {
+            updateTimeText(`Starts in ${determineTimeString(time, criticalTimes[0].start)}`);
+            updateCourse(criticalTimes[0].course);
+            updateNextCourse("");
+          } else {
+            for (let i: number = 0; i < criticalTimes.length; i++) {
+              if (time >= criticalTimes[i].start && time < criticalTimes[i].end) {
+                updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[i].end)}`);
+                updateCourse(criticalTimes[i].course);
+                if (i != criticalTimes.length - 1) {
+                  updateNextCourse(`Up next: ${criticalTimes[i + 1].course}`);
+                } else {
+                  updateNextCourse("");
+                }
+                break;
+              } 
+            }
           }
+          
         }
       }, 1000);
       return () => clearInterval(interval);
