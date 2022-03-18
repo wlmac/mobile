@@ -98,41 +98,42 @@ export default function HomeScreen() {
     return `${hours}h ${minutes}min`;
   }
 
-  const interval = setInterval(() => {
-    time = Math.floor((Date.now() - new Date().setHours(0, 0, 0, 0)) / 60000);
-    if (criticalTimes.length == 0) { }
-    else if (time >= criticalTimes[criticalTimes.length - 1].end || dayOfTheWeek > 5) {
-      updateCourse(`SCHOOL DAY FINISHED`);
-      updateTimeText(``);
-      updateNextCourse("");
-    }
-    else {
-      if (time < criticalTimes[0].start) {
-        updateTimeText(`Starts in ${determineTimeString(time, criticalTimes[0].start)}`);
-        updateCourse(criticalTimes[0].course);
-        updateNextCourse("");
-      } else {
-        for (let i: number = 0; i < criticalTimes.length; i++) {
-          if (time >= criticalTimes[i].start && time < criticalTimes[i].end) {
-            updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[i].end)}`);
-            updateCourse(criticalTimes[i].course);
-            if (i != criticalTimes.length - 1) {
-              updateNextCourse(`Up next: ${criticalTimes[i + 1].course}`);
-            } else {
-              updateNextCourse("");
-            }
-            break;
-          } 
-        }
-      }
-    }
-  }, 1000);
+  var loopingInterval: any;
 
   React.useEffect(() => {
     if (dataUploaded) {
       dayOfTheWeek = new Date().getDay();
-      clearInterval(interval);
-      return () => clearInterval(interval);
+      clearInterval(loopingInterval);
+      loopingInterval = setInterval(() => {
+        time = Math.floor((Date.now() - new Date().setHours(0, 0, 0, 0)) / 60000);
+        if (criticalTimes.length == 0) { }
+        else if (time >= criticalTimes[criticalTimes.length - 1].end || dayOfTheWeek > 5) {
+          updateCourse(`SCHOOL DAY FINISHED`);
+          updateTimeText(``);
+          updateNextCourse("");
+        }
+        else {
+          if (time < criticalTimes[0].start) {
+            updateTimeText(`Starts in ${determineTimeString(time, criticalTimes[0].start)}`);
+            updateCourse(criticalTimes[0].course);
+            updateNextCourse("");
+          } else {
+            for (let i: number = 0; i < criticalTimes.length; i++) {
+              if (time >= criticalTimes[i].start && time < criticalTimes[i].end) {
+                updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[i].end)}`);
+                updateCourse(criticalTimes[i].course);
+                if (i != criticalTimes.length - 1) {
+                  updateNextCourse(`Up next: ${criticalTimes[i + 1].course}`);
+                } else {
+                  updateNextCourse("");
+                }
+                break;
+              } 
+            }
+          }
+        }
+      }, 1000);
+      return () => clearInterval(loopingInterval);
     }
   }, [dataUploaded]);
 
