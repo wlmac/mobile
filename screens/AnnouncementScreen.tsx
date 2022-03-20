@@ -1,20 +1,19 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { StyleProp, Switch, ViewStyle } from 'react-native';
-import { StyleSheet, StatusBar, ScrollView, Image } from 'react-native';
+import { StyleSheet, StatusBar, ScrollView, Image, Switch, Platform } from 'react-native';
 import { Text, View } from '../components/Themed';
 import Announcement from '../components/Announcement';
 import FullAnnouncement from '../components/FullAnnouncement';
 import * as WebBrowser from 'expo-web-browser';
 
-import useColorScheme from '../hooks/useColorScheme';
+import { ThemeContext } from '../hooks/useColorScheme';
 import apiRequest from '../lib/apiRequest';
 import config from '../config.json';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function AnnouncementScreen() {
     // get color scheme
-    let colorScheme = useColorScheme();
+    let colorScheme = React.useContext(ThemeContext);
     const loadNum = 5; // # announcements to load at a time
 
     // stores announcements
@@ -75,11 +74,12 @@ export default function AnnouncementScreen() {
         // club name + club icon API requests
         await AsyncStorage.getItem("@orgs").then((res:any) => {
             let jsonres = JSON.parse(res);
-            for (let i = 0; i < jsonres.length; i += 1) {
-                if (jsonres[i] != null) addOrgs(i, jsonres[i].name, jsonres[i].icon);
+            if (jsonres && Array.isArray(jsonres)) {
+                for (let i = 0; i < jsonres.length; i += 1) {
+                    if (jsonres[i] != null) addOrgs(i, jsonres[i].name, jsonres[i].icon);
+                }
             }
         });
-        //console.log(orgs);
 
         await loadAnnResults();
         await loadMyResults();
@@ -94,19 +94,29 @@ export default function AnnouncementScreen() {
     const loadAnnResults = async() => {
         if (loadingMore) return;
         setLoadingMore(true);
-        await apiRequest(`/api/announcements?format=json&limit=${loadNum}&offset=${nextAnnSet}`, '', 'GET').then((res) => {
-            if (res.success) {
-                let jsonres = JSON.parse(res.response).results;
-                jsonres.forEach((item: any) => {
-                    let orgId = item.organization.id; // gets the organization id
-                    item.icon = orgs[orgId].icon;
-                    item.name = orgs[orgId].name;
-                });
-                setAnnouncements(announcements.concat(jsonres));
-                setNextAnnSet(nextAnnSet + loadNum);
-            }
-        });
-
+        var success: boolean = false;
+        var counter: number = 0;
+        while (!success && counter < 3) {
+            counter += 1;
+            await apiRequest(`/api/announcements?format=json&limit=${loadNum}&offset=${nextAnnSet}`, '', 'GET').then((res) => {
+                if (res.success) {
+                    try {
+                        let jsonres = JSON.parse(res.response).results;
+                        if (jsonres && Array.isArray(jsonres)) {
+                            jsonres.forEach((item: any) => {
+                                let orgId = item.organization.id; // gets the organization id
+                                item.icon = orgs[orgId].icon;
+                                item.name = orgs[orgId].name;
+                            });
+                            success = true;
+                            setAnnouncements(announcements.concat(jsonres));
+                            setNextAnnSet(nextAnnSet + loadNum);
+                        }
+                    } catch (_e) {}
+                }
+            });
+        }
+        if (!success && counter == 3) console.log("All Announcements API Not Working");
         setLoadingMore(false);
     }
 
@@ -114,19 +124,27 @@ export default function AnnouncementScreen() {
     const loadMyResults = async() => {
         if (loadingMore) return;
         setLoadingMore(true);
-        await apiRequest(`/api/announcements/feed?format=json&limit=${loadNum}&offset=${nextMySet}`, '', 'GET').then((res) => {
-            if (res.success) {
-                let jsonres = JSON.parse(res.response).results;
-                jsonres.forEach((item: any) => {
-                    let orgId = item.organization.id; // gets the organization id
-                    item.icon = orgs[orgId].icon;
-                    item.name = orgs[orgId].name;
-                });
-                setMyAnnouncements(myAnnouncements.concat(jsonres));
-                setNextMySet(nextMySet + loadNum);
-            }
-        });
-
+        var success: boolean = false;
+        var counter: number = 0;
+        while (!success && counter < 3) {
+            counter += 1;
+            await apiRequest(`/api/announcements/feed?format=json&limit=${loadNum}&offset=${nextMySet}`, '', 'GET').then((res) => {
+                if (res.success) {
+                    let jsonres = JSON.parse(res.response).results;
+                    if (jsonres && Array.isArray(jsonres)) {
+                        jsonres.forEach((item: any) => {
+                            let orgId = item.organization.id; // gets the organization id
+                            item.icon = orgs[orgId].icon;
+                            item.name = orgs[orgId].name;
+                        });
+                        success = true;
+                        setMyAnnouncements(myAnnouncements.concat(jsonres));
+                        setNextMySet(nextMySet + loadNum);
+                    }
+                }
+            });
+        }
+        if (!success && counter == 3) console.log("My Announcements API Not Working");
         setLoadingMore(false);
     }
     
@@ -144,7 +162,7 @@ export default function AnnouncementScreen() {
         </View>
 
         {/* After Everything is Loaded */}
-        <View style={!isLoading ? [styles.container, {backgroundColor: (colorScheme === "dark" ? "#252525" : "#eaeaea")}] : {display: "none"}}>
+        <View style={!isLoading ? [styles.container, {backgroundColor: (colorScheme.scheme === "dark" ? "#252525" : "#eaeaea")}] : {display: "none"}}>
             <Text style={fullAnnId == "-1" ? styles.header : {display: "none"}}>
                 {isFilter ? "My Announcements" : "All Announcements"}
             </Text>
@@ -196,13 +214,17 @@ export default function AnnouncementScreen() {
                 style={{
                 height: 3.5,
                 width: "100%",
-                backgroundColor: colorScheme === "dark" ? "#1c1c1c" : "#d4d4d4",
+                backgroundColor: colorScheme.scheme === "dark" ? "#1c1c1c" : "#d4d4d4",
                 }}
             />
 
             {/* Filter Announcements */}
-            <View style={[fullAnnId == "-1" ? styles.row : {display: "none"}, {backgroundColor: colorScheme === 'dark' ? "#252525" : "#eaeaea",}]}>
-                <Text style={{color: isFilter ?(useColorScheme() === "dark" ? "#434343" : "#a8a8a8") : (useColorScheme() === "light" ? "#434343" : "#a8a8a8"), fontFamily: 'poppins', paddingHorizontal: 8, paddingTop: 5,
+            <View style={[fullAnnId == "-1" ? styles.row : {display: "none"}, {backgroundColor: colorScheme.scheme === 'dark' ? "#252525" : "#eaeaea",}]}>
+                <Text style={
+                    {color: isFilter ?(colorScheme.scheme === "dark" ? "#434343" : "#a8a8a8") : (colorScheme.scheme === "light" ? "#434343" : "#a8a8a8"), 
+                    fontFamily: 'poppins', 
+                    paddingHorizontal: 8, 
+                    paddingVertical: Platform.OS === 'ios' ? 5 : 10
                 }}>All </Text>
                 <Switch style={styles.switch}
                     trackColor={{ false: "#555555", true: "#828282" }}
@@ -214,7 +236,11 @@ export default function AnnouncementScreen() {
                     }}
                     value={isFilter}
                 />
-                <Text style={{color: isFilter ?(useColorScheme() === "light" ? "#434343" : "#a8a8a8") : (useColorScheme() === "dark" ? "#434343" : "#a8a8a8"), fontFamily: 'poppins', paddingHorizontal:12, paddingTop: 5 
+                <Text style={
+                    {color: isFilter ?(colorScheme.scheme === "light" ? "#434343" : "#a8a8a8") : (colorScheme.scheme === "dark" ? "#434343" : "#a8a8a8"), 
+                    fontFamily: 'poppins', 
+                    paddingHorizontal:12, 
+                    paddingVertical: Platform.OS === 'ios' ? 5 : 10
                 }}>My </Text>
             </View>
         </View>

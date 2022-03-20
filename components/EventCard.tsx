@@ -5,14 +5,14 @@ import { StyleSheet, TouchableOpacity } from 'react-native';
 import { View, Text } from './Themed';
 import { Ionicons } from '@expo/vector-icons';
 
-import useColorScheme from '../hooks/useColorScheme';
+import {ThemeContext} from '../hooks/useColorScheme';
 
 let theme;
 
 // Event card
 export function EventCard({ event } : { event: any }) {
 
-  theme = useColorScheme();
+  theme = React.useContext(ThemeContext);
 
   const color = event.tags.length == 0 ? '#74e1ed' : event.tags[0].color;
 
@@ -21,22 +21,22 @@ export function EventCard({ event } : { event: any }) {
 
 
   return (
-    <View style={[styles.eventCardContainer, {backgroundColor: theme === 'dark' ? '#252525' : '#e0e0e0'}]}>
+    <View style={[styles.eventCardContainer, {backgroundColor: theme.scheme === 'dark' ? '#252525' : '#e0e0e0'}]}>
       <TouchableOpacity
         onPress={() => {setSelected(!selected)}}
       >
 
         <View style={[styles.quickInfo, {backgroundColor: 'transparent'}]}>
           {timeRange(event.start_date, event.end_date, color)}
-          <View style={[styles.info, {backgroundColor: theme === 'light' ? '#f3f3f3' : '#1c1c1c'}]}>
-            <Text style={[styles.titleText, {color: theme === 'light' ? '#404040' : '#fff'}]}>{event.name}</Text>
+          <View style={[styles.info, {backgroundColor: theme.scheme === 'light' ? '#f3f3f3' : '#1c1c1c'}]}>
+            <Text style={[styles.titleText, {color: theme.scheme === 'light' ? '#404040' : '#fff'}]}>{event.name}</Text>
             <Text style={styles.organizationText}>{event.organization.name}</Text>
             {/* display if selected is true*/}
             {selected && (
               <View style={styles.description}>
                 <View style={styles.separator} />
                 <View style={styles.description}>
-                  <Text style={{color: theme === 'light' ? '#4f4f4f' : '#fff'}}>{event.description.length == 0 ? 'No description' : event.description}</Text>
+                  <Text style={{color: theme.scheme === 'light' ? '#4f4f4f' : '#fff'}}>{event.description.length == 0 ? 'No description' : event.description}</Text>
                 </View>
               </View>
             )}
@@ -53,12 +53,12 @@ export function EventCard({ event } : { event: any }) {
             {/* caret to signify expanding of the description of an event*/}
             {selected && (
               <View style={styles.caret}>
-                <Ionicons name="chevron-up" size={20} color={theme === 'light' ? '#000' : '#fff'} />
+                <Ionicons name="chevron-up" size={20} color={theme.scheme === 'light' ? '#000' : '#fff'} />
               </View>
             )}
             {!selected && (
               <View style={styles.caret}>
-                <Ionicons name="chevron-down" size={20} color={theme === 'light' ? '#000' : '#fff'} />
+                <Ionicons name="chevron-down" size={20} color={theme.scheme === 'light' ? '#000' : '#fff'} />
               </View>
             )}
           </View>

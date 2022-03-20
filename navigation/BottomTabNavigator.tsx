@@ -9,7 +9,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import * as React from 'react';
 
 import Colors from '../constants/Colors';
-import useColorScheme from '../hooks/useColorScheme';
+import {ThemeContext} from '../hooks/useColorScheme';
 import HomeScreen from '../screens/HomeScreen';
 import AnnouncementScreen from '../screens/AnnouncementScreen';
 import CalendarScreen from '../screens/CalendarScreen';
@@ -20,12 +20,12 @@ import { BottomTabParamList, HomeParamList, AnnouncementParamList, CalendarParam
 const BottomTab = createBottomTabNavigator<BottomTabParamList>();
 
 export default function BottomTabNavigator() {
-  const colorScheme = useColorScheme();
+  const colorScheme = React.useContext(ThemeContext);
 
   return (
     <BottomTab.Navigator
       initialRouteName="Home"
-      screenOptions={{ tabBarActiveTintColor: Colors[colorScheme].tint, tabBarStyle: { display: "flex" } }}>
+      screenOptions={{ tabBarActiveTintColor: Colors[colorScheme.scheme].tint, tabBarStyle: { display: "flex" } }}>
       <BottomTab.Screen
         name="Home"
         component={HomeNavigator}

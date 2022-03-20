@@ -12,9 +12,7 @@ import LoginScreen from '../screens/LoginScreen';
 import { RootStackParamList } from '../types';
 import BottomTabNavigator from './BottomTabNavigator';
 
-import useColorScheme from '../hooks/useColorScheme';
-
-export const ThemeContext = React.createContext({});
+import useColorScheme, { ThemeContext } from '../hooks/useColorScheme';
 
 const LightTheme = {
   dark: false,
@@ -34,15 +32,25 @@ const CustomDarkTheme = {
 };
 
 export default function Navigation({ loginNeeded }: { loginNeeded: boolean }) {
-  let [colorScheme, updateNavScheme] = React.useState(useColorScheme());
-  return (
-    <ThemeContext.Provider value={{currentNavScheme: colorScheme, updateNavScheme: updateNavScheme}}>
-      <NavigationContainer
-        theme={colorScheme === 'dark' ? CustomDarkTheme : LightTheme}>
-        <RootNavigator loginNeeded={loginNeeded} />
-      </NavigationContainer>
-    </ThemeContext.Provider>
-  );
+  const scheme = useColorScheme();
+  const [colorScheme, setColorScheme] = React.useState(scheme.scheme);
+
+  React.useEffect(() => {
+    setColorScheme(scheme.scheme);
+  }, [scheme.scheme, scheme.schemeLoaded]);
+  if (!scheme.schemeLoaded) {
+    return null;
+  }
+  else {
+    return (
+      <ThemeContext.Provider value={scheme}>
+        <NavigationContainer
+          theme={colorScheme === 'dark' ? CustomDarkTheme : LightTheme}>
+          <RootNavigator loginNeeded={loginNeeded} />
+        </NavigationContainer>
+      </ThemeContext.Provider>
+    );
+  }
 }
 
 // A root stack navigator is often used for displaying modals on top of all other content

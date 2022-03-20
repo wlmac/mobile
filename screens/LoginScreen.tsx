@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import * as WebBrowser from 'expo-web-browser';
-import useColorScheme from '../hooks/useColorScheme';
+import {ThemeContext} from '../hooks/useColorScheme';
 
 import config from '../config.json';
 import { Text, View } from '../components/Themed';
@@ -19,6 +19,8 @@ let state = {
 
 
 export default function LoginScreen({ route, navigation }: { route: RouteProp<RootStackParamList, 'Login'>, navigation: StackNavigationProp<RootStackParamList, 'Login'> }) {
+  const colorScheme = React.useContext(ThemeContext);
+
   let [loginResText, updateLoginResText] = React.useState("");
   let [keyboardUp, updateKeyboardUp] = React.useState(false);
 
@@ -74,7 +76,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
       <View style={styles.pictureContainer}>
       
         <Image style={{width:"100%", height: "100%"}} 
-          source={useColorScheme()==="light"? require('../assets/images/LogInGraphics_LightMode.png'): require('../assets/images/LogInGraphics_DarkMode.png')}/>
+          source={colorScheme.scheme === "light"? require('../assets/images/LogInGraphics_LightMode.png'): require('../assets/images/LogInGraphics_DarkMode.png')}/>
 
       {/* ---- PICTURE CONTAINER -----*/}
       </View>

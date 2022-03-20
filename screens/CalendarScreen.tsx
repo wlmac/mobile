@@ -5,7 +5,7 @@ import { Calendar } from 'react-native-calendars';
 
 import { Text, View } from '../components/Themed';
 import { EventCard } from '../components/EventCard';
-import useColorScheme from '../hooks/useColorScheme';
+import {ThemeContext} from '../hooks/useColorScheme';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -30,7 +30,7 @@ const daysInMonth = [-1, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 export default function CalendarScreen() {
 
   // get theme
-  const colorScheme = useColorScheme();
+  const colorScheme = React.useContext(ThemeContext);
 
   // get today's date
   const today: YMDDate = dateToYMD();
@@ -100,7 +100,7 @@ export default function CalendarScreen() {
   // use effect on color scheme change
   useEffect (() => {
     setCurrentKey(new Date());
-  }, [colorScheme]);
+  }, [colorScheme.scheme]);
 
   // update events on day change using useeffect
   useEffect(() => {
@@ -122,7 +122,7 @@ export default function CalendarScreen() {
   }, [selectedDay]);
 
   return (
-    <View style={[styles.container, {backgroundColor: colorScheme === 'dark' ? '#252525' : '#e0e0e0'}]}>
+    <View style={[styles.container, {backgroundColor: colorScheme.scheme === 'dark' ? '#252525' : '#e0e0e0'}]}>
       <ScrollView>
         
         {/* --- Calendar wrapper ---*/}
@@ -133,24 +133,24 @@ export default function CalendarScreen() {
             key={currentKey.toISOString()}
             theme = {
               {
-                backgroundColor: colorScheme === 'dark' ? '#000' : '#fff',
-                calendarBackground: colorScheme === 'dark' ? '#161616' : '#f0f0f0',
+                backgroundColor: colorScheme.scheme === 'dark' ? '#000' : '#fff',
+                calendarBackground: colorScheme.scheme === 'dark' ? '#161616' : '#f0f0f0',
               
-                textSectionTitleColor: colorScheme === 'dark' ? '#fff' : '#000',
-                textSectionTitleDisabledColor: colorScheme === 'dark' ? '#4a4a4a' : '#b8b8b8',
+                textSectionTitleColor: colorScheme.scheme === 'dark' ? '#fff' : '#000',
+                textSectionTitleDisabledColor: colorScheme.scheme === 'dark' ? '#4a4a4a' : '#b8b8b8',
               
-                todayTextColor: colorScheme === 'dark' ? '#d1a700' : '#d49a13',
-                dayTextColor: colorScheme === 'dark' ? '#fff' : '#000',
+                todayTextColor: colorScheme.scheme === 'dark' ? '#d1a700' : '#d49a13',
+                dayTextColor: colorScheme.scheme === 'dark' ? '#fff' : '#000',
               
-                textDisabledColor: colorScheme === 'dark' ? '#4a4a4a' : '#b8b8b8',
+                textDisabledColor: colorScheme.scheme === 'dark' ? '#4a4a4a' : '#b8b8b8',
               
                 dotColor: '#00adf5',
                 selectedDotColor: '#fff',
               
-                arrowColor: colorScheme === 'dark' ? '#fff' : '#0a2945',
+                arrowColor: colorScheme.scheme === 'dark' ? '#fff' : '#0a2945',
                 disabledArrowColor: '#4a4a4a',
               
-                monthTextColor: colorScheme === 'dark' ? '#348feb' : '#105fb0',
+                monthTextColor: colorScheme.scheme === 'dark' ? '#348feb' : '#105fb0',
                 textMonthFontWeight: 'bold',
                 textMonthFontSize: 16,
 
@@ -216,10 +216,10 @@ export default function CalendarScreen() {
           />
         </View>
         
-        <View style={{backgroundColor: colorScheme === 'dark' ? '#1c1c1c' : '#e6e6e6', height: 10}}></View>
+        <View style={{backgroundColor: colorScheme.scheme === 'dark' ? '#1c1c1c' : '#e6e6e6', height: 10}}></View>
         
         {/* --- Return to today button, disabled when selected day or displayed month isn't on the month ---*/}
-        <View style={[styles.returnToToday, {backgroundColor: colorScheme === 'dark' ? '#252525' : '#e0e0e0'}]}>
+        <View style={[styles.returnToToday, {backgroundColor: colorScheme.scheme === 'dark' ? '#252525' : '#e0e0e0'}]}>
           <TouchableOpacity
             disabled={displayedDate.strform == today.strform}
             onPress={() => {
@@ -229,7 +229,7 @@ export default function CalendarScreen() {
             }}
           >
             <Text style={[styles.returnToTodayText, 
-              {color: colorScheme === 'light'
+              {color: colorScheme.scheme === 'light'
               ? 
               displayedDate.strform == today.strform ? '#b3b3b3' : '#000'
               : 
@@ -240,12 +240,12 @@ export default function CalendarScreen() {
           </TouchableOpacity>
         </View> 
 
-        <View style={[styles.container, {backgroundColor: colorScheme === 'dark' ? '#252525' : '#e0e0e0'}]}>
+        <View style={[styles.container, {backgroundColor: colorScheme.scheme === 'dark' ? '#252525' : '#e0e0e0'}]}>
         <View style={styles.separator} lightColor="#adadad" darkColor="rgba(255,255,255,0.1)" />
         </View>
         
         {/* --- Event list title ---*/}
-        <View style={[styles.eventsTitle, {backgroundColor: colorScheme === 'dark' ? '#252525' : '#e0e0e0'}]}>
+        <View style={[styles.eventsTitle, {backgroundColor: colorScheme.scheme === 'dark' ? '#252525' : '#e0e0e0'}]}>
           
           {
           // if the data is null, there is an error
@@ -255,18 +255,18 @@ export default function CalendarScreen() {
           : 
 
           // events today
-          <View style={{backgroundColor: colorScheme === 'dark' ? '#252525' : '#e0e0e0'}}>
-            <Text style={[styles.dateText, {color: colorScheme === 'light' ? '#000' : '#fff'}]}>
+          <View style={{backgroundColor: colorScheme.scheme === 'dark' ? '#252525' : '#e0e0e0'}}>
+            <Text style={[styles.dateText, {color: colorScheme.scheme === 'light' ? '#000' : '#fff'}]}>
               {YMDToLong(selectedDay)}
             </Text>
             {
               eventsToday.length === 0
               ?
               // if there's no events, display `no events`
-              <Text style={[styles.eventsCountText, {color: colorScheme === 'light' ? '#000' : '#fff'}]}>No events on this day</Text>
+              <Text style={[styles.eventsCountText, {color: colorScheme.scheme === 'light' ? '#000' : '#fff'}]}>No events on this day</Text>
               :
               // lists events
-              <View style={[styles.eventCardsContainer, {backgroundColor: colorScheme === 'dark' ? '#252525' : '#e0e0e0'}]}>
+              <View style={[styles.eventCardsContainer, {backgroundColor: colorScheme.scheme === 'dark' ? '#252525' : '#e0e0e0'}]}>
                 {Object.entries(eventsToday).map(([key, event]) => (
                   // reset key (resets component)
                   <EventCard key={key+new Date().toISOString()} event={event} />
@@ -278,7 +278,7 @@ export default function CalendarScreen() {
 
         </View>
 
-        <View style={[styles.container, {backgroundColor: colorScheme === 'dark' ? '#252525' : '#e0e0e0'}]}>
+        <View style={[styles.container, {backgroundColor: colorScheme.scheme === 'dark' ? '#252525' : '#e0e0e0'}]}>
           <View style={styles.separator} lightColor="#adadad" darkColor="rgba(255,255,255,0.1)" />
         </View>
 

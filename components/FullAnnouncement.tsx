@@ -3,7 +3,7 @@ import { StyleSheet, Image } from 'react-native';
 import { Text, View } from '../components/Themed';
 import Markdown, { MarkdownIt } from 'react-native-markdown-display';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import useColorScheme from '../hooks/useColorScheme';
+import {ThemeContext} from '../hooks/useColorScheme';
 import * as WebBrowser from 'expo-web-browser';
 
 var lightC = "#3a6a96";
@@ -13,11 +13,11 @@ export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToSc
         return(<></>);
     }
 
-    const colorScheme = useColorScheme();
+    const colorScheme = React.useContext(ThemeContext);
 
     return (
-        <View style={[styles.announcement, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c', shadowColor: colorScheme === 'light' ? '#1c1c1c' : '#e6e6e6'}]} onStartShouldSetResponder={(e) => true} onResponderRelease={() => backToScroll(ann.id)}>
-            <View style={[styles.tags, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
+        <View style={[styles.announcement, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c', shadowColor: colorScheme.scheme === 'light' ? '#1c1c1c' : '#e6e6e6'}]} onStartShouldSetResponder={(e) => true} onResponderRelease={() => backToScroll(ann.id)}>
+            <View style={[styles.tags, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
                 {Object.entries(ann.tags).map(([key, tag]) => (
                     createTag(key, tag)
                 ))}
@@ -25,13 +25,13 @@ export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToSc
 
             {createHeader(ann.title)}
             
-            {annDetails(ann.name, ann.icon, ann.author.slug, ann.created_date, colorScheme)}
+            {annDetails(ann.name, ann.icon, ann.author.slug, ann.created_date, colorScheme.scheme)}
             {previewText(ann.body)}
 
             {/* View More Details */}
-            <View style={[styles.click, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
+            <View style={[styles.click, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
                 <TouchableOpacity onPress={() => backToScroll("-1")}>
-                    <Text style={[{color: useColorScheme() === "light" ? lightC : darkC}, {fontSize: 16}]}>{"<  Return to Announcements"}</Text>
+                    <Text style={[{color: colorScheme.scheme === "light" ? lightC : darkC}, {fontSize: 16}]}>{"<  Return to Announcements"}</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -70,11 +70,11 @@ function annDetails(org: string, orgIcon: string, author: string, timeStamp: str
 // markdown to plaintext
 function previewText(text: string) {
 
-    const colorScheme = useColorScheme();
+    const colorScheme = React.useContext(ThemeContext);
 
     return (
-        <View style={[styles.text, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
-            <Markdown style={colorScheme === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={url => {
+        <View style={[styles.text, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
+            <Markdown style={colorScheme.scheme === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={url => {
                 if(url) {
                     WebBrowser.openBrowserAsync(url);
                     return false;
