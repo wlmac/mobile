@@ -10,8 +10,6 @@ export default async function cacheResources(): Promise<void> {
 }
 
 export async function storeApiCalls(): Promise<void> {
-    var announcements: Object[] = [];
-    var myAnnouncements: Object[] = [];
     var orgs: Object[] = new Array(1000);
 
     // organizations
@@ -23,24 +21,11 @@ export async function storeApiCalls(): Promise<void> {
                     orgs[org.id] = {name: org.name, icon: org.icon};
                 });
             }
-            //console.log('organization cache done');
         } else {
-            //console.log("organization cache failed");
+            console.log("API request error: " + res.response);
         }
     });
-
-    // all announcements
-    await apiRequest('/api/announcements?format=json', '', 'GET').then((res) => {
-        if (res.success) {
-            let jsonres = JSON.parse(res.response);
-            if(jsonres && Array.isArray(jsonres)) {
-                announcements = jsonres;
-            }
-            //console.log('announcement cache done');
-        } else {
-            //console.log("announcement cache failed");
-        }
-    });
+    AsyncStorage.setItem("@orgs", JSON.stringify(orgs));
 
     await apiRequest(`/api/events?start=2021-09-20`, '', 'GET').then(res => {
         if (res.success) {
@@ -49,8 +34,4 @@ export async function storeApiCalls(): Promise<void> {
             console.log("API request error: " + res.response);
         }
     });
-
-    AsyncStorage.setItem("@announcements", JSON.stringify(announcements));
-    AsyncStorage.setItem("@myann", JSON.stringify(myAnnouncements));
-    AsyncStorage.setItem("@orgs", JSON.stringify(orgs));
 }
