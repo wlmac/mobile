@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
 
 function getWeather() {
   return new Promise<Weather>((resolve, reject) => {
-    fetch(`${config.weatherserver}/api/location/4118/`).then((response) => response.json()).then((json) => {
+    fetch(`${config.weatherserver}/weather`).then((response) => response.json()).then((json) => {
       json.consolidated_weather[0];
       let weather = new Weather(json.consolidated_weather[0].weather_state_abbr, json.consolidated_weather[0].the_temp);
       resolve(weather);
