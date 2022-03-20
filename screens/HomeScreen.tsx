@@ -122,7 +122,7 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
         }
       }
     }
-    else if (dataUploaded == "") {
+    else if (dataUploaded == "" && !guestMode.guest) {
       updateCourse(`Currently Offline`);
       updateTimeText('No internet');
       updateTimeTable(`Could not connect to server!`);
