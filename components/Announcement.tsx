@@ -1,14 +1,19 @@
 import * as React from 'react';
 import { StyleSheet, Image } from 'react-native';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Text, View } from '../components/Themed';
-import useColorScheme from '../hooks/useColorScheme';
+import { ThemeContext } from '../hooks/useColorScheme';
 
 var lightC = "#3a6a96";
 var darkC = "#42a4ff";
+
 export default function Announcement({ann, fullAnn}:{ann: any, fullAnn: Function}) {
+
+    const colorScheme = React.useContext(ThemeContext);
+
     return (
-        <View style={[styles.announcement, {shadowColor: useColorScheme() === "light" ? "black" : "white"}]}>
-            <View style={styles.tags}>
+        <View style={[styles.announcement, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c', shadowColor: colorScheme.scheme === 'light' ? '#1c1c1c' : '#e6e6e6'}]}>
+            <View style={[styles.tags, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
                 {Object.entries(ann.tags).map(([key, tag]) => (
                     createTag(key, tag)
                 ))}
@@ -16,12 +21,14 @@ export default function Announcement({ann, fullAnn}:{ann: any, fullAnn: Function
 
             {createHeader(ann.title)}
             
-            {annDetails(ann.name, ann.icon, ann.author.slug, ann.created_date)}
+            {annDetails(ann.name, ann.icon, ann.author.slug, ann.created_date, colorScheme.scheme)}
             {previewText(ann.body)}
 
             {/* View More Details */}
-            <View style={styles.click} onStartShouldSetResponder={(e) => true} onResponderRelease={() => fullAnn(ann.id)}>
-                <Text style={[{color: useColorScheme() === "light" ? lightC : darkC}]}>{"See announcement  >"}</Text>
+            <View style={[styles.click, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
+                <TouchableOpacity onPress={() => fullAnn(ann.id)}>
+                    <Text style={[{color: colorScheme.scheme === "light" ? lightC : darkC}]}>{"See announcement  >"}</Text>
+                </TouchableOpacity>
             </View>
         </View>
     );
@@ -39,18 +46,19 @@ function createHeader(title: string) {
     );
 }
 
-function annDetails(org: string, orgIcon: string, author: string, timeStamp: string) {
+function annDetails(org: string, orgIcon: string, author: string, timeStamp: string, colorScheme: string) {
+
     return (
         <View style={styles.details}>
-            <View style={styles.detailsHeading}>
-                <View style={[styles.iconShadow, {shadowColor: useColorScheme() === "light" ? "black" : "white"}]}>
+            <View style={[styles.detailsHeading, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
+                <View style={[styles.iconShadow, {shadowColor: colorScheme === "light" ? "black" : "white"}]}>
                     <Image style={styles.orgIcon} source={{uri: orgIcon}}></Image>
                 </View>
-                <Text style={[styles.clubName, {color: useColorScheme() === "light" ? lightC : darkC}]}>{org}</Text>
+                <Text style={[styles.clubName, {color: colorScheme === "light" ? lightC : darkC}]}>{org}</Text>
             </View>
-            <View style={styles.detailsSubheading}>
+            <View style={[styles.detailsSubheading, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
                 <Text style={styles.timeStamp}>{new Date(timeStamp).toLocaleString("en-US", {timeZone: "EST"})}</Text>
-                <Text style={[styles.author, {color: useColorScheme() === "light" ? lightC : darkC}]}>{author}</Text>
+                <Text style={[styles.author, {color: colorScheme === "light" ? lightC : darkC}]}>{author}</Text>
             </View>
         </View>
     );
@@ -74,7 +82,7 @@ const styles = StyleSheet.create({
         paddingHorizontal:12,
         shadowOffset: {width: 0, height: 1},
         shadowOpacity: 0.4,
-        borderRadius: 15,
+        borderRadius: 5,
     },
     tags: {
         flex: 1,

@@ -1,19 +1,26 @@
 import * as React from 'react';
-import { StyleSheet, Image, useColorScheme, ImageBackground } from 'react-native';
+import { StyleSheet, Image, ImageBackground } from 'react-native';
+import { ThemeContext } from '../hooks/useColorScheme';
+import { GuestModeContext } from '../hooks/useGuestMode';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 
 import apiRequest from '../lib/apiRequest';
 import { Text, View } from '../components/Themed';
 import { ChangeLogModal } from '../components/Changelog';
 import config from '../config.json';
 import getSeason from '../lib/getSeason';
+import { BottomTabParamList } from '../types';
 
 let theme;
 
-export default function HomeScreen() {
+export default function HomeScreen({ navigation }: { navigation: BottomTabNavigationProp<BottomTabParamList, 'Home'> }) {
+  const colorScheme = React.useContext(ThemeContext);
+  const guestMode = React.useContext(GuestModeContext);
 
   let criticalTimes: any[];
   let time: number;
   let schedule: any;
+  let termSchedule: any;
   let dayOfTheWeek: number;
   let season = getSeason();
 
@@ -26,24 +33,30 @@ export default function HomeScreen() {
   let [timeText, updateTimeText] = React.useState("Loading...");
   let [nextCourse, updateNextCourse] = React.useState("");
 
-  let [dataUploaded, updateDataUploaded] = React.useState(false);
+  let [dayHomepage, updateHomePage] = React.useState("No School!");
+
+  let [dataUploaded, updateDataUploaded] = React.useState("");
 
   criticalTimes = [];
 
-  apiRequest(`/api/me/schedule`, '', 'GET').then(res => {
+  apiRequest(`/api/term/current/schedule`, '', 'GET', true).then(res => {
     if (res.success) {
-      schedule = JSON.parse(res.response);
-      if (schedule && schedule[0]) {
+      termSchedule = JSON.parse(res.response);
+      if (termSchedule && termSchedule[0]) {
         let displayedInfo = ``;
-        for (let i = 0; i < schedule.length; i++) {
-          displayedInfo += `${schedule[i].description.time}  |  ${schedule[i].course}`;
+        updateHomePage(`${termSchedule[0].cycle}`);
+        for (let i = 0; i < termSchedule.length; i++) {
+          if (termSchedule[i].course == null) {
+            termSchedule[i].course = "Period " + (i + 1);
+          }
+          displayedInfo += `${termSchedule[i].description.time}${' '.repeat(Math.max(20 - termSchedule[i].description.time.length, 0))} |  ${termSchedule[i].course}`;
           let timeobj = {
-            start: ((Date.parse(schedule[i].time.start) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
-            end: ((Date.parse(schedule[i].time.end) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
-            course: schedule[i].course
+            start: ((Date.parse(termSchedule[i].time.start) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
+            end: ((Date.parse(termSchedule[i].time.end) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
+            course: termSchedule[i].course
           }
           criticalTimes.push(timeobj);
-          if (i !== schedule.length - 1) {
+          if (i !== termSchedule.length - 1) {
             displayedInfo += `\n`;
           }
         }
@@ -56,16 +69,60 @@ export default function HomeScreen() {
           }
           criticalTimes.splice(pindx + 1, 0, lunchobj);
         }
-        updateTimeTable(displayedInfo);
-        updateDataUploaded(true);
-      }
-      else {
-        updateTimeTable(`No class today!`);
+        if (dataUploaded == '') {
+          updateTimeTable(displayedInfo);
+          updateDataUploaded("public");
+        }
+      } else {
+        updateTimeTable(`No class today!             `); //having spaces here aligns the text to the left bar
         updateCourse(`SCHOOL DAY FINISHED`);
         updateTimeText(``);
       }
     }
-    else {
+  }).catch(err => {
+    updateTimeTable(`Uh-oh, error occurred :(`);
+  })
+  getWeather().then((data) => {
+    updateIcon(wIcons[data.weather_state_abbr]);
+    updateTemp(`${data.the_temp}°`);
+    updateWeather(data.weather_state_abbr);
+  }).catch(() => {
+    updateTemp(`Unknown`);
+    updateIcon(require('../assets/images/nowifi.png'));
+  })
+
+  apiRequest(`/api/me/schedule`, '', 'GET').then(res => {
+    if (res.success) {
+      schedule = JSON.parse(res.response);
+      if (schedule && schedule[0]) {
+        let displayedInfo = ``;
+        for (let i = 0; i < schedule.length; i++) {
+          if (schedule[i].course == null) {
+            schedule[i].course = "Period " + (i + 1);
+          }
+          displayedInfo += `${schedule[i].description.time}${' '.repeat(Math.max(20 - schedule[i].description.time.length, 0))} |  ${schedule[i].course}`;
+          let timeobj = {
+            start: ((Date.parse(schedule[i].time.start) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
+            end: ((Date.parse(schedule[i].time.end) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
+            course: schedule[i].course
+          }
+          for (let j = 0; j < criticalTimes.length; j++) {
+            if (criticalTimes[j].start == timeobj.start && criticalTimes[j].end == timeobj.end) {
+              criticalTimes[j].course = timeobj.course;
+              break;
+            }
+          }
+          if (i !== schedule.length - 1) {
+            displayedInfo += `\n`;
+          }
+        }
+        if (dataUploaded == 'public') {
+          updateTimeTable(displayedInfo);
+          updateDataUploaded("personal");
+        }
+      }
+    }
+    else if (dataUploaded == "" && !guestMode.guest) {
       updateCourse(`Currently Offline`);
       updateTimeText('No internet');
       updateTimeTable(`Could not connect to server!`);
@@ -82,16 +139,22 @@ export default function HomeScreen() {
     updateIcon(require('../assets/images/nowifi.png'));
   })
 
+
   const determineTimeString = (presentTime: number, futureTime: number) => {
-    return futureTime - presentTime >= 10 ?
-      `${Math.floor((futureTime - presentTime) / 60)}:${(futureTime - presentTime) % 60}` :
-      `${Math.floor((futureTime - presentTime) / 60)}:0${(futureTime - presentTime) % 60}`
+    const difference = futureTime - presentTime;
+    const hours = Math.floor(difference / 60) + "";
+    const minutes = difference % 60 + "";
+
+    return `${hours}h ${minutes}min`;
   }
 
+  var loopingInterval: any;
+
   React.useEffect(() => {
-    if (dataUploaded) {
+    if (dataUploaded !== "") {
       dayOfTheWeek = new Date().getDay();
-      const interval = setInterval(() => {
+      clearInterval(loopingInterval);
+      loopingInterval = setInterval(() => {
         time = Math.floor((Date.now() - new Date().setHours(0, 0, 0, 0)) / 60000);
         if (criticalTimes.length == 0) { }
         else if (time >= criticalTimes[criticalTimes.length - 1].end || dayOfTheWeek > 5) {
@@ -99,47 +162,43 @@ export default function HomeScreen() {
           updateTimeText(``);
           updateNextCourse("");
         }
-        else if (time < criticalTimes[0].start) {
-          updateTimeText(`Starts in ${determineTimeString(time, criticalTimes[0].start)}`);
-          updateCourse(criticalTimes[0].course);
-          updateNextCourse("");
-        }
-        else if (time >= criticalTimes[criticalTimes.length - 1].start && time < criticalTimes[criticalTimes.length - 1].end) {
-          updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[criticalTimes.length - 1].end)}`);
-          updateCourse(criticalTimes[criticalTimes.length - 1].course);
-          updateNextCourse("");
-        }
-        else if (criticalTimes.length >= 2) {
-          for (let i: number = 0; i < criticalTimes.length - 1; i++) {
-            if (time >= criticalTimes[i].start && time < criticalTimes[i].end) {
-              updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[i].end)}`);
-              updateCourse(criticalTimes[i].course);
-              updateNextCourse(`Up next: ${criticalTimes[i + 1].course}`);
-              break;
-            }
-            else if (time < criticalTimes[i+1].start) {
-              updateTimeText(`Starts in ${determineTimeString(time, criticalTimes[i+1].start)}`);
-              updateCourse(criticalTimes[i+1].course);
-              updateNextCourse("");
-              break;
+        else {
+          if (time < criticalTimes[0].start) {
+            updateTimeText(`Starts in ${determineTimeString(time, criticalTimes[0].start)}`);
+            updateCourse(criticalTimes[0].course);
+            updateNextCourse("");
+          } else {
+            for (let i: number = 0; i < criticalTimes.length; i++) {
+              if (time >= criticalTimes[i].start && time < criticalTimes[i].end) {
+                updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[i].end)}`);
+                updateCourse(criticalTimes[i].course);
+                if (i != criticalTimes.length - 1) {
+                  updateNextCourse(`Up next: ${criticalTimes[i + 1].course}`);
+                } else {
+                  updateNextCourse("");
+                }
+                break;
+              }
             }
           }
         }
       }, 1000);
-      return () => clearInterval(interval);
+      return () => clearInterval(loopingInterval);
     }
   }, [dataUploaded]);
 
-  if (useColorScheme() === "light") {
+  if (colorScheme.scheme === "light") {
     theme = {
-      color: "#300",
+      color1: "#005C99",
+      color2: "#003D66",
       websiteColor: "rgb(58, 106, 150)",
       tint: "transparent"
     }
   }
   else {
     theme = {
-      color: "white",
+      color1: "#e6e6e6",
+      color2: '#e0e0e0',
       websiteColor: "rgb(58, 106, 150)",
       tint: "rgba(0, 0, 0, 0.3)"
     }
@@ -156,7 +215,7 @@ export default function HomeScreen() {
           <View style={styles.weatherContainer}>
 
             {/* --- TEMPERATURE --- */}
-            <Text style={[styles.temperature, { color: theme.color }]}>{temp}</Text>
+            <Text style={[styles.temperature, { color: theme.color1 }]}>{temp}</Text>
 
             {/* --- WEATHER DIVIDER --- */}
             <View style={[styles.weatherDivider, { borderColor: 'rgb(58, 106, 150)' }]} />
@@ -170,13 +229,16 @@ export default function HomeScreen() {
 
 
           {/* --- COURSE ---*/}
-          <Text style={[styles.course, { color: theme.color }]}>{course}</Text>
+          <Text style={[styles.course, { color: theme.color2 }]}>{course}</Text>
 
           {/* --- TIME TEXT ---*/}
-          <Text style={[styles.timeText, { color: theme.color }]}>{timeText}</Text>
+          <Text style={[styles.timeText, { color: theme.color2 }]}>{timeText}</Text>
 
           {/* --- TIME TEXT ---*/}
-          <Text style={[styles.timeText, { color: theme.color }]}>{nextCourse}</Text>
+          <Text style={[styles.timeText, { color: theme.color2 }]}>{nextCourse}</Text>
+          <Text style={[{ textAlign: 'center' }, guestMode.guest ? {display: "flex"} : {display: "none"}]}>
+            <Text style={{ color: colorScheme.scheme == 'dark' ? 'rgb(148, 180, 235)' : 'rgb(51,102,187)' }} onPress={() => { navigation.jumpTo('Settings') }}>{' '}Log in{' '}</Text>
+            to view your personal schedule here!</Text>
 
 
 
@@ -184,13 +246,13 @@ export default function HomeScreen() {
           <View style={styles.timeTableContainer}>
 
             {/* --- WEEK TEXT --- */}
-            <Text style={[styles.weekText, { color: theme.color }]}>Week</Text>
+            <Text style={[styles.weekText, { color: theme.color1 }]}>{dayHomepage}</Text>
 
             {/* --- COURSE CONTAINER --- */}
             <View style={styles.courseContainer}>
 
               {/* --- COURSE TEXT --- */}
-              <Text style={[styles.courseText, { color: theme.color }]}>{timetable}</Text>
+              <Text style={[styles.courseText, { color: theme.color1 }]}>{timetable}</Text>
 
               {/* --- COURSE CONTAINER --- */}
             </View>
@@ -307,7 +369,7 @@ const styles = StyleSheet.create({
 
 function getWeather() {
   return new Promise<Weather>((resolve, reject) => {
-    fetch(`${config.weatherserver}/api/location/4118/`).then((response) => response.json()).then((json) => {
+    fetch(`${config.weatherserver}/weather`).then((response) => response.json()).then((json) => {
       json.consolidated_weather[0];
       let weather = new Weather(json.consolidated_weather[0].weather_state_abbr, json.consolidated_weather[0].the_temp);
       resolve(weather);

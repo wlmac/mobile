@@ -1,8 +1,11 @@
 import * as React from 'react';
-import { StyleSheet, TextInput, Button, Linking, TouchableOpacity, Image, useColorScheme, Platform, Keyboard, useWindowDimensions} from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity, Image, Platform, Keyboard, useWindowDimensions} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
+import * as WebBrowser from 'expo-web-browser';
+import {ThemeContext} from '../hooks/useColorScheme';
+import { GuestModeContext } from '../hooks/useGuestMode';
 
 import config from '../config.json';
 import { Text, View } from '../components/Themed';
@@ -17,6 +20,9 @@ let state = {
 
 
 export default function LoginScreen({ route, navigation }: { route: RouteProp<RootStackParamList, 'Login'>, navigation: StackNavigationProp<RootStackParamList, 'Login'> }) {
+  const colorScheme = React.useContext(ThemeContext);
+  const guestMode = React.useContext(GuestModeContext);
+
   let [loginResText, updateLoginResText] = React.useState("");
   let [keyboardUp, updateKeyboardUp] = React.useState(false);
 
@@ -72,7 +78,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
       <View style={styles.pictureContainer}>
       
         <Image style={{width:"100%", height: "100%"}} 
-          source={useColorScheme()==="light"? require('../assets/images/LogInGraphics_LightMode.png'): require('../assets/images/LogInGraphics_DarkMode.png')}/>
+          source={colorScheme.scheme === "light"? require('../assets/images/LogInGraphics_LightMode.png'): require('../assets/images/LogInGraphics_DarkMode.png')}/>
 
       {/* ---- PICTURE CONTAINER -----*/}
       </View>
@@ -130,6 +136,19 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
           <TouchableOpacity onPress={handleForgotPasswordPress} style={styles.helpLink}>
             <Text style={styles.helpLinkText} lightColor={Colors.light.tint}>
               Forgot Password
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.helpContainer}>
+        <TouchableOpacity style={styles.helpLink} onPress={() => {
+          updateLoginResText("Please wait...");
+          guestMode.updateGuest(true);
+          cacheResources().then(() => {
+            navigation.replace('Root');
+          })
+        }}>
+            <Text style={styles.helpLinkText} lightColor={Colors.light.tint}>
+              Continue in Guest Mode
             </Text>
           </TouchableOpacity>
         </View>
@@ -268,11 +287,11 @@ const styles = StyleSheet.create({
 });
 
 function handleRegisterPress() {
-  Linking.openURL(`${config.server}/accounts/signup/?next=/`).catch(err => console.error("Couldn't load page", err));
+  WebBrowser.openBrowserAsync(`${config.server}/accounts/signup/?next=/`).catch(err => console.error("Couldn't load page", err));
 }
 
 function handleForgotPasswordPress() {
-  Linking.openURL(`${config.server}/accounts/password/reset/`).catch(err => console.error("Couldn't load page", err));
+  WebBrowser.openBrowserAsync(`${config.server}/accounts/password/reset/`).catch(err => console.error("Couldn't load page", err));
 }
 
 function login() {

@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { StyleSheet, Image } from 'react-native';
 import { Text, View } from '../components/Themed';
-import Markdown from 'react-native-markdown-display';
-import useColorScheme from '../hooks/useColorScheme';
-const linkify = require('markdown-linkify'); //using require due to lack of type definitions
+import Markdown, { MarkdownIt } from 'react-native-markdown-display';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import {ThemeContext} from '../hooks/useColorScheme';
+import * as WebBrowser from 'expo-web-browser';
 
 var lightC = "#3a6a96";
 var darkC = "#42a4ff";
@@ -11,9 +12,12 @@ export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToSc
     if (ann == undefined) { // prevent errors
         return(<></>);
     }
+
+    const colorScheme = React.useContext(ThemeContext);
+
     return (
-        <View style={[styles.announcement, {shadowColor: useColorScheme() === "light" ? "black" : "white"}]} onStartShouldSetResponder={(e) => true} onResponderRelease={() => backToScroll(ann.id)}>
-            <View style={styles.tags}>
+        <View style={[styles.announcement, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c', shadowColor: colorScheme.scheme === 'light' ? '#1c1c1c' : '#e6e6e6'}]} onStartShouldSetResponder={(e) => true} onResponderRelease={() => backToScroll(ann.id)}>
+            <View style={[styles.tags, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
                 {Object.entries(ann.tags).map(([key, tag]) => (
                     createTag(key, tag)
                 ))}
@@ -21,12 +25,14 @@ export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToSc
 
             {createHeader(ann.title)}
             
-            {annDetails(ann.name, ann.icon, ann.author.slug, ann.created_date)}
+            {annDetails(ann.name, ann.icon, ann.author.slug, ann.created_date, colorScheme.scheme)}
             {previewText(ann.body)}
 
             {/* View More Details */}
-            <View style={styles.click} onStartShouldSetResponder={(e) => true} onResponderRelease={() => backToScroll("-1")}>
-                <Text style={[{color: useColorScheme() === "light" ? lightC : darkC}, {fontSize: 16}]}>{"<  Back to Announcements"}</Text>
+            <View style={[styles.click, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
+                <TouchableOpacity onPress={() => backToScroll("-1")}>
+                    <Text style={[{color: colorScheme.scheme === "light" ? lightC : darkC}, {fontSize: 16}]}>{"<  Return to Announcements"}</Text>
+                </TouchableOpacity>
             </View>
         </View>
     );
@@ -44,18 +50,18 @@ function createHeader(title: string) {
     );
 }
 
-function annDetails(org: string, orgIcon: string, author: string, timeStamp: string) {
+function annDetails(org: string, orgIcon: string, author: string, timeStamp: string, colorScheme: string) {
     return (
-        <View style={styles.details}>
-            <View style={styles.detailsHeading}>
-                <View style={[styles.iconShadow, {shadowColor: useColorScheme() === "light" ? "black" : "white"}]}>
+        <View style={[styles.details, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
+            <View style={[styles.detailsHeading, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
+                <View style={[styles.iconShadow, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
                     <Image style={styles.orgIcon} source={{uri: orgIcon}}></Image>
                 </View>
-                <Text style={[styles.clubName, {color: useColorScheme() === "light" ? lightC : darkC}]}>{org}</Text>
+                <Text style={[styles.clubName, {color: colorScheme === "light" ? lightC : darkC}]}>{org}</Text>
             </View>
-            <View style={styles.detailsSubheading}>
+            <View style={[styles.detailsSubheading, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
                 <Text style={styles.timeStamp}>{new Date(timeStamp).toLocaleString("en-US", {timeZone: "EST"})}</Text>
-                <Text style={[styles.author, {color: useColorScheme() === "light" ? lightC : darkC}]}>{author}</Text>
+                <Text style={[styles.author, {color: colorScheme === "light" ? lightC : darkC}]}>{author}</Text>
             </View>
         </View>
     );
@@ -63,9 +69,20 @@ function annDetails(org: string, orgIcon: string, author: string, timeStamp: str
 
 // markdown to plaintext
 function previewText(text: string) {
+
+    const colorScheme = React.useContext(ThemeContext);
+
     return (
-        <View style={styles.text}>
-            <Markdown style={useColorScheme() === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true}>{linkify(text)}</Markdown>
+        <View style={[styles.text, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
+            <Markdown style={colorScheme.scheme === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={url => {
+                if(url) {
+                    WebBrowser.openBrowserAsync(url);
+                    return false;
+                }
+                else {
+                    return true;
+                }
+            }} markdownit={MarkdownIt({linkify: true, typographer: true})} defaultImageHandler="https://www.maclyonsden.com/">{text}</Markdown>
         </View>
     )
 }
@@ -78,14 +95,14 @@ const styles = StyleSheet.create({
         marginHorizontal: 10,
         shadowOffset: {width: 0, height: 1},
         shadowOpacity: 0.4,
-        borderRadius: 15,
+        borderRadius: 5,
     },
     tags: {
         flex: 1,
         flexDirection: "row",
         flexWrap: "wrap",
         marginTop: 15,
-        marginHorizontal: 5,
+        marginHorizontal: 12,
     },
     tag: {
         color: "black",
@@ -93,14 +110,14 @@ const styles = StyleSheet.create({
         paddingVertical: 2,
         paddingHorizontal: 7,
         marginHorizontal: 3,
-        marginBottom: 5,
+        marginBottom: 10,
         borderRadius: 5,
         fontSize: 14,
     },
     header: {
         fontSize: 30,
         fontWeight: "bold",
-        marginHorizontal: 20,
+        marginHorizontal: 15,
         marginBottom: 10,
     },
     details: {
@@ -120,7 +137,7 @@ const styles = StyleSheet.create({
         shadowOffset: {width: 0, height: 1},
         shadowOpacity: 0.4,
         shadowRadius: 2,
-        marginHorizontal: 8,
+        marginHorizontal: 10,
         borderRadius: 38/2,
     },
     orgIcon: {
@@ -130,15 +147,16 @@ const styles = StyleSheet.create({
         borderRadius: 38/2,
     },
     text: {
+        flex: 0,
+        flexDirection: 'row',
         marginTop: 5,
-        marginHorizontal: 5,
-        paddingHorizontal: 10,
+        paddingHorizontal: 15,
         paddingVertical: 5,
     },
     clubName: {
         fontSize: 20,
         paddingTop: 0,
-        paddingHorizontal: 5,
+        paddingRight: 15,
         fontWeight: "bold",
         flex: 1
     },
@@ -159,14 +177,14 @@ const styles = StyleSheet.create({
     click: {
         marginTop: 5,
         marginBottom: 15,
-        marginHorizontal: 10,
+        marginHorizontal: 20,
     },
 });
 
 const markdownStylesLight = StyleSheet.create({
     body: {
         color: "black",
-        backgroundColor: "white",
+        backgroundColor: "#f7f7f7",
         fontSize: 17,
     },
     link: {
@@ -181,11 +199,11 @@ const markdownStylesLight = StyleSheet.create({
 const markdownStylesDark = StyleSheet.create({
     body: {
         color: "white",
-        backgroundColor: "black",
+        backgroundColor: '#1c1c1c',
         fontSize: 17,
     },
     blockquote: {
-        backgroundColor: "black",
+        backgroundColor: "#3D3D3D",
     },
     link: {
         color: "#00abff",
@@ -193,5 +211,8 @@ const markdownStylesDark = StyleSheet.create({
     image: {
         minWidth: '90%',
         margin: 10,
-    }
+    },
+    code_inline: {
+        backgroundColor: '#3D3D3D',
+    },
 });

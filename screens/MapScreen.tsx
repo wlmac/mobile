@@ -2,10 +2,9 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import {
   FlatList,
+  Platform,
   StyleSheet,
   TouchableOpacity,
-  useColorScheme,
-  Alert
 } from "react-native";
 
 import MapView, { Marker, Overlay, PROVIDER_DEFAULT } from "react-native-maps";
@@ -14,7 +13,7 @@ import * as Location from "expo-location";
 import { Switch } from "react-native";
 import { TextInput } from "react-native";
 import filter from "lodash.filter";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {ThemeContext} from "../hooks/useColorScheme";
 
 const floorOne = require("../assets/images/FloorOne.png");
 const floorTwo = require("../assets/images/FloorTwo.png");
@@ -34,48 +33,33 @@ export default function MapScreen() {
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled((isEnabled) => !isEnabled);
   const [selectRoom, setSelectRoom] = useState({
-    type: "Feature",
-    geometry: {
-      type: "Point",
-      coordinates: [0, 0],
-    },
-    properties: {
-      title: "",
-      floor: 0,
-    },
-  });
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [0, 0],
+      },
+      properties: {
+        title: "",
+        floor: 0,
+      },
+    },);
 
   useEffect(() => {
-    AsyncStorage.getItem('@locationwarning').then(val => {
-      if (val && val == "viewed") {
-        requestPerms();
-      }
-      else {
-        Alert.alert('Allow Location Services', `Metropolis collects location data to enable the map feature. Your location is not transmitted off your device and will not be used when the app is in the background.`, 
-        [{ text: 'Deny', onPress: () => {
-          Alert.alert('Location denied', 'You can still use the map, however your position relative to the school cannot be shown. To re-enable this feature, simply restart the app and come back to this screen.', [{text: 'Ok', onPress: () => {}}], {cancelable: false});
-        } },
-        {text: 'Ok', onPress: () => {
-          AsyncStorage.setItem('@locationwarning', 'viewed');
-          requestPerms();
-        }}], { cancelable: false });
-      }
-    })
-  }, []);
+    (async () => {
 
-  async function requestPerms(){
-    let { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") {
-      setErrorMsg("Permission to access location was denied");
-      return;
-    } else {
-      let location = await Location.getCurrentPositionAsync();
-      altitude = location.coords.altitude;
-      if (location.coords.altitude != null && location.coords.altitude > 147)
-        setIsEnabled(true);
-      else setIsEnabled(false);
-    }
-  };
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setErrorMsg("Permission to access location was denied");
+        return;
+      } else {
+        let location = await Location.getCurrentPositionAsync();
+        altitude = location.coords.altitude;
+        if (location.coords.altitude != null && location.coords.altitude > 147)
+          setIsEnabled(true);
+        else setIsEnabled(false);
+      }
+    })();
+  }, []);
 
   // --------------------------------------------------------
 
@@ -1233,7 +1217,7 @@ export default function MapScreen() {
     setState({ fullData: nextData, query: text });
   };
 
-  const contains = ({ type, geometry, properties }: any, query: any) => {
+  const contains = ({ type,geometry,properties }: any, query: any) => {
     if (properties.title.includes(query)) {
       return true;
     }
@@ -1257,9 +1241,14 @@ export default function MapScreen() {
     setText("");
     setState({ fullData: [], query: "" });
     setSelectRoom(room);
+    if(room.properties.floor==1)setIsEnabled(false); 
+    else if(room.properties.floor==2) setIsEnabled(true); 
   };
 
+
   // -------------------------------------------
+
+  const colorScheme = React.useContext(ThemeContext);
 
   return (
     <View style={styles.container}>
@@ -1267,9 +1256,10 @@ export default function MapScreen() {
       <TextInput
         style={[
           styles.searchBar,
-          { color: useColorScheme() === "light" ? "black" : "white" },
+          { backgroundColor: colorScheme.scheme === "dark" ? "#1c1c1c" : "#e0e0e0",
+            color: colorScheme.scheme === "dark" ? "#e0e0e0" : "#1c1c1c" },
         ]}
-        placeholderTextColor={useColorScheme() === "light" ? "black" : "white"}
+        placeholderTextColor={colorScheme.scheme === "light" ? "#1c1c1c" : "#e0e0e0"}
         placeholder="Search"
         onChangeText={(text) => handleSearch(text)}
         defaultValue={text}
@@ -1277,17 +1267,16 @@ export default function MapScreen() {
 
       <View
         style={{
-          height: 1,
           width: "86%",
-          backgroundColor: useColorScheme() === "light" ? "black" : "white",
-          marginBottom: state.query.length > 0 ? 5 : -1,
+          backgroundColor: 'transparent',
         }}
       />
 
-      <View style={[styles.row2, { backgroundColor: useColorScheme() === "light" ? "black" : "white" }]}>
-
+        <View style={[styles.row2, {backgroundColor: colorScheme.scheme === "dark"? "#252525" : "#e6e6e6"}]}>
+        
         <FlatList
           style={{
+            backgroundColor: colorScheme.scheme === "dark" ? "#252525" : "#e6e6e6",
             height:
               state.query.length > 0
                 ? state.fullData.length * 40 > 150
@@ -1301,6 +1290,8 @@ export default function MapScreen() {
             <TouchableOpacity onPress={() => reset(item)}>
               <View
                 style={{
+                  width: '100%',
+                  backgroundColor: colorScheme.scheme === "dark" ? "#252525" : "#e6e6e6",
                   flexDirection: "row",
                   alignItems: "center",
                 }}
@@ -1324,7 +1315,7 @@ export default function MapScreen() {
         style={{
           height: 3.5,
           width: "100%",
-          backgroundColor: "#efefef",
+          backgroundColor: colorScheme.scheme === "dark" ? "#252525" : "#d4d4d4",
         }}
       />
       <MapView
@@ -1346,7 +1337,7 @@ export default function MapScreen() {
         zoomEnabled={true}
         pitchEnabled={true}
         showsUserLocation={true}
-        followsUserLocation={true}
+        // followsUserLocation={true}
         showsCompass={true}
         showsBuildings={true}
         showsTraffic={true}
@@ -1372,30 +1363,32 @@ export default function MapScreen() {
         style={{
           height: 3.5,
           width: "100%",
-          backgroundColor: "#efefef",
+          backgroundColor: colorScheme.scheme === "dark" ? "#252525" : "#d4d4d4",
         }}
       />
-      <View style={styles.row}>
+      <View style={[styles.row, {backgroundColor: colorScheme.scheme === "dark" ? "#1c1c1c" : "#e0e0e0"}]}>
         <Text
           style={{
-            color: isEnabled ? "#b7b7b7ff" : "#434343ff",
+            color: isEnabled ? (colorScheme.scheme === "dark" ? "#434343" : "#a8a8a8") : (colorScheme.scheme === "light" ? "#434343" : "#a8a8a8"),
             fontFamily: "poppins",
             paddingHorizontal: 8,
+            paddingVertical: Platform.OS === 'ios' ? 0 : 10
           }}
         >
           Floor One
         </Text>
         <Switch
-          trackColor={{ false: "#b7b7b7ff", true: "#b7b7b7ff" }}
-          thumbColor={isEnabled ? "#434343ff" : "#434343ff"}
+          trackColor={{ false: "#555555", true: "#828282" }}
+          thumbColor={isEnabled ? "#444444" : "#444444"}
           onValueChange={toggleSwitch}
           value={isEnabled}
         />
         <Text
           style={{
-            color: isEnabled ? "#434343ff" : "#b7b7b7ff",
+            color: !isEnabled ? (colorScheme.scheme === "dark" ? "#434343" : "#a8a8a8") : (colorScheme.scheme === "light" ? "#434343" : "#a8a8a8"),
             fontFamily: "poppins",
             paddingHorizontal: 8,
+            paddingVertical: Platform.OS === 'ios' ? 0 : 10
           }}
         >
           Floor Two
@@ -1405,19 +1398,24 @@ export default function MapScreen() {
   );
 }
 
+function readFloor(floor: any){
+  if (floor==1)return false; 
+  else if(floor==2) return true; 
+}
+
 function mapOverlay(altitude: any, isEnabled: boolean) {
-  if (isEnabled) {//|| altitude > 147
+  if (isEnabled ) {//|| altitude > 147
     return (
       <Overlay
         image={floorTwo}
         bounds={[
           [43.752834542813886, -79.4626054388977],
           [43.7540593854649, -79.46087161319494],
-
+          
         ]}
       />
     );
-  } else if (!isEnabled) {
+  } else if ( !isEnabled) {
     return (
       <Overlay
         image={floorOne}
@@ -1430,7 +1428,7 @@ function mapOverlay(altitude: any, isEnabled: boolean) {
   }
 }
 
-function roomIdentifier(latitude: any, longitude: any) {
+function roomIdentifier(latitude: any, longitude: any, ) {
   if (latitude == null || longitude == null) return;
   return <Marker coordinate={{ latitude, longitude }}></Marker>;
 }
@@ -1464,9 +1462,10 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: "row",
+    justifyContent: "center",
     // flexWrap: "wrap",
-    paddingHorizontal: 8,
-    paddingVertical: 20,
+    width: '100%',
+    paddingVertical: 15,
   },
   row2: {
     flexDirection: "row",
