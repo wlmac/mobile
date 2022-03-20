@@ -1241,7 +1241,10 @@ export default function MapScreen() {
     setText("");
     setState({ fullData: [], query: "" });
     setSelectRoom(room);
+    if(room.properties.floor==1)setIsEnabled(false); 
+    else if(room.properties.floor==2) setIsEnabled(true); 
   };
+
 
   // -------------------------------------------
 
@@ -1395,6 +1398,11 @@ export default function MapScreen() {
   );
 }
 
+function readFloor(floor: any){
+  if (floor==1)return false; 
+  else if(floor==2) return true; 
+}
+
 function mapOverlay(altitude: any, isEnabled: boolean) {
   if (isEnabled ) {//|| altitude > 147
     return (
@@ -1420,7 +1428,7 @@ function mapOverlay(altitude: any, isEnabled: boolean) {
   }
 }
 
-function roomIdentifier(latitude: any, longitude: any) {
+function roomIdentifier(latitude: any, longitude: any, ) {
   if (latitude == null || longitude == null) return;
   return <Marker coordinate={{ latitude, longitude }}></Marker>;
 }
