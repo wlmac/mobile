@@ -237,7 +237,7 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
           {/* --- TIME TEXT ---*/}
           <Text style={[styles.timeText, { color: theme.color2 }]}>{nextCourse}</Text>
           <Text style={[{ textAlign: 'center' }, guestMode.guest ? {display: "flex"} : {display: "none"}]}>
-            <Text style={{ color: 'rgb(148, 180, 235)' }} onPress={() => { navigation.jumpTo('Settings') }}>{' '}Log in{' '}</Text>
+            <Text style={{ color: colorScheme.scheme == 'dark' ? 'rgb(148, 180, 235)' : 'rgb(51,102,187)' }} onPress={() => { navigation.jumpTo('Settings') }}>{' '}Log in{' '}</Text>
             to view your personal schedule here!</Text>
 
 
