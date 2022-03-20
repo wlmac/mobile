@@ -39,7 +39,7 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
 
   criticalTimes = [];
 
-  apiRequest(`/api/term/current/schedule?date=2022-03-09`, '', 'GET', true).then(res => {
+  apiRequest(`/api/term/current/schedule`, '', 'GET', true).then(res => {
     if (res.success) {
       termSchedule = JSON.parse(res.response);
       if (termSchedule && termSchedule[0]) {
@@ -91,7 +91,7 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
     updateIcon(require('../assets/images/nowifi.png'));
   })
 
-  apiRequest(`/api/me/schedule?date=2022-03-09`, '', 'GET').then(res => {
+  apiRequest(`/api/me/schedule`, '', 'GET').then(res => {
     if (res.success) {
       schedule = JSON.parse(res.response);
       if (schedule && schedule[0]) {
