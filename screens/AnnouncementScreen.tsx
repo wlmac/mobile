@@ -16,12 +16,14 @@ export default function AnnouncementScreen() {
     let colorScheme = React.useContext(ThemeContext);
     const loadNum = 5; // # announcements to load at a time
 
+    const emptyOrgs: {name: string, icon: string}[] = [];
+
     // stores announcements
     const [announcements, setAnnouncements] = useState([]);
     const [myAnnouncements, setMyAnnouncements] = useState([]);
-    const [orgs, setOrgs] = useState([]);
+    const [orgs, setOrgs] = useState(emptyOrgs);
 
-    const addOrgs = (id: number, name: String, icon: String) => {
+    const addOrgs = (id: number, name: string, icon: string) => {
         let tmp = orgs;
         tmp[id] = {name: name, icon: icon};
         setOrgs(tmp);
@@ -109,6 +111,7 @@ export default function AnnouncementScreen() {
                                 item.name = orgs[orgId].name;
                             });
                             success = true;
+                            // @ts-ignore
                             setAnnouncements(announcements.concat(jsonres));
                             setNextAnnSet(nextAnnSet + loadNum);
                         }
@@ -138,6 +141,7 @@ export default function AnnouncementScreen() {
                             item.name = orgs[orgId].name;
                         });
                         success = true;
+                        // @ts-ignore
                         setMyAnnouncements(myAnnouncements.concat(jsonres));
                         setNextMySet(nextMySet + loadNum);
                     }
