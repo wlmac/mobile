@@ -21,7 +21,7 @@ export default function Changelog({ back }: { back: Function }) {
                 <Text style={styles.title}> Changelog </Text>
                 <View style={styles.separator} lightColor="#adadad" darkColor="rgba(255,255,255,0.1)" />
                 {Object.entries(changelog).map(([key, change]) => (
-                    <View key={key} style={{backgroundColor: colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525'}}>
+                    <View key={key} style={[{backgroundColor: colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525'}, {paddingBottom: 50}]}>
                         <Text style={{ fontSize: 20, fontWeight: 'bold', color: colorScheme.scheme === "dark" ? '#348feb' : '#105fb0' }}> v{change.version} </Text>
                         <Text style={{ color: colorScheme.scheme === "dark" ? '#cccccc' : '#555555', fontSize: 15 }}> {new Date(change.time).toLocaleString() + '\n'} </Text>
                         <View style={{backgroundColor: colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525'}}>
