@@ -13,6 +13,7 @@ import { RootStackParamList } from '../types';
 import BottomTabNavigator from './BottomTabNavigator';
 
 import useColorScheme, { ThemeContext } from '../hooks/useColorScheme';
+import useGuestMode, { GuestModeContext } from '../hooks/useGuestMode';
 
 const LightTheme = {
   dark: false,
@@ -33,6 +34,7 @@ const CustomDarkTheme = {
 
 export default function Navigation({ loginNeeded }: { loginNeeded: boolean }) {
   const scheme = useColorScheme();
+  const guest = useGuestMode();
 
   if (!scheme.schemeLoaded) {
     return null;
@@ -40,10 +42,12 @@ export default function Navigation({ loginNeeded }: { loginNeeded: boolean }) {
   else {
     return (
       <ThemeContext.Provider value={scheme}>
-        <NavigationContainer
-          theme={scheme.scheme === 'dark' ? CustomDarkTheme : LightTheme}>
-          <RootNavigator loginNeeded={loginNeeded} />
-        </NavigationContainer>
+        <GuestModeContext.Provider value={guest}>
+          <NavigationContainer
+            theme={scheme.scheme === 'dark' ? CustomDarkTheme : LightTheme}>
+            <RootNavigator loginNeeded={loginNeeded}/>
+          </NavigationContainer>
+        </GuestModeContext.Provider>
       </ThemeContext.Provider>
     );
   }
@@ -54,22 +58,17 @@ export default function Navigation({ loginNeeded }: { loginNeeded: boolean }) {
 const Stack = createStackNavigator<RootStackParamList>();
 
 function RootNavigator({ loginNeeded }: { loginNeeded: boolean }) {
-  if (loginNeeded) {
-    return (
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Login" component={LoginScreen} initialParams={{ loginNeeded: loginNeeded }} />
-        <Stack.Screen name="Root" component={BottomTabNavigator} />
-        <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
-      </Stack.Navigator>
-    );
-  }
-  else {
-    return (
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Root" component={BottomTabNavigator} />
-        <Stack.Screen name="Login" component={LoginScreen} initialParams={{ loginNeeded: loginNeeded }} />
-        <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
-      </Stack.Navigator>
-    );
-  }
+  const guestMode = React.useContext(GuestModeContext);
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {loginNeeded && !guestMode.guest ? [
+        <Stack.Screen name="Root" component={BottomTabNavigator} key="rootstackscreen"/>,
+        <Stack.Screen name="Login" component={LoginScreen} initialParams={{ loginNeeded: loginNeeded }} key="loginstackscreen" />
+      ] : [
+        <Stack.Screen name="Login" component={LoginScreen} initialParams={{ loginNeeded: loginNeeded }} key="loginstackscreen" />,
+        <Stack.Screen name="Root" component={BottomTabNavigator} key="rootstackscreen"/>
+      ]}
+      <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
+    </Stack.Navigator>
+  );
 }

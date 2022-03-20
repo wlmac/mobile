@@ -1,17 +1,21 @@
 import * as React from 'react';
 import { StyleSheet, Image, ImageBackground } from 'react-native';
-import {ThemeContext} from '../hooks/useColorScheme';
+import { ThemeContext } from '../hooks/useColorScheme';
+import { GuestModeContext } from '../hooks/useGuestMode';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 
 import apiRequest from '../lib/apiRequest';
 import { Text, View } from '../components/Themed';
 import { ChangeLogModal } from '../components/Changelog';
 import config from '../config.json';
 import getSeason from '../lib/getSeason';
+import { BottomTabParamList } from '../types';
 
 let theme;
 
-export default function HomeScreen() {
+export default function HomeScreen({ navigation }: { navigation: BottomTabNavigationProp<BottomTabParamList, 'Home'> }) {
   const colorScheme = React.useContext(ThemeContext);
+  const guestMode = React.useContext(GuestModeContext);
 
   let criticalTimes: any[];
   let time: number;
@@ -31,24 +35,30 @@ export default function HomeScreen() {
 
   let [dayHomepage, updateHomePage] = React.useState("No School!");
 
-  let [dataUploaded, updateDataUploaded] = React.useState(false);
+  let [dataUploaded, updateDataUploaded] = React.useState("");
 
   criticalTimes = [];
 
-  apiRequest(`/api/term/current/schedule`, '', 'GET').then(res => {
+  apiRequest(`/api/term/current/schedule?date=2022-03-09`, '', 'GET', true).then(res => {
     if (res.success) {
       termSchedule = JSON.parse(res.response);
       if (termSchedule && termSchedule[0]) {
+        let displayedInfo = ``;
+        updateHomePage(`${termSchedule[0].cycle}`);
         for (let i = 0; i < termSchedule.length; i++) {
           if (termSchedule[i].course == null) {
             termSchedule[i].course = "Period " + (i + 1);
           }
+          displayedInfo += `${termSchedule[i].description.time}${' '.repeat(Math.max(20 - termSchedule[i].description.time.length, 0))} |  ${termSchedule[i].course}`;
           let timeobj = {
             start: ((Date.parse(termSchedule[i].time.start) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
             end: ((Date.parse(termSchedule[i].time.end) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
             course: termSchedule[i].course
           }
           criticalTimes.push(timeobj);
+          if (i !== termSchedule.length - 1) {
+            displayedInfo += `\n`;
+          }
         }
         if (criticalTimes.length >= 2) { //if there are more than 2 courses, there must be a lunch in there somewhere, right?
           let pindx = Math.floor(criticalTimes.length / 2.0) - 1;
@@ -58,6 +68,10 @@ export default function HomeScreen() {
             course: 'LUNCH'
           }
           criticalTimes.splice(pindx + 1, 0, lunchobj);
+        }
+        if (dataUploaded == '') {
+          updateTimeTable(displayedInfo);
+          updateDataUploaded("public");
         }
       } else {
         updateTimeTable(`No class today!`);
@@ -77,11 +91,10 @@ export default function HomeScreen() {
     updateIcon(require('../assets/images/nowifi.png'));
   })
 
-  apiRequest(`/api/me/schedule`, '', 'GET').then(res => {
+  apiRequest(`/api/me/schedule?date=2022-03-09`, '', 'GET').then(res => {
     if (res.success) {
       schedule = JSON.parse(res.response);
       if (schedule && schedule[0]) {
-        updateHomePage(`${schedule[0].cycle}`);
         let displayedInfo = ``;
         for (let i = 0; i < schedule.length; i++) {
           if (schedule[i].course == null) {
@@ -103,11 +116,13 @@ export default function HomeScreen() {
             displayedInfo += `\n`;
           }
         }
-        updateTimeTable(displayedInfo);
-        updateDataUploaded(true);
+        if (dataUploaded == 'public') {
+          updateTimeTable(displayedInfo);
+          updateDataUploaded("personal");
+        }
       }
     }
-    else {
+    else if (dataUploaded == "") {
       updateCourse(`Currently Offline`);
       updateTimeText('No internet');
       updateTimeTable(`Could not connect to server!`);
@@ -127,16 +142,16 @@ export default function HomeScreen() {
 
   const determineTimeString = (presentTime: number, futureTime: number) => {
     const difference = futureTime - presentTime;
-    const hours = Math.floor(difference/60) + "";
+    const hours = Math.floor(difference / 60) + "";
     const minutes = difference % 60 + "";
-    
+
     return `${hours}h ${minutes}min`;
   }
 
   var loopingInterval: any;
 
   React.useEffect(() => {
-    if (dataUploaded) {
+    if (dataUploaded !== "") {
       dayOfTheWeek = new Date().getDay();
       clearInterval(loopingInterval);
       loopingInterval = setInterval(() => {
@@ -163,7 +178,7 @@ export default function HomeScreen() {
                   updateNextCourse("");
                 }
                 break;
-              } 
+              }
             }
           }
         }
@@ -221,6 +236,9 @@ export default function HomeScreen() {
 
           {/* --- TIME TEXT ---*/}
           <Text style={[styles.timeText, { color: theme.color2 }]}>{nextCourse}</Text>
+          <Text style={[{ textAlign: 'center' }, guestMode.guest ? {display: "flex"} : {display: "none"}]}>
+            <Text style={{ color: 'rgb(148, 180, 235)' }} onPress={() => { navigation.jumpTo('Settings') }}>{' '}Log in{' '}</Text>
+            to view your personal schedule here!</Text>
 
 
 
