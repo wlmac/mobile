@@ -100,43 +100,9 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
     const loadAnnResults = async() => {
         if (loadingMore) return;
         setLoadingMore(true);
-        var success: boolean = false;
-        var counter: number = 0;
-        while (!success && counter < 3) {
-            counter += 1;
-            await apiRequest(`/api/announcements?format=json&limit=${loadNum}&offset=${nextAnnSet}`, '', 'GET', true).then((res) => {
-                if (res.success) {
-                    try {
-                        let jsonres = JSON.parse(res.response).results;
-                        if (jsonres && Array.isArray(jsonres)) {
-                            jsonres.forEach((item: any) => {
-                                let orgId = item.organization.id; // gets the organization id
-                                item.icon = orgs[orgId].icon;
-                                item.name = orgs[orgId].name;
-                            });
-                            success = true;
-                            // @ts-ignore
-                            setAnnouncements(announcements.concat(jsonres));
-                            setNextAnnSet(nextAnnSet + loadNum);
-                        }
-                    } catch (_e) {}
-                }
-            })
-        }
-        if (!success && counter == 3) console.log("All Announcements API Not Working");
-        setLoadingMore(false);
-    }
-
-    // load more "my announcements"
-    const loadMyResults = async() => {
-        if (loadingMore) return;
-        setLoadingMore(true);
-        var success: boolean = false;
-        var counter: number = 0;
-        while (!success && counter < 3) {
-            counter += 1;
-            await apiRequest(`/api/announcements/feed?format=json&limit=${loadNum}&offset=${nextMySet}`, '', 'GET').then((res) => {
-                if (res.success) {
+        await apiRequest(`/api/announcements?format=json&limit=${loadNum}&offset=${nextAnnSet}`, '', 'GET', true).then((res) => {
+            if (res.success) {
+                try {
                     let jsonres = JSON.parse(res.response).results;
                     if (jsonres && Array.isArray(jsonres)) {
                         jsonres.forEach((item: any) => {
@@ -144,15 +110,38 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
                             item.icon = orgs[orgId].icon;
                             item.name = orgs[orgId].name;
                         });
-                        success = true;
+                        // @ts-ignore
+                        setAnnouncements(announcements.concat(jsonres));
+                        setNextAnnSet(nextAnnSet + loadNum);
+                    }
+                } catch (_e) {}
+            }
+        })
+
+        setLoadingMore(false);
+    }
+
+    // load more "my announcements"
+    const loadMyResults = async() => {
+        if (loadingMore) return;
+        setLoadingMore(true);
+        await apiRequest(`/api/announcements/feed?format=json&limit=${loadNum}&offset=${nextMySet}`, '', 'GET').then((res) => {
+            if (res.success) {
+                try {
+                    let jsonres = JSON.parse(res.response).results;
+                    if (jsonres && Array.isArray(jsonres)) {
+                        jsonres.forEach((item: any) => {
+                            let orgId = item.organization.id; // gets the organization id
+                            item.icon = orgs[orgId].icon;
+                            item.name = orgs[orgId].name;
+                        });
                         // @ts-ignore
                         setMyAnnouncements(myAnnouncements.concat(jsonres));
                         setNextMySet(nextMySet + loadNum);
                     }
-                }
-            });
-        }
-        if (!success && counter == 3) console.log("My Announcements API Not Working");
+                } catch (_e) {}
+            }
+        });
         setLoadingMore(false);
     }
     
@@ -205,12 +194,12 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
                 {Object.entries(myAnnouncements).map(([key, ann]) => (
                     <Announcement key={key} ann={ann} fullAnn={setFullAnnId}></Announcement>
                 ))}
-                <View style={noMyFeed ? {display: "none"} : {display: "flex"}}>     
+                <View style={[noMyFeed ? {display: "none"} : {display: "flex"}, {backgroundColor: (colorScheme.scheme === "dark" ? "#252525" : "#eaeaea")}]}>     
                     <Text style={{textAlign: 'center'}}>There is nothing in your feed. Join some 
                         <Text style={{color: 'rgb(51,102,187)'}} onPress={() => { WebBrowser.openBrowserAsync(config.server + '/clubs') }}>{' '}clubs{' '}</Text>
                     to have their announcements show up here!</Text>
                  </View>
-                 <View style={guestMode.guest ? {display: "flex"} : {display: "none"}}>     
+                 <View style={[guestMode.guest ? {display: "flex"} : {display: "none"}, {backgroundColor: (colorScheme.scheme === "dark" ? "#252525" : "#eaeaea")}]}>     
                     <Text style={{textAlign: 'center'}}>
                         <Text style={{color: 'rgb(51,102,187)'}} onPress={() => { navigation.jumpTo('Settings') }}>{' '}Log in{' '}</Text>
                     to view your personal feed here!</Text>
