@@ -74,7 +74,7 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
           updateDataUploaded("public");
         }
       } else {
-        updateTimeTable(`No class today!`);
+        updateTimeTable(`No class today!             `); //having spaces here aligns the text to the left bar
         updateCourse(`SCHOOL DAY FINISHED`);
         updateTimeText(``);
       }
