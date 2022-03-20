@@ -5,15 +5,19 @@ import { Text, View } from '../components/Themed';
 import Announcement from '../components/Announcement';
 import FullAnnouncement from '../components/FullAnnouncement';
 import * as WebBrowser from 'expo-web-browser';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 
 import { ThemeContext } from '../hooks/useColorScheme';
+import { GuestModeContext } from '../hooks/useGuestMode';
 import apiRequest from '../lib/apiRequest';
 import config from '../config.json';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BottomTabParamList } from '../types';
 
-export default function AnnouncementScreen() {
+export default function AnnouncementScreen({ navigation }: { navigation: BottomTabNavigationProp<BottomTabParamList, 'Announcements'> }) {
     // get color scheme
     let colorScheme = React.useContext(ThemeContext);
+    const guestMode = React.useContext(GuestModeContext);
     const loadNum = 5; // # announcements to load at a time
 
     const emptyOrgs: {name: string, icon: string}[] = [];
@@ -100,7 +104,7 @@ export default function AnnouncementScreen() {
         var counter: number = 0;
         while (!success && counter < 3) {
             counter += 1;
-            await apiRequest(`/api/announcements?format=json&limit=${loadNum}&offset=${nextAnnSet}`, '', 'GET').then((res) => {
+            await apiRequest(`/api/announcements?format=json&limit=${loadNum}&offset=${nextAnnSet}`, '', 'GET', true).then((res) => {
                 if (res.success) {
                     try {
                         let jsonres = JSON.parse(res.response).results;
@@ -117,7 +121,7 @@ export default function AnnouncementScreen() {
                         }
                     } catch (_e) {}
                 }
-            });
+            })
         }
         if (!success && counter == 3) console.log("All Announcements API Not Working");
         setLoadingMore(false);
@@ -205,6 +209,11 @@ export default function AnnouncementScreen() {
                     <Text style={{textAlign: 'center'}}>There is nothing in your feed. Join some 
                         <Text style={{color: 'rgb(51,102,187)'}} onPress={() => { WebBrowser.openBrowserAsync(config.server + '/clubs') }}>{' '}clubs{' '}</Text>
                     to have their announcements show up here!</Text>
+                 </View>
+                 <View style={guestMode.guest ? {display: "flex"} : {display: "none"}}>     
+                    <Text style={{textAlign: 'center'}}>
+                        <Text style={{color: 'rgb(51,102,187)'}} onPress={() => { navigation.jumpTo('Settings') }}>{' '}Log in{' '}</Text>
+                    to view your personal feed here!</Text>
                  </View>
             </ScrollView>
 

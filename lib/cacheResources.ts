@@ -13,7 +13,7 @@ export async function storeApiCalls(): Promise<void> {
     var orgs: Object[] = new Array(1000);
 
     // organizations
-    await apiRequest('/api/organizations?format=json', '', 'GET').then((res) => {
+    await apiRequest('/api/organizations?format=json', '', 'GET', true).then((res) => {
         if (res.success) {
             let jsonres = JSON.parse(res.response);
             if(jsonres && Array.isArray(jsonres)) {

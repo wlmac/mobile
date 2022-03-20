@@ -9,6 +9,7 @@ import Changelog from '../components/Changelog';
 import About from '../components/About';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemeContext } from '../hooks/useColorScheme';
+import { GuestModeContext } from '../hooks/useGuestMode';
 
 export default function SettingsScreen({ navigation }: { navigation: StackNavigationProp<RootStackParamList, 'Root'> }) {
   const [curView, setCurView] = React.useState(-1);
@@ -20,6 +21,7 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
   2 = About
   */
   const scheme = React.useContext(ThemeContext);
+  const guestMode = React.useContext(GuestModeContext);
 
   const btnBgColor = scheme.scheme === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
   const iconColor = scheme.scheme === "light" ? "rgb(64, 64, 64)" : "rgb(189, 189, 189)";
@@ -34,7 +36,13 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
   }
   let logout = () => {
     AsyncStorage.clear().then(() => {
-      Alert.alert('Success', `Logged out successfully`, [{ text: 'Ok', onPress: () => navigation.replace('Login', { loginNeeded: true }) }], { cancelable: false });
+      if (guestMode.guest) {
+        guestMode.updateGuest(false);
+        navigation.replace('Login', { loginNeeded: true });
+      }
+      else {
+        Alert.alert('Success', `Logged out successfully`, [{ text: 'Ok', onPress: () => navigation.replace('Login', { loginNeeded: true }) }], { cancelable: false });
+      }
     });
   }
 
@@ -67,7 +75,7 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
       </TouchableOpacity>
       <View style={styles.separator} lightColor="#adadad" darkColor="rgba(255,255,255,0.1)" />
       <TouchableOpacity style={curView == -1 ? [styles.logoutButton, { backgroundColor: logoutBtnBgColor }] : { display: "none" }} onPress={logout}>
-        <Text style={{ color: "white" }}> Log Out </Text>
+        <Text style={{ color: "white" }}> Log {guestMode.guest ? 'In' : 'Out'} </Text>
         <Ionicons name="exit-outline" size={18} color={'#e2e2e2'} />
       </TouchableOpacity>
     </View>
