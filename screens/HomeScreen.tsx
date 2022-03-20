@@ -16,6 +16,7 @@ export default function HomeScreen() {
   let criticalTimes: any[];
   let time: number;
   let schedule: any;
+  let termSchedule: any;
   let dayOfTheWeek: number;
   let season = getSeason();
 
@@ -34,6 +35,48 @@ export default function HomeScreen() {
 
   criticalTimes = [];
 
+  apiRequest(`/api/term/current/schedule`, '', 'GET').then(res => {
+    if (res.success) {
+      termSchedule = JSON.parse(res.response);
+      if (termSchedule && termSchedule[0]) {
+        for (let i = 0; i < termSchedule.length; i++) {
+          if (termSchedule[i].course == null) {
+            termSchedule[i].course = "Period " + (i + 1);
+          }
+          let timeobj = {
+            start: ((Date.parse(termSchedule[i].time.start) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
+            end: ((Date.parse(termSchedule[i].time.end) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
+            course: termSchedule[i].course
+          }
+          criticalTimes.push(timeobj);
+        }
+        if (criticalTimes.length >= 2) { //if there are more than 2 courses, there must be a lunch in there somewhere, right?
+          let pindx = Math.floor(criticalTimes.length / 2.0) - 1;
+          let lunchobj = {
+            start: criticalTimes[pindx].end,
+            end: criticalTimes[pindx + 1].start,
+            course: 'LUNCH'
+          }
+          criticalTimes.splice(pindx + 1, 0, lunchobj);
+        }
+      } else {
+        updateTimeTable(`No class today!`);
+        updateCourse(`SCHOOL DAY FINISHED`);
+        updateTimeText(``);
+      }
+    }
+  }).catch(err => {
+    updateTimeTable(`Uh-oh, error occurred :(`);
+  })
+  getWeather().then((data) => {
+    updateIcon(wIcons[data.weather_state_abbr]);
+    updateTemp(`${data.the_temp}°`);
+    updateWeather(data.weather_state_abbr);
+  }).catch(() => {
+    updateTemp(`Unknown`);
+    updateIcon(require('../assets/images/nowifi.png'));
+  })
+
   apiRequest(`/api/me/schedule`, '', 'GET').then(res => {
     if (res.success) {
       schedule = JSON.parse(res.response);
@@ -50,27 +93,18 @@ export default function HomeScreen() {
             end: ((Date.parse(schedule[i].time.end) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
             course: schedule[i].course
           }
-          criticalTimes.push(timeobj);
+          for (let j = 0; j < criticalTimes.length; j++) {
+            if (criticalTimes[j].start == timeobj.start && criticalTimes[j].end == timeobj.end) {
+              criticalTimes[j].course = timeobj.course;
+              break;
+            }
+          }
           if (i !== schedule.length - 1) {
             displayedInfo += `\n`;
           }
         }
-        if (criticalTimes.length >= 2) { //if there are more than 2 courses, there must be a lunch in there somewhere, right?
-          let pindx = Math.floor(criticalTimes.length / 2.0) - 1;
-          let lunchobj = {
-            start: criticalTimes[pindx].end,
-            end: criticalTimes[pindx + 1].start,
-            course: 'LUNCH'
-          }
-          criticalTimes.splice(pindx + 1, 0, lunchobj);
-        }
         updateTimeTable(displayedInfo);
         updateDataUploaded(true);
-      }
-      else {
-        updateTimeTable(`No class today!`);
-        updateCourse(`SCHOOL DAY FINISHED`);
-        updateTimeText(``);
       }
     }
     else {
@@ -89,7 +123,7 @@ export default function HomeScreen() {
     updateTemp(`Unknown`);
     updateIcon(require('../assets/images/nowifi.png'));
   })
-  
+
 
   const determineTimeString = (presentTime: number, futureTime: number) => {
     const difference = futureTime - presentTime;
@@ -99,10 +133,13 @@ export default function HomeScreen() {
     return `${hours}h ${minutes}min`;
   }
 
+  var loopingInterval: any;
+
   React.useEffect(() => {
     if (dataUploaded) {
       dayOfTheWeek = new Date().getDay();
-      const interval = setInterval(() => {
+      clearInterval(loopingInterval);
+      loopingInterval = setInterval(() => {
         time = Math.floor((Date.now() - new Date().setHours(0, 0, 0, 0)) / 60000);
         if (criticalTimes.length == 0) { }
         else if (time >= criticalTimes[criticalTimes.length - 1].end || dayOfTheWeek > 5) {
@@ -129,10 +166,9 @@ export default function HomeScreen() {
               } 
             }
           }
-          
         }
       }, 1000);
-      return () => clearInterval(interval);
+      return () => clearInterval(loopingInterval);
     }
   }, [dataUploaded]);
 
