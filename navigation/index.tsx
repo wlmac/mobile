@@ -33,11 +33,7 @@ const CustomDarkTheme = {
 
 export default function Navigation({ loginNeeded }: { loginNeeded: boolean }) {
   const scheme = useColorScheme();
-  const [colorScheme, setColorScheme] = React.useState(scheme.scheme);
 
-  React.useEffect(() => {
-    setColorScheme(scheme.scheme);
-  }, [scheme.scheme, scheme.schemeLoaded]);
   if (!scheme.schemeLoaded) {
     return null;
   }
@@ -45,7 +41,7 @@ export default function Navigation({ loginNeeded }: { loginNeeded: boolean }) {
     return (
       <ThemeContext.Provider value={scheme}>
         <NavigationContainer
-          theme={colorScheme === 'dark' ? CustomDarkTheme : LightTheme}>
+          theme={scheme.scheme === 'dark' ? CustomDarkTheme : LightTheme}>
           <RootNavigator loginNeeded={loginNeeded} />
         </NavigationContainer>
       </ThemeContext.Provider>
