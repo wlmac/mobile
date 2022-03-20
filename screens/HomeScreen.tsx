@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { StyleSheet, Image, ImageBackground } from 'react-native';
-import useColorScheme from '../hooks/useColorScheme';
+import {ThemeContext} from '../hooks/useColorScheme';
 
 import apiRequest from '../lib/apiRequest';
 import { Text, View } from '../components/Themed';
@@ -11,6 +11,7 @@ import getSeason from '../lib/getSeason';
 let theme;
 
 export default function HomeScreen() {
+  const colorScheme = React.useContext(ThemeContext);
 
   let criticalTimes: any[];
   let time: number;
@@ -135,7 +136,7 @@ export default function HomeScreen() {
     }
   }, [dataUploaded]);
 
-  if (useColorScheme() === "light") {
+  if (colorScheme.scheme === "light") {
     theme = {
       color1: "#005C99",
       color2: "#003D66",

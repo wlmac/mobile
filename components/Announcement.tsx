@@ -2,18 +2,18 @@ import * as React from 'react';
 import { StyleSheet, Image } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Text, View } from '../components/Themed';
-import useColorScheme from '../hooks/useColorScheme';
+import { ThemeContext } from '../hooks/useColorScheme';
 
 var lightC = "#3a6a96";
 var darkC = "#42a4ff";
 
 export default function Announcement({ann, fullAnn}:{ann: any, fullAnn: Function}) {
 
-    const colorScheme = useColorScheme();
+    const colorScheme = React.useContext(ThemeContext);
 
     return (
-        <View style={[styles.announcement, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c', shadowColor: colorScheme === 'light' ? '#1c1c1c' : '#e6e6e6'}]}>
-            <View style={[styles.tags, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
+        <View style={[styles.announcement, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c', shadowColor: colorScheme.scheme === 'light' ? '#1c1c1c' : '#e6e6e6'}]}>
+            <View style={[styles.tags, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
                 {Object.entries(ann.tags).map(([key, tag]) => (
                     createTag(key, tag)
                 ))}
@@ -21,13 +21,13 @@ export default function Announcement({ann, fullAnn}:{ann: any, fullAnn: Function
 
             {createHeader(ann.title)}
             
-            {annDetails(ann.name, ann.icon, ann.author.slug, ann.created_date, colorScheme)}
+            {annDetails(ann.name, ann.icon, ann.author.slug, ann.created_date, colorScheme.scheme)}
             {previewText(ann.body)}
 
             {/* View More Details */}
-            <View style={[styles.click, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
+            <View style={[styles.click, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
                 <TouchableOpacity onPress={() => fullAnn(ann.id)}>
-                    <Text style={[{color: colorScheme === "light" ? lightC : darkC}]}>{"See announcement  >"}</Text>
+                    <Text style={[{color: colorScheme.scheme === "light" ? lightC : darkC}]}>{"See announcement  >"}</Text>
                 </TouchableOpacity>
             </View>
         </View>

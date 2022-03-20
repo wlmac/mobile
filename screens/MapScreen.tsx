@@ -13,7 +13,7 @@ import * as Location from "expo-location";
 import { Switch } from "react-native";
 import { TextInput } from "react-native";
 import filter from "lodash.filter";
-import useColorScheme from "../hooks/useColorScheme";
+import {ThemeContext} from "../hooks/useColorScheme";
 
 const floorOne = require("../assets/images/FloorOne.png");
 const floorTwo = require("../assets/images/FloorTwo.png");
@@ -1245,7 +1245,7 @@ export default function MapScreen() {
 
   // -------------------------------------------
 
-  const colorScheme = useColorScheme();
+  const colorScheme = React.useContext(ThemeContext);
 
   return (
     <View style={styles.container}>
@@ -1253,10 +1253,10 @@ export default function MapScreen() {
       <TextInput
         style={[
           styles.searchBar,
-          { backgroundColor: colorScheme === "dark" ? "#1c1c1c" : "#e0e0e0",
-            color: colorScheme === "dark" ? "#e0e0e0" : "#1c1c1c" },
+          { backgroundColor: colorScheme.scheme === "dark" ? "#1c1c1c" : "#e0e0e0",
+            color: colorScheme.scheme === "dark" ? "#e0e0e0" : "#1c1c1c" },
         ]}
-        placeholderTextColor={colorScheme === "light" ? "#1c1c1c" : "#e0e0e0"}
+        placeholderTextColor={colorScheme.scheme === "light" ? "#1c1c1c" : "#e0e0e0"}
         placeholder="Search"
         onChangeText={(text) => handleSearch(text)}
         defaultValue={text}
@@ -1269,11 +1269,11 @@ export default function MapScreen() {
         }}
       />
 
-        <View style={[styles.row2, {backgroundColor: colorScheme === "dark"? "#252525" : "#e6e6e6"}]}>
+        <View style={[styles.row2, {backgroundColor: colorScheme.scheme === "dark"? "#252525" : "#e6e6e6"}]}>
         
         <FlatList
           style={{
-            backgroundColor: colorScheme === "dark" ? "#252525" : "#e6e6e6",
+            backgroundColor: colorScheme.scheme === "dark" ? "#252525" : "#e6e6e6",
             height:
               state.query.length > 0
                 ? state.fullData.length * 40 > 150
@@ -1288,7 +1288,7 @@ export default function MapScreen() {
               <View
                 style={{
                   width: '100%',
-                  backgroundColor: colorScheme === "dark" ? "#252525" : "#e6e6e6",
+                  backgroundColor: colorScheme.scheme === "dark" ? "#252525" : "#e6e6e6",
                   flexDirection: "row",
                   alignItems: "center",
                 }}
@@ -1312,7 +1312,7 @@ export default function MapScreen() {
         style={{
           height: 3.5,
           width: "100%",
-          backgroundColor: colorScheme === "dark" ? "#252525" : "#d4d4d4",
+          backgroundColor: colorScheme.scheme === "dark" ? "#252525" : "#d4d4d4",
         }}
       />
       <MapView
@@ -1360,13 +1360,13 @@ export default function MapScreen() {
         style={{
           height: 3.5,
           width: "100%",
-          backgroundColor: colorScheme === "dark" ? "#252525" : "#d4d4d4",
+          backgroundColor: colorScheme.scheme === "dark" ? "#252525" : "#d4d4d4",
         }}
       />
-      <View style={[styles.row, {backgroundColor: colorScheme === "dark" ? "#1c1c1c" : "#e0e0e0"}]}>
+      <View style={[styles.row, {backgroundColor: colorScheme.scheme === "dark" ? "#1c1c1c" : "#e0e0e0"}]}>
         <Text
           style={{
-            color: isEnabled ? (colorScheme === "dark" ? "#434343" : "#a8a8a8") : (colorScheme === "light" ? "#434343" : "#a8a8a8"),
+            color: isEnabled ? (colorScheme.scheme === "dark" ? "#434343" : "#a8a8a8") : (colorScheme.scheme === "light" ? "#434343" : "#a8a8a8"),
             fontFamily: "poppins",
             paddingHorizontal: 8,
             paddingVertical: Platform.OS === 'ios' ? 0 : 10
@@ -1382,10 +1382,10 @@ export default function MapScreen() {
         />
         <Text
           style={{
-            color: !isEnabled ? (colorScheme === "dark" ? "#434343" : "#a8a8a8") : (colorScheme === "light" ? "#434343" : "#a8a8a8"),
+            color: !isEnabled ? (colorScheme.scheme === "dark" ? "#434343" : "#a8a8a8") : (colorScheme.scheme === "light" ? "#434343" : "#a8a8a8"),
             fontFamily: "poppins",
             paddingHorizontal: 8,
-            paddingVertical: Platform.OS === 'ios' ? 1 : 10
+            paddingVertical: Platform.OS === 'ios' ? 0 : 10
           }}
         >
           Floor Two

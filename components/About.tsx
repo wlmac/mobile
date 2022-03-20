@@ -3,20 +3,20 @@ import { ScrollView, StyleSheet, Alert, TouchableOpacity, Linking } from 'react-
 import { Text, View } from '../components/Themed';
 import * as WebBrowser from 'expo-web-browser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import useColorScheme, { updateColourScheme } from '../hooks/useColorScheme';
+import {ThemeContext} from '../hooks/useColorScheme';
 import config from '../config.json';
 
 export default function About({ back }: { back: Function }) {
 
-    const colorScheme = useColorScheme();
-    const btnBgColor = colorScheme === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
+    const colorScheme = React.useContext(ThemeContext);
+    const btnBgColor = colorScheme.scheme === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
 
     return (
-        <View style={[styles.container, {backgroundColor: colorScheme === 'light' ? '#e0e0e0' : '#252525'}]}>
+        <View style={[styles.container, {backgroundColor: colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525'}]}>
             <Text style={styles.title}>
                 About
             </Text>
-            <View style={[styles.container, {backgroundColor: colorScheme === 'light' ? '#e0e0e0' : '#252525'}]}>
+            <View style={[styles.container, {backgroundColor: colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525'}]}>
                 <Text>The Metropolis app is the mobile app for {' '}
                     <TouchableOpacity onPress={() => { WebBrowser.openBrowserAsync(config.server) }}>
                         <Text style={styles.link}>
@@ -68,7 +68,7 @@ export default function About({ back }: { back: Function }) {
                     </TouchableOpacity>
                 </Text>
             </View>
-            <View style={{ justifyContent: 'space-between' , backgroundColor: colorScheme === 'light' ? '#e0e0e0' : '#252525'}}>
+            <View style={{ justifyContent: 'space-between' , backgroundColor: colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525'}}>
                 <TouchableOpacity style={[styles.button, { backgroundColor: btnBgColor }]} onPress={() => { back(-1) }}>
                     <Text> Back </Text>
                 </TouchableOpacity>
