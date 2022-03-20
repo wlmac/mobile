@@ -46,6 +46,13 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
     });
   }
 
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("blur", () => {
+      setView(-1);
+    });
+    return unsubscribe;
+  }, [navigation])
+
   return (
     <View style={[styles.container, { backgroundColor: scheme.scheme === 'light' ? '#e0e0e0' : '#252525' }]}>
       <ScrollView ref={topAbout} style={curView == 2 ? { flex: 1, width: "100%" } : { display: "none" }}>
