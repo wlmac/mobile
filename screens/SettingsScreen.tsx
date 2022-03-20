@@ -8,7 +8,7 @@ import { RootStackParamList } from '../types';
 import Changelog from '../components/Changelog';
 import About from '../components/About';
 import { Ionicons } from '@expo/vector-icons';
-import useColorScheme, { ThemeContext } from '../hooks/useColorScheme';
+import { ThemeContext } from '../hooks/useColorScheme';
 
 export default function SettingsScreen({ navigation }: { navigation: StackNavigationProp<RootStackParamList, 'Root'> }) {
   const [curView, setCurView] = React.useState(-1);
@@ -21,16 +21,9 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
   */
   const scheme = React.useContext(ThemeContext);
 
-  const [colorScheme, setColorScheme] = useState(scheme.scheme);
-
-  // use effect to change color scheme
-  useEffect(() => {
-    setColorScheme(scheme.scheme);
-  }, [scheme.schemeLoaded, scheme.scheme])
-
-  const btnBgColor = colorScheme === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
-  const iconColor = colorScheme === "light" ? "rgb(64, 64, 64)" : "rgb(189, 189, 189)";
-  const logoutBtnBgColor = '#073763'; //useColorScheme() === "light" ? "rgb(17, 111, 207)" : "rgb(58, 106, 150)"; 
+  const btnBgColor = scheme.scheme === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
+  const iconColor = scheme.scheme === "light" ? "rgb(64, 64, 64)" : "rgb(189, 189, 189)";
+  const logoutBtnBgColor = '#073763'; //scheme.scheme === "light" ? "rgb(17, 111, 207)" : "rgb(58, 106, 150)"; 
 
   // scroll to top
   const topChangeLog = React.useRef<ScrollView>(null);
@@ -46,7 +39,7 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colorScheme === 'light' ? '#e0e0e0' : '#252525' }]}>
+    <View style={[styles.container, { backgroundColor: scheme.scheme === 'light' ? '#e0e0e0' : '#252525' }]}>
       <ScrollView ref={topAbout} style={curView == 2 ? { flex: 1, width: "100%" } : { display: "none" }}>
         <About back={setView}></About>
       </ScrollView>
@@ -57,10 +50,10 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
       <TouchableOpacity
         style={curView == -1 ? [styles.button, { backgroundColor: btnBgColor }] : { display: "none" }}
         onPress={() => {
-          if (colorScheme === 'dark') scheme.updateScheme('light');
+          if (scheme.scheme === 'dark') scheme.updateScheme('light');
           else scheme.updateScheme('dark');
         }}>
-        <Text> Appearance: {colorScheme} </Text>
+        <Text> Appearance: {scheme.scheme} </Text>
         <Ionicons name="color-palette-outline" size={18} color={iconColor} />
       </TouchableOpacity>
 
