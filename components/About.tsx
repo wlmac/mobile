@@ -40,7 +40,7 @@ export default function About({ back }: { back: Function }) {
                 </Text>
                 <Text style={{ marginBottom: 12 }}>
                     <Text style={{ fontWeight: 'bold' }}>Lead Developer:</Text> Patrick Lin {'\n'}
-                    <Text style={{ fontWeight: 'bold' }}>Other Developers:</Text> Aaron Zhu, Shane Chen, Aava Sapkota, Vlad Surdu {'\n'}
+                    <Text style={{ fontWeight: 'bold' }}>Other Developers:</Text> Aaron Zhu, Shane Chen, Aava Sapkota, Vlad Surdu, Jeremy Liang {'\n'}
                     <Text style={{ fontWeight: 'bold' }}>Backend:</Text> Ken Shibata, Paul Lee {'\n'}
                     <Text style={{ fontWeight: 'bold' }}>Graphics and Design:</Text> Chelsea Wong, Justin Lu, Nicole Cui {'\n'}
                     <Text style={{ fontWeight: 'bold' }}>Support:</Text> Project Metropolis, SAC, WLMAC {'\n'}
@@ -56,7 +56,7 @@ export default function About({ back }: { back: Function }) {
                             hello@maclyonsden.com
                         </Text>
                     </TouchableOpacity>{'\n'}
-                    <TouchableOpacity onPress={() => { WebBrowser.openBrowserAsync('https://forms.gle/VoEn6s1814oEQYEV6') }}>
+                    <TouchableOpacity onPress={() => { WebBrowser.openBrowserAsync('https://maclyonsden.com/contact') }}>
                         <Text style={styles.link}>
                             Contact Us Form
                         </Text>
