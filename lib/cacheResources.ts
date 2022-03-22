@@ -27,7 +27,7 @@ export async function storeApiCalls(): Promise<void> {
     });
     AsyncStorage.setItem("@orgs", JSON.stringify(orgs));
 
-    await apiRequest(`/api/events?start=2021-09-20`, '', 'GET').then(res => {
+    await apiRequest(`/api/events?start=2021-09-20`, '', 'GET', true).then(res => {
         if (res.success) {
             AsyncStorage.setItem("@events", res.response);
         } else {
