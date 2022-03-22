@@ -4,7 +4,7 @@
     "slug": "metropolis",
     "owner": "apocalypsecalculator",
     "privacy": "hidden",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "githubUrl": "https://github.com/wlmac/mobile",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -26,11 +26,20 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true, 
+      "supportsTablet": true,
       "bundleIdentifier": "com.maclyonsden.metropolis",
-      "buildNumber": "4",
+      "buildNumber": "5",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "This app accesses location information to display location in respect to the school"
+        "NSLocationWhenInUseUsageDescription": "This app accesses location information to display location in respect to the school",
+        "UISupportedInterfaceOrientations": [
+          "UIInterfaceOrientationPortrait"
+        ],
+        "UISupportedInterfaceOrientations~ipad": [
+          "UIInterfaceOrientationLandscapeRight",
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIDeviceOrientationPortrait",
+          "UIDeviceOrientationPortraitUpsideDown"
+        ]
       }
     },
     "android": {
@@ -48,7 +57,7 @@
           "apiKey": "API key here"
         }
       },
-      "versionCode": 7
+      "versionCode": 8
     },
     "web": {
       "favicon": "./assets/images/favicon.png"

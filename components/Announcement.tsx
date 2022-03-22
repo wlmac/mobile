@@ -10,7 +10,7 @@ var darkC = "#42a4ff";
 export default function Announcement({ann, fullAnn}:{ann: any, fullAnn: Function}) {
 
     const colorScheme = React.useContext(ThemeContext);
-
+    //console.log(ann.id, ann.title);
     return (
         <View style={[styles.announcement, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c', shadowColor: colorScheme.scheme === 'light' ? '#1c1c1c' : '#e6e6e6'}]}>
             <View style={[styles.tags, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
@@ -26,7 +26,7 @@ export default function Announcement({ann, fullAnn}:{ann: any, fullAnn: Function
 
             {/* View More Details */}
             <View style={[styles.click, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
-                <TouchableOpacity onPress={() => fullAnn(ann.id)}>
+                <TouchableOpacity onPress={() => {fullAnn(ann.id)}}>
                     <Text style={[{color: colorScheme.scheme === "light" ? lightC : darkC}]}>{"See announcement  >"}</Text>
                 </TouchableOpacity>
             </View>
