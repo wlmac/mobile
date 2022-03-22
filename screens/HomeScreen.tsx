@@ -47,7 +47,7 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
           if (termSchedule[i].course == null) {
             termSchedule[i].course = "Period " + (i + 1);
           }
-          displayedInfo += `${termSchedule[i].description.time}${' '.repeat(Math.max(20 - termSchedule[i].description.time.length, 0))} |  ${termSchedule[i].course}`;
+          displayedInfo += `${termSchedule[i].description.time}\t|  ${termSchedule[i].course}`;
           let timeobj = {
             start: ((Date.parse(termSchedule[i].time.start) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
             end: ((Date.parse(termSchedule[i].time.end) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
@@ -98,7 +98,7 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
           if (schedule[i].course == null) {
             schedule[i].course = "Period " + (i + 1);
           }
-          displayedInfo += `${schedule[i].description.time}${' '.repeat(Math.max(20 - schedule[i].description.time.length, 0))} |  ${schedule[i].course}`;
+          displayedInfo += `${schedule[i].description.time}\t|  ${schedule[i].course}`;
           let timeobj = {
             start: ((Date.parse(schedule[i].time.start) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
             end: ((Date.parse(schedule[i].time.end) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
@@ -364,7 +364,8 @@ const styles = StyleSheet.create({
   courseText: {
     marginVertical: 5,
     marginLeft: 10,
-
+    textAlign: "justify",
+    justifyContent: 'space-evenly',
     fontSize: 17,
   },
 
