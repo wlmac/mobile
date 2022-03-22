@@ -18,7 +18,7 @@ First run:
 ```
 npm install --legacy-peer-deps --include-dev
 ```
-Navigate to node_modules/strip-ansi/index.js and `require` to `import`.
+Navigate to node_modules/strip-ansi/index.js and change `require` to `import`.
 
 If you are building an Android app, you will need an API key for Google Maps for Android SDK and place it in the appropriate field in app.json.
 
