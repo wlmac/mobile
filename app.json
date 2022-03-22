@@ -26,11 +26,20 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true, 
+      "supportsTablet": true,
       "bundleIdentifier": "com.maclyonsden.metropolis",
       "buildNumber": "5",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "This app accesses location information to display location in respect to the school"
+        "NSLocationWhenInUseUsageDescription": "This app accesses location information to display location in respect to the school",
+        "UISupportedInterfaceOrientations": [
+          "UIInterfaceOrientationPortrait"
+        ],
+        "UISupportedInterfaceOrientations~ipad": [
+          "UIInterfaceOrientationLandscapeRight",
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIDeviceOrientationPortrait",
+          "UIDeviceOrientationPortraitUpsideDown"
+        ]
       }
     },
     "android": {
