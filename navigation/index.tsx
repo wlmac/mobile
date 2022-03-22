@@ -45,7 +45,7 @@ export default function Navigation({ loginNeeded }: { loginNeeded: boolean }) {
         <GuestModeContext.Provider value={guest}>
           <NavigationContainer
             theme={scheme.scheme === 'dark' ? CustomDarkTheme : LightTheme}>
-            <RootNavigator loginNeeded={loginNeeded}/>
+            <RootNavigator loginNeeded={loginNeeded} />
           </NavigationContainer>
         </GuestModeContext.Provider>
       </ThemeContext.Provider>
@@ -59,14 +59,18 @@ const Stack = createStackNavigator<RootStackParamList>();
 
 function RootNavigator({ loginNeeded }: { loginNeeded: boolean }) {
   const guestMode = React.useContext(GuestModeContext);
+  const [toLogin, setToLogin] = React.useState(loginNeeded && !guestMode.guest);
+  React.useEffect(() => {
+    setToLogin(loginNeeded && !guestMode.guest);
+  }, [guestMode.guest])
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {loginNeeded && !guestMode.guest ? [
-        <Stack.Screen name="Root" component={BottomTabNavigator} key="rootstackscreen"/>,
-        <Stack.Screen name="Login" component={LoginScreen} initialParams={{ loginNeeded: loginNeeded }} key="loginstackscreen" />
-      ] : [
+      {toLogin ? [
         <Stack.Screen name="Login" component={LoginScreen} initialParams={{ loginNeeded: loginNeeded }} key="loginstackscreen" />,
-        <Stack.Screen name="Root" component={BottomTabNavigator} key="rootstackscreen"/>
+        <Stack.Screen name="Root" component={BottomTabNavigator} key="rootstackscreen" />
+      ] : [
+        <Stack.Screen name="Root" component={BottomTabNavigator} key="rootstackscreen" />,
+        <Stack.Screen name="Login" component={LoginScreen} initialParams={{ loginNeeded: loginNeeded }} key="loginstackscreen" />
       ]}
       <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
     </Stack.Navigator>

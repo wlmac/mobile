@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet, Alert, TouchableOpacity, useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
 
@@ -37,6 +37,7 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
   let logout = () => {
     AsyncStorage.clear().then(() => {
       if (guestMode.guest) {
+        scheme.updateScheme(scheme.scheme);
         guestMode.updateGuest(false);
         navigation.replace('Login', { loginNeeded: true });
       }

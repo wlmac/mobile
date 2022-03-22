@@ -129,12 +129,12 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
         
         <View style={styles.helpContainer}>
           <TouchableOpacity onPress={handleRegisterPress} style={styles.helpLink}>
-            <Text style={styles.helpLinkText} lightColor={Colors.light.tint}>
+            <Text style={[styles.helpLinkText, {color: colorScheme.scheme == 'light' ? Colors.light.text : Colors.dark.text}]} lightColor={Colors.light.tint} darkColor={Colors.dark.tint}>
               Register
             </Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={handleForgotPasswordPress} style={styles.helpLink}>
-            <Text style={styles.helpLinkText} lightColor={Colors.light.tint}>
+            <Text style={[styles.helpLinkText, {color: colorScheme.scheme == 'light' ? Colors.light.text : Colors.dark.text}]} lightColor={Colors.light.tint} darkColor={Colors.dark.tint}>
               Forgot Password
             </Text>
           </TouchableOpacity>
@@ -147,7 +147,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
             navigation.replace('Root');
           })
         }}>
-            <Text style={styles.helpLinkText} lightColor={Colors.light.tint}>
+            <Text style={[styles.helpLinkText, {color: colorScheme.scheme == 'light' ? Colors.light.text : Colors.dark.text}]} lightColor={Colors.light.tint} darkColor={Colors.dark.tint}>
               Continue in Guest Mode
             </Text>
           </TouchableOpacity>
