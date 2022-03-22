@@ -117,7 +117,6 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
                 } catch (_e) {}
             }
         })
-
         setLoadingMore(false);
     }
 
@@ -125,6 +124,7 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
     const loadMyResults = async() => {
         if (loadingMore) return;
         setLoadingMore(true);
+
         await apiRequest(`/api/announcements/feed?format=json&limit=${loadNum}&offset=${nextMySet}`, '', 'GET').then((res) => {
             if (res.success) {
                 try {
@@ -142,6 +142,7 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
                 } catch (_e) {}
             }
         });
+
         setLoadingMore(false);
     }
     
@@ -198,17 +199,17 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
                     <Text style={{textAlign: 'center'}}>There is nothing in your feed. Join some 
                         <Text style={{color: 'rgb(51,102,187)'}} onPress={() => { WebBrowser.openBrowserAsync(config.server + '/clubs') }}>{' '}clubs{' '}</Text>
                     to have their announcements show up here!</Text>
-                 </View>
-                 <View style={[guestMode.guest ? {display: "flex"} : {display: "none"}, {backgroundColor: (colorScheme.scheme === "dark" ? "#252525" : "#eaeaea")}]}>     
+                </View>
+                <View style={[guestMode.guest ? {display: "flex"} : {display: "none"}, {backgroundColor: (colorScheme.scheme === "dark" ? "#252525" : "#eaeaea")}]}>     
                     <Text style={{textAlign: 'center'}}>
                         <Text style={{color: 'rgb(51,102,187)'}} onPress={() => { navigation.jumpTo('Settings') }}>{' '}Log in{' '}</Text>
                     to view your personal feed here!</Text>
-                 </View>
+                </View>
             </ScrollView>
 
             {/* Full Announcement */}
             <ScrollView ref={fullA} style={fullAnnId != "-1" ? styles.scrollView : {display: "none"}}>
-                <FullAnnouncement ann={announcements.find((e: any) => e.id == fullAnnId)} backToScroll={setFullAnnId}></FullAnnouncement>
+                <FullAnnouncement ann={announcements.concat(myAnnouncements).find((e: any) => e.id == fullAnnId)} backToScroll={setFullAnnId}></FullAnnouncement>
             </ScrollView>
 
             {/* Divider */}
