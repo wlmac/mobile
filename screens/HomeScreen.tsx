@@ -28,14 +28,12 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
   let [weatherIcon, updateIcon] = React.useState(require('../assets/images/loading.gif'));
   let [weather, updateWeather] = React.useState('c');
   let [temp, updateTemp] = React.useState('Loading...');
-
   let [course, updateCourse] = React.useState("Loading...");
   let [timeText, updateTimeText] = React.useState("Loading...");
   let [nextCourse, updateNextCourse] = React.useState("");
-
   let [dayHomepage, updateHomePage] = React.useState("No School!");
-
   let [dataUploaded, updateDataUploaded] = React.useState("");
+  let [currentDay, setCurrentDay] = React.useState(new Date().getDay());
 
   criticalTimes = [];
 
@@ -155,6 +153,11 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
       dayOfTheWeek = new Date().getDay();
       clearInterval(loopingInterval);
       loopingInterval = setInterval(() => {
+        if(currentDay !== new Date().getDay()) {
+          clearInterval(loopingInterval);
+          setCurrentDay(new Date().getDay());
+          updateDataUploaded("");
+        }
         time = Math.floor((Date.now() - new Date().setHours(0, 0, 0, 0)) / 60000);
         if (criticalTimes.length == 0) { }
         else if (time >= criticalTimes[criticalTimes.length - 1].end || dayOfTheWeek > 5) {
