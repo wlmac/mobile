@@ -12,13 +12,13 @@ export default function App() {
   const startupHook = useCachedResources();
 
   Device.getDeviceTypeAsync().then(type => {
-    if(type == 2) {
-      /*According to Expo docs,
+    /*According to Expo docs,
       0 is unknown, 1 is phone, 2 is tablet, 3 is desktop, 4 is tv*/
-      ScreenOrientation.unlockAsync().catch(err => {});
+    if (type != 2) {
+      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT);
     }
-  }).catch(err => {});
-  
+  }).catch(err => { });
+
   if (!startupHook.isLoadingComplete) {
     return null;
   } else {

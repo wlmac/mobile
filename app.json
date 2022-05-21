@@ -6,7 +6,6 @@
     "privacy": "hidden",
     "version": "1.1.1",
     "githubUrl": "https://github.com/wlmac/mobile",
-    "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "metropolis",
     "userInterfaceStyle": "automatic",
