@@ -14,7 +14,7 @@ import { Switch } from "react-native";
 import { TextInput } from "react-native";
 import filter from "lodash.filter";
 import {ThemeContext} from "../hooks/useColorScheme";
-import { data }  from "../constants/map";
+import { data }  from "../constants/Map";
 
 const floorOne = require("../assets/images/FloorOne.png");
 const floorTwo = require("../assets/images/FloorTwo.png");
