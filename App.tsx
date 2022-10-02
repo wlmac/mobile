@@ -11,13 +11,15 @@ import Navigation from './navigation';
 export default function App() {
   const startupHook = useCachedResources();
 
-  Device.getDeviceTypeAsync().then(type => {
-    /*According to Expo docs,
-      0 is unknown, 1 is phone, 2 is tablet, 3 is desktop, 4 is tv*/
-    if (type != 2) {
-      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT);
-    }
-  }).catch(err => { });
+  React.useEffect(() => {
+    Device.getDeviceTypeAsync().then(type => {
+      /*According to Expo docs,
+        0 is unknown, 1 is phone, 2 is tablet, 3 is desktop, 4 is tv*/
+      if (type != 2) {
+        ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+      }
+    }).catch(err => { });
+  }, []);
 
   if (!startupHook.isLoadingComplete) {
     return null;
