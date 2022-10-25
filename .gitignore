@@ -10,5 +10,7 @@ npm-debug.*
 *.orig.*
 web-build/
 
+mobile_prev
+
 # macOS
 .DS_Store
