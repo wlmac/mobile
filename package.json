@@ -41,6 +41,7 @@
     "lodash.filter": "^4.6.0",
     "react-native-calendars": "^1.1290.0",
     "react-native-markdown-display": "^7.0.0-alpha.2",
+    "rome": "^10.0.0",
     "typescript": "^4.8.4"
   },
   "private": true
