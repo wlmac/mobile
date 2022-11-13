@@ -50,7 +50,9 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
     const [fullAnnId, setAnnId] = useState("-1");
     function setFullAnnId(id: string) {
         setAnnId(id);
-        if (id == "-1") fullA?.current?.scrollTo({x: 0, y: 0, animated: false});
+        if (id === "-1") {
+            fullA?.current?.scrollTo({x: 0, y: 0, animated: false});
+        }
     }
     
     //displayed info if nothing in feed
@@ -82,7 +84,9 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
             let jsonres = JSON.parse(res);
             if (jsonres && Array.isArray(jsonres)) {
                 for (let i = 0; i < jsonres.length; i += 1) {
-                    if (jsonres[i] != null) addOrgs(i, jsonres[i].name, jsonres[i].icon);
+                    if (jsonres[i] != null) {
+                        addOrgs(i, jsonres[i].name, jsonres[i].icon);
+                    }
                 }
             }
         });
@@ -90,7 +94,7 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
         await loadAnnResults();
         await loadMyResults();
 
-        if(myAnnouncements.length == 0) {
+        if(myAnnouncements.length === 0) {
             togglenoMyFeedText(true);
         }
         toggleLoading(false);
@@ -98,7 +102,9 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
 
     // load more "all announcements"
     const loadAnnResults = async() => {
-        if (loadingMore) return;
+        if (loadingMore) {
+            return;
+        }
         setLoadingMore(true);
         await apiRequest(`/api/announcements?format=json&limit=${loadNum}&offset=${nextAnnSet}`, '', 'GET', true).then((res) => {
             if (res.success) {
@@ -122,7 +128,9 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
 
     // load more "my announcements"
     const loadMyResults = async() => {
-        if (loadingMore) return;
+        if (loadingMore) {
+            return;
+        }
         setLoadingMore(true);
 
         await apiRequest(`/api/announcements/feed?format=json&limit=${loadNum}&offset=${nextMySet}`, '', 'GET').then((res) => {
@@ -160,15 +168,15 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
         </View>
 
         {/* After Everything is Loaded */}
-        <View style={!isLoading ? [styles.container, {backgroundColor: (colorScheme.scheme === "dark" ? "#252525" : "#eaeaea")}] : {display: "none"}}>
-            <Text style={fullAnnId == "-1" ? styles.header : {display: "none"}}>
+        <View style={isLoading ? {display: "none"} : [styles.container, {backgroundColor: (colorScheme.scheme === "dark" ? "#252525" : "#eaeaea")}]}>
+            <Text style={fullAnnId === "-1" ? styles.header : {display: "none"}}>
                 {isFilter ? "My Announcements" : "All Announcements"}
             </Text>
 
             {/* School Announcements */}
             <ScrollView 
                 ref={allA} 
-                style={!isFilter && fullAnnId == "-1" ? styles.scrollView : {display: "none"}}
+                style={!isFilter && fullAnnId === "-1" ? styles.scrollView : {display: "none"}}
                 onScroll={({nativeEvent}) => {
                     if (isCloseToBottom(nativeEvent)) {
                         loadAnnResults();
@@ -177,14 +185,14 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
                 scrollEventThrottle={0}
                 >
                     {Object.entries(announcements).map(([key, ann]) => (
-                        <Announcement key={key} ann={ann} fullAnn={setFullAnnId}></Announcement>
+                        <Announcement key={key} ann={ann} fullAnn={setFullAnnId}/>
                     ))}
             </ScrollView>
 
             {/* My Feed Announcement */}
             <ScrollView 
                 ref={myA} 
-                style={isFilter && fullAnnId == "-1" ? styles.scrollView : {display: "none"}}
+                style={isFilter && fullAnnId === "-1" ? styles.scrollView : {display: "none"}}
                 onScroll={({nativeEvent}) => {
                     if (isCloseToBottom(nativeEvent)) {
                         loadMyResults();
@@ -193,11 +201,11 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
                 scrollEventThrottle={0}
             >
                 {Object.entries(myAnnouncements).map(([key, ann]) => (
-                    <Announcement key={key} ann={ann} fullAnn={setFullAnnId}></Announcement>
+                    <Announcement key={key} ann={ann} fullAnn={setFullAnnId}/>
                 ))}
                 <View style={[noMyFeed ? {display: "none"} : {display: "flex"}, {backgroundColor: (colorScheme.scheme === "dark" ? "#252525" : "#eaeaea")}]}>     
                     <Text style={{textAlign: 'center'}}>There is nothing in your feed. Join some 
-                        <Text style={{color: 'rgb(51,102,187)'}} onPress={() => { WebBrowser.openBrowserAsync(config.server + '/clubs') }}>{' '}clubs{' '}</Text>
+                        <Text style={{color: 'rgb(51,102,187)'}} onPress={() => { WebBrowser.openBrowserAsync(`${config.server}/clubs`) }}>{' '}clubs{' '}</Text>
                     to have their announcements show up here!</Text>
                 </View>
                 <View style={[guestMode.guest ? {display: "flex"} : {display: "none"}, {backgroundColor: (colorScheme.scheme === "dark" ? "#252525" : "#eaeaea")}]}>     
@@ -208,8 +216,8 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
             </ScrollView>
 
             {/* Full Announcement */}
-            <ScrollView ref={fullA} style={fullAnnId != "-1" ? styles.scrollView : {display: "none"}}>
-                <FullAnnouncement ann={announcements.concat(myAnnouncements).find((e: any) => e.id == fullAnnId)} backToScroll={setFullAnnId}></FullAnnouncement>
+            <ScrollView ref={fullA} style={fullAnnId !== "-1" ? styles.scrollView : {display: "none"}}>
+                <FullAnnouncement ann={announcements.concat(myAnnouncements).find((e: any) => e.id === fullAnnId)} backToScroll={setFullAnnId}/>
             </ScrollView>
 
             {/* Divider */}
@@ -222,7 +230,7 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
             />
 
             {/* Filter Announcements */}
-            <View style={[fullAnnId == "-1" ? styles.row : {display: "none"}, {backgroundColor: colorScheme.scheme === 'dark' ? "#252525" : "#eaeaea",}]}>
+            <View style={[fullAnnId === "-1" ? styles.row : {display: "none"}, {backgroundColor: colorScheme.scheme === 'dark' ? "#252525" : "#eaeaea",}]}>
                 <Text style={
                     {color: isFilter ?(colorScheme.scheme === "dark" ? "#434343" : "#a8a8a8") : (colorScheme.scheme === "light" ? "#434343" : "#a8a8a8"), 
                     fontFamily: 'poppins', 

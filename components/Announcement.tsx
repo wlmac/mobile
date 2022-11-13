@@ -52,7 +52,7 @@ function annDetails(org: string, orgIcon: string, author: string, timeStamp: str
         <View style={styles.details}>
             <View style={[styles.detailsHeading, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
                 <View style={[styles.iconShadow, {shadowColor: colorScheme === "light" ? "black" : "white"}]}>
-                    <Image style={styles.orgIcon} source={{uri: orgIcon}}></Image>
+                    <Image style={styles.orgIcon} source={{uri: orgIcon}}/>
                 </View>
                 <Text style={[styles.clubName, {color: colorScheme === "light" ? lightC : darkC}]}>{org}</Text>
             </View>

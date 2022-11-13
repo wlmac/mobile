@@ -9,7 +9,7 @@ import * as WebBrowser from 'expo-web-browser';
 var lightC = "#3a6a96";
 var darkC = "#42a4ff";
 export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToScroll: Function}) {
-    if (ann == undefined) { // prevent errors
+    if (ann === undefined) { // prevent errors
         return(<></>);
     }
 
@@ -56,7 +56,7 @@ function annDetails(org: string, orgIcon: string, author: string, timeStamp: str
         <View style={[styles.details, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
             <View style={[styles.detailsHeading, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
                 <View style={[styles.iconShadow, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
-                    <Image style={styles.orgIcon} source={{uri: orgIcon}}></Image>
+                    <Image style={styles.orgIcon} source={{uri: orgIcon}}/>
                 </View>
                 <Text style={[styles.clubName, {color: colorScheme === "light" ? lightC : darkC}]}>{org}</Text>
             </View>
