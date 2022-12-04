@@ -57,12 +57,12 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
   }
 
   React.useEffect (()=>{
-    Keyboard.addListener(Platform.OS === `android`? `keyboardDidShow`: `keyboardWillShow`, keyboardShown);
-    Keyboard.addListener(Platform.OS === `android`? `keyboardDidHide`: `keyboardWillHide`, keyboardHidden);
+    const sub1 = Keyboard.addListener(Platform.OS === `android`? `keyboardDidShow`: `keyboardWillShow`, keyboardShown);
+    const sub2 = Keyboard.addListener(Platform.OS === `android`? `keyboardDidHide`: `keyboardWillHide`, keyboardHidden);
 
     return () => {
-      Keyboard.removeListener(Platform.OS === `android`? `keyboardDidShow`: `keyboardWillShow`, keyboardShown);
-      Keyboard.removeListener(Platform.OS === `android`? `keyboardDidHide`: `keyboardWillHide`, keyboardHidden);
+      sub1.remove();
+      sub2.remove();
     }
   },[]);
 
