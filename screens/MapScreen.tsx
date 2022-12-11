@@ -59,7 +59,6 @@ export default function MapScreen({
         if (location.coords.altitude != null && location.coords.altitude > 147)
           setIsEnabled(true);
         else setIsEnabled(false);
-        1;
       }
     })();
   }, []);
@@ -129,6 +128,7 @@ export default function MapScreen({
             color: colorScheme.scheme === "dark" ? "#e0e0e0" : "#1c1c1c",
           },
         ]}
+        keyboardAppearance={colorScheme.scheme === "dark" ? "dark" : "light"}
         placeholderTextColor={
           colorScheme.scheme === "light" ? "#1c1c1c" : "#e0e0e0"
         }
