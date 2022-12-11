@@ -3,7 +3,13 @@ import { Text, View } from "../components/Themed";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { BottomTabParamList } from "../types";
 
-import { FlatList, Platform, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  FlatList,
+  Platform,
+  StyleSheet,
+  TouchableOpacity,
+  useColorScheme,
+} from "react-native";
 
 import { useState, useEffect } from "react";
 import MapView, { Marker, Overlay, PROVIDER_DEFAULT } from "react-native-maps";
@@ -201,6 +207,7 @@ export default function MapScreen({
         }}
       />
       <MapView
+        userInterfaceStyle={colorScheme.scheme === "dark" ? "dark" : "light"}
         style={styles.map}
         initialRegion={{
           latitude: latitude,
@@ -272,14 +279,14 @@ export default function MapScreen({
               : "#a8a8a8",
             fontFamily: "poppins",
             paddingHorizontal: 8,
-            paddingVertical: Platform.OS === "ios" ? 0 : 10,
+            paddingVertical: Platform.OS === "ios" ? 5 : 10,
           }}
         >
           Floor One
         </Text>
         <Switch
           trackColor={{ false: "#555555", true: "#828282" }}
-          thumbColor={isEnabled ? "#444444" : "#444444"}
+          thumbColor={colorScheme.scheme === "dark" ? "#e0e0e0" : "#444444"}
           onValueChange={toggleSwitch}
           value={isEnabled}
         />
@@ -294,7 +301,7 @@ export default function MapScreen({
               : "#a8a8a8",
             fontFamily: "poppins",
             paddingHorizontal: 8,
-            paddingVertical: Platform.OS === "ios" ? 0 : 10,
+            paddingVertical: Platform.OS === "ios" ? 5 : 10,
           }}
         >
           Floor Two
