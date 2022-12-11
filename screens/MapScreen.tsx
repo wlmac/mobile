@@ -1,14 +1,9 @@
 import * as React from "react";
-import { Text, View } from '../components/Themed';
-import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { BottomTabParamList } from '../types';
+import { Text, View } from "../components/Themed";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import { BottomTabParamList } from "../types";
 
-import {
-  FlatList,
-  Platform,
-  StyleSheet,
-  TouchableOpacity,
-} from "react-native";
+import { FlatList, Platform, StyleSheet, TouchableOpacity } from "react-native";
 
 import { useState, useEffect } from "react";
 import MapView, { Marker, Overlay, PROVIDER_DEFAULT } from "react-native-maps";
@@ -17,12 +12,16 @@ import { Switch } from "react-native";
 import { TextInput } from "react-native";
 import filter from "lodash.filter";
 import { ThemeContext } from "../hooks/useColorScheme";
-import maplocations from "../maplocations.json";
+import maplocations from "../constants/maplocations.json";
 
 const floorOne = require("../assets/images/FloorOne.png");
 const floorTwo = require("../assets/images/FloorTwo.png");
 
-export default function MapScreen({ navigation }: { navigation: BottomTabNavigationProp<BottomTabParamList, 'Map'> }) {
+export default function MapScreen({
+  navigation,
+}: {
+  navigation: BottomTabNavigationProp<BottomTabParamList, "Map">;
+}) {
   const LATITUDE_DELTA = 0.00122;
   const LONGITUDE_DELTA = 0.00061;
   const latitude = 43.75376776088882;
@@ -46,11 +45,10 @@ export default function MapScreen({ navigation }: { navigation: BottomTabNavigat
       title: "",
       floor: 0,
     },
-  },);
+  });
 
   useEffect(() => {
     (async () => {
-
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
         setErrorMsg("Permission to access location was denied");
@@ -61,6 +59,7 @@ export default function MapScreen({ navigation }: { navigation: BottomTabNavigat
         if (location.coords.altitude != null && location.coords.altitude > 147)
           setIsEnabled(true);
         else setIsEnabled(false);
+        1;
       }
     })();
   }, []);
@@ -114,7 +113,6 @@ export default function MapScreen({ navigation }: { navigation: BottomTabNavigat
     else if (room.properties.floor == 2) setIsEnabled(true);
   };
 
-
   // -------------------------------------------
 
   const colorScheme = React.useContext(ThemeContext);
@@ -126,11 +124,14 @@ export default function MapScreen({ navigation }: { navigation: BottomTabNavigat
         style={[
           styles.searchBar,
           {
-            backgroundColor: colorScheme.scheme === "dark" ? "#1c1c1c" : "#e0e0e0",
-            color: colorScheme.scheme === "dark" ? "#e0e0e0" : "#1c1c1c"
+            backgroundColor:
+              colorScheme.scheme === "dark" ? "#1c1c1c" : "#e0e0e0",
+            color: colorScheme.scheme === "dark" ? "#e0e0e0" : "#1c1c1c",
           },
         ]}
-        placeholderTextColor={colorScheme.scheme === "light" ? "#1c1c1c" : "#e0e0e0"}
+        placeholderTextColor={
+          colorScheme.scheme === "light" ? "#1c1c1c" : "#e0e0e0"
+        }
         placeholder="Search"
         onChangeText={(text) => handleSearch(text)}
         defaultValue={text}
@@ -139,15 +140,23 @@ export default function MapScreen({ navigation }: { navigation: BottomTabNavigat
       <View
         style={{
           width: "86%",
-          backgroundColor: 'transparent',
+          backgroundColor: "transparent",
         }}
       />
 
-      <View style={[styles.row2, { backgroundColor: colorScheme.scheme === "dark" ? "#252525" : "#e6e6e6" }]}>
-
+      <View
+        style={[
+          styles.row2,
+          {
+            backgroundColor:
+              colorScheme.scheme === "dark" ? "#252525" : "#e6e6e6",
+          },
+        ]}
+      >
         <FlatList
           style={{
-            backgroundColor: colorScheme.scheme === "dark" ? "#252525" : "#e6e6e6",
+            backgroundColor:
+              colorScheme.scheme === "dark" ? "#252525" : "#e6e6e6",
             height:
               state.query.length > 0
                 ? state.fullData.length * 40 > 150
@@ -161,8 +170,9 @@ export default function MapScreen({ navigation }: { navigation: BottomTabNavigat
             <TouchableOpacity onPress={() => reset(item)}>
               <View
                 style={{
-                  width: '100%',
-                  backgroundColor: colorScheme.scheme === "dark" ? "#252525" : "#e6e6e6",
+                  width: "100%",
+                  backgroundColor:
+                    colorScheme.scheme === "dark" ? "#252525" : "#e6e6e6",
                   flexDirection: "row",
                   alignItems: "center",
                 }}
@@ -186,7 +196,8 @@ export default function MapScreen({ navigation }: { navigation: BottomTabNavigat
         style={{
           height: 3.5,
           width: "100%",
-          backgroundColor: colorScheme.scheme === "dark" ? "#252525" : "#d4d4d4",
+          backgroundColor:
+            colorScheme.scheme === "dark" ? "#252525" : "#d4d4d4",
         }}
       />
       <MapView
@@ -227,23 +238,41 @@ export default function MapScreen({ navigation }: { navigation: BottomTabNavigat
           }}
         ></Marker> */}
 
-        {roomIdentifier(selectRoom.geometry.coordinates[1], selectRoom.geometry.coordinates[0])}
+        {roomIdentifier(
+          selectRoom.geometry.coordinates[1],
+          selectRoom.geometry.coordinates[0]
+        )}
         {mapOverlay(location.altitude, isEnabled)}
       </MapView>
       <View
         style={{
           height: 3.5,
           width: "100%",
-          backgroundColor: colorScheme.scheme === "dark" ? "#252525" : "#d4d4d4",
+          backgroundColor:
+            colorScheme.scheme === "dark" ? "#252525" : "#d4d4d4",
         }}
       />
-      <View style={[styles.row, { backgroundColor: colorScheme.scheme === "dark" ? "#1c1c1c" : "#e0e0e0" }]}>
+      <View
+        style={[
+          styles.row,
+          {
+            backgroundColor:
+              colorScheme.scheme === "dark" ? "#1c1c1c" : "#e0e0e0",
+          },
+        ]}
+      >
         <Text
           style={{
-            color: isEnabled ? (colorScheme.scheme === "dark" ? "#434343" : "#a8a8a8") : (colorScheme.scheme === "light" ? "#434343" : "#a8a8a8"),
+            color: isEnabled
+              ? colorScheme.scheme === "dark"
+                ? "#434343"
+                : "#a8a8a8"
+              : colorScheme.scheme === "light"
+              ? "#434343"
+              : "#a8a8a8",
             fontFamily: "poppins",
             paddingHorizontal: 8,
-            paddingVertical: Platform.OS === 'ios' ? 0 : 10
+            paddingVertical: Platform.OS === "ios" ? 0 : 10,
           }}
         >
           Floor One
@@ -256,10 +285,16 @@ export default function MapScreen({ navigation }: { navigation: BottomTabNavigat
         />
         <Text
           style={{
-            color: !isEnabled ? (colorScheme.scheme === "dark" ? "#434343" : "#a8a8a8") : (colorScheme.scheme === "light" ? "#434343" : "#a8a8a8"),
+            color: !isEnabled
+              ? colorScheme.scheme === "dark"
+                ? "#434343"
+                : "#a8a8a8"
+              : colorScheme.scheme === "light"
+              ? "#434343"
+              : "#a8a8a8",
             fontFamily: "poppins",
             paddingHorizontal: 8,
-            paddingVertical: Platform.OS === 'ios' ? 0 : 10
+            paddingVertical: Platform.OS === "ios" ? 0 : 10,
           }}
         >
           Floor Two
@@ -275,14 +310,14 @@ function readFloor(floor: any) {
 }
 
 function mapOverlay(altitude: any, isEnabled: boolean) {
-  if (isEnabled) {//|| altitude > 147
+  if (isEnabled) {
+    //|| altitude > 147
     return (
       <Overlay
         image={floorTwo}
         bounds={[
           [43.752834542813886, -79.4626054388977],
           [43.7540593854649, -79.46087161319494],
-
         ]}
       />
     );
@@ -299,7 +334,7 @@ function mapOverlay(altitude: any, isEnabled: boolean) {
   }
 }
 
-function roomIdentifier(latitude: any, longitude: any,) {
+function roomIdentifier(latitude: any, longitude: any) {
   if (latitude == null || longitude == null) return;
   return <Marker coordinate={{ latitude, longitude }}></Marker>;
 }
@@ -335,7 +370,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     // flexWrap: "wrap",
-    width: '100%',
+    width: "100%",
     paddingVertical: 15,
   },
   row2: {
