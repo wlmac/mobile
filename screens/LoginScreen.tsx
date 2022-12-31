@@ -22,24 +22,32 @@ let state = {
 export default function LoginScreen({ route, navigation }: { route: RouteProp<RootStackParamList, 'Login'>, navigation: StackNavigationProp<RootStackParamList, 'Login'> }) {
   const colorScheme = React.useContext(ThemeContext);
   const guestMode = React.useContext(GuestModeContext);
+  const [disabled,setDisabled] = React.useState(false);
+
 
   let [loginResText, updateLoginResText] = React.useState("");
   let [keyboardUp, updateKeyboardUp] = React.useState(false);
 
+
+
   const { loginNeeded } = route.params;
   let loginPress = () => {
-    updateLoginResText("Logging in... Please wait");
-    login().then(val => {
-      if (val == "success") {
-        updateLoginResText("Success! Preparing app...");
-        cacheResources().then(() => {
-          navigation.replace('Root');
-        })
-      }
-      else {
-        updateLoginResText(String(val));
-      }
-    }).catch(err => console.log(err));
+   // if (!loggingIn) {
+      updateLoginResText("Logging in... Please wait");
+      setDisabled(true);
+      login().then(val => {
+        if (val == "success") {
+          updateLoginResText("Success! Preparing app...");
+          cacheResources().then(() => {
+            navigation.replace('Root');
+          })
+        }
+        else {
+          updateLoginResText(String(val));
+          setDisabled(false);
+        }
+      }).catch(err => console.log(err));
+    //}
   }
   if (!loginNeeded) {
     React.useEffect(() => {
@@ -121,7 +129,10 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
           {/*<Text>{loginResText}</Text>*/}
 
           <View style={styles.logInButton}>
-            <TouchableOpacity style={styles.logInButton} onPress={loginPress}>
+            <TouchableOpacity style={styles.logInButton}
+              disabled={disabled}
+              onPress={loginPress}
+            >
               <Text style={{color: "white"}}> Login </Text>
             </TouchableOpacity>
           </View>
