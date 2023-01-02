@@ -21,7 +21,7 @@ export default function SettingsScreen({ navigation }: { navigation: BottomTabNa
 */
 
 import React, { useState, useEffect } from 'react';
-import { ScrollView, StyleSheet, Alert, TouchableOpacity, useColorScheme } from 'react-native';
+import { ScrollView, StyleSheet, Alert, TouchableOpacity, useColorScheme, StyleProp } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
 
@@ -34,7 +34,7 @@ import { ThemeContext } from '../hooks/useColorScheme';
 import { GuestModeContext } from '../hooks/useGuestMode';
 
 export default function SettingsScreen({ navigation }: { navigation: StackNavigationProp<RootStackParamList, 'Root'> }) {
-  const [curView, setCurView] = React.useState(-1);
+  const [curView, setView] = React.useState(-1);
 
   /*
   curView: 
@@ -45,18 +45,28 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
   const scheme = React.useContext(ThemeContext);
   const guestMode = React.useContext(GuestModeContext);
 
-  const btnBgColor = scheme.scheme === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
-  const iconColor = scheme.scheme === "light" ? "rgb(64, 64, 64)" : "rgb(189, 189, 189)";
-  const logoutBtnBgColor = '#073763'; //scheme.scheme === "light" ? "rgb(17, 111, 207)" : "rgb(58, 106, 150)"; 
+  //this took me an hour to figure out ffs
+  const schemeStyle = scheme.scheme == 'light' ? lightStyle : darkStyle;
+  let styles: {[key: string]: object | StyleProp<object>} = {};
+  for(const [k, v] of Object.entries(baseStyle))
+    styles[k] = v;
+  for(const [k, v] of Object.entries(schemeStyle)){
+    if(k in styles)
+      styles[k] = StyleSheet.compose(styles[k], v);
+    else
+      styles[k] = v;
+  }
 
   // scroll to top
   const topChangeLog = React.useRef<ScrollView>(null);
   const topAbout = React.useRef<ScrollView>(null);
 
-  function setView(val: number) {
-    setCurView(val);
+  //helper function
+  function styleIf(view: number, style: any){
+    return curView == view ? style : { display: "none" };
   }
-  let logout = () => {
+
+  function logout(){
     AsyncStorage.clear().then(() => {
       if (guestMode.guest) {
         scheme.updateScheme(scheme.scheme);
@@ -74,45 +84,45 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
       setView(-1);
     });
     return unsubscribe;
-  }, [navigation])
+  }, [navigation]);
 
   return (
-    <View style={[styles.container, { backgroundColor: scheme.scheme === 'light' ? '#e0e0e0' : '#252525' }]}>
-      <ScrollView ref={topAbout} style={curView == 2 ? { flex: 1, width: "100%" } : { display: "none" }}>
+    <View style={styles.container}>
+      <ScrollView ref={topAbout} style={styleIf(2, { flex: 1, width: "100%" })}>
         <About back={setView}></About>
       </ScrollView>
-      <ScrollView ref={topChangeLog} style={curView == 1 ? { flex: 1, width: "100%" } : { display: "none" }}>
+      <ScrollView ref={topChangeLog} style={styleIf(1, { flex: 1, width: "100%" })}>
         <Changelog back={setView}></Changelog>
       </ScrollView>
 
       <TouchableOpacity
-        style={curView == -1 ? [styles.button, { backgroundColor: btnBgColor }] : { display: "none" }}
+        style={curView == -1 ? [styles.button] : { display: "none" }}
         onPress={() => {
           if (scheme.scheme === 'dark') scheme.updateScheme('light');
           else scheme.updateScheme('dark');
         }}>
         <Text> Appearance: {scheme.scheme} </Text>
-        <Ionicons name="color-palette-outline" size={18} color={iconColor} />
+        <Ionicons name="color-palette-outline" size={18} style={styles.icon} />
       </TouchableOpacity>
 
-      <TouchableOpacity style={curView == -1 ? [styles.button, { backgroundColor: btnBgColor }] : { display: "none" }} onPress={() => { topAbout?.current?.scrollTo({ x: 0, y: 0, animated: false }); setView(2) }}>
+      <TouchableOpacity style={styleIf(-1, styles.button)} onPress={() => { topAbout?.current?.scrollTo({ x: 0, y: 0, animated: false }); setView(2) }}>
         <Text> About </Text>
-        <Ionicons name="information-circle-outline" size={18} color={iconColor} />
+        <Ionicons name="information-circle-outline" size={18} style={styles.icon} />
       </TouchableOpacity>
-      <TouchableOpacity style={curView == -1 ? [styles.button, { backgroundColor: btnBgColor }] : { display: "none" }} onPress={() => { topChangeLog?.current?.scrollTo({ x: 0, y: 0, animated: false }); setView(1) }}>
+      <TouchableOpacity style={styleIf(-1, styles.button)} onPress={() => { topChangeLog?.current?.scrollTo({ x: 0, y: 0, animated: false }); setView(1) }}>
         <Text> View Changelog </Text>
-        <Ionicons name="cog-outline" size={18} color={iconColor} />
+        <Ionicons name="cog-outline" size={18} style={styles.icon} />
       </TouchableOpacity>
       <View style={styles.separator} lightColor="#adadad" darkColor="rgba(255,255,255,0.1)" />
-      <TouchableOpacity style={curView == -1 ? [styles.logoutButton, { backgroundColor: logoutBtnBgColor }] : { display: "none" }} onPress={logout}>
+      <TouchableOpacity style={styleIf(-1, styles.logoutButton)} onPress={logout}>
         <Text style={{ color: "white" }}> Log {guestMode.guest ? 'In' : 'Out'} </Text>
-        <Ionicons name="exit-outline" size={18} color={'#e2e2e2'} />
+        <Ionicons name="exit-outline" size={18} style={styles.logoutIcon} />
       </TouchableOpacity>
     </View>
   );
 }
-//chevron-forward
-const styles = StyleSheet.create({
+
+const baseStyle = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
@@ -127,15 +137,6 @@ const styles = StyleSheet.create({
     height: 1,
     width: '80%',
   },
-  logoutButton: {
-    width: "80%",
-    borderRadius: 5,
-    alignItems: 'center',
-    padding: 10,
-    marginTop: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
   button: {
     width: "80%",
     borderRadius: 5,
@@ -144,5 +145,45 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  logoutButton: {
+    width: "80%",
+    borderRadius: 5,
+    alignItems: 'center',
+    padding: 10,
+    marginTop: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+
+    //there was a commented out section: scheme.scheme === "light" ? "rgb(17, 111, 207)" : "rgb(58, 106, 150)"; 
+    //if anybody decides to bring back different colors for different schemes make an entry in lightStyles and darkStyles
+    backgroundColor: '#073763'
+  },
+  logoutIcon: {
+    color: '#e2e2e2'
+  }
+});
+
+const lightStyle = StyleSheet.create({
+  container: {
+    backgroundColor: '#e0e0e0'
+  },
+  button: {
+    backgroundColor: '#bdbdbd'
+  },
+  icon: {
+    color: '#404040'
+  }
+});
+
+const darkStyle = StyleSheet.create({
+  container: {
+    backgroundColor: '#252525'
+  },
+  button: {
+    backgroundColor: '#404040'
+  },
+  icon: {
+    color: '#bdbdbd'
   }
 });
