@@ -150,8 +150,8 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
     });
 
     let interval: number;
-    setSchedule("/api/term/current/schedule?date=2022-12-01", false).then(
-      () => setSchedule("/api/me/schedule?date=2022-12-01", true))
+    setSchedule("/api/term/current/schedule", false).then(
+      () => setSchedule("/api/me/schedule", true))
       .then(() => interval = window.setInterval(() => updateInfo(), 1000));
     return () => window.clearInterval(interval);
   }, []);
