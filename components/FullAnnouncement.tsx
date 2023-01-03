@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, Image } from 'react-native';
+import { StyleSheet, Image, ScrollView } from 'react-native';
 import { Text, View } from '../components/Themed';
 import Markdown, { MarkdownIt } from 'react-native-markdown-display';
 import { TouchableOpacity } from 'react-native-gesture-handler';
@@ -8,6 +8,7 @@ import * as WebBrowser from 'expo-web-browser';
 
 var lightC = "#3a6a96";
 var darkC = "#42a4ff";
+const markdownItInstance = MarkdownIt({linkify: true, typographer: true});
 export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToScroll: Function}) {
     if (ann === undefined) { // prevent errors
         return(<></>);
@@ -15,9 +16,10 @@ export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToSc
 
     const colorScheme = React.useContext(ThemeContext);
 
+    //const ast = tokensToAST(stringToTokens(ann.body, markdownItInstance));
 
     return (
-        <View style={[styles.announcement, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c', shadowColor: colorScheme.scheme === 'light' ? '#1c1c1c' : '#e6e6e6'}]} onStartShouldSetResponder={(e) => true} onResponderRelease={() => backToScroll(ann.id)}>
+        <ScrollView style={[styles.announcement, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c', shadowColor: colorScheme.scheme === 'light' ? '#1c1c1c' : '#e6e6e6'}]} onStartShouldSetResponder={(e) => true} onResponderRelease={() => backToScroll(ann.id)}>
             <View style={[styles.tags, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
                 {Object.entries(ann.tags).map(([key, tag]) => (
                     createTag(key, tag)
@@ -35,7 +37,7 @@ export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToSc
                     <Text style={[{color: colorScheme.scheme === "light" ? lightC : darkC}, {fontSize: 16}]}>{"<  Return to Announcements"}</Text>
                 </TouchableOpacity>
             </View>
-        </View>
+        </ScrollView>
     );
 }
 
@@ -69,13 +71,17 @@ function annDetails(org: string, orgIcon: string, author: string, timeStamp: str
 }
 
 // markdown to plaintext
-function previewText(text: string) {
+function previewText(text: any) {
 
     const colorScheme = React.useContext(ThemeContext);
 
+    //const html = markdownItInstance.render(text);
+    //console.log(html);
+
+
     return (
         <View style={[styles.text, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
-            <Markdown style={colorScheme.scheme === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={url => {
+            <Markdown debugPrintTree={true} style={colorScheme.scheme === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={url => {
                 if(url) {
                     WebBrowser.openBrowserAsync(url);
                     return false;
@@ -83,7 +89,7 @@ function previewText(text: string) {
                 else {
                     return true;
                 }
-            }} markdownit={MarkdownIt({linkify: true, typographer: true})} defaultImageHandler="https://www.maclyonsden.com/">{text}</Markdown>
+            }} markdownit={markdownItInstance} defaultImageHandler="https://www.maclyonsden.com/">{text}</Markdown>
         </View>
     )
 }
@@ -202,6 +208,9 @@ const markdownStylesDark = StyleSheet.create({
         color: "white",
         backgroundColor: '#1c1c1c',
         fontSize: 17,
+    },
+    hr: {
+        backgroundColor: "white",
     },
     blockquote: {
         backgroundColor: "#3D3D3D",
