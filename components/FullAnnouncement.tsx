@@ -81,7 +81,7 @@ function previewText(text: any) {
 
     return (
         <View style={[styles.text, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
-            <Markdown debugPrintTree={true} style={colorScheme.scheme === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={url => {
+            <Markdown debugPrintTree={/*true*/ false} style={colorScheme.scheme === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={url => {
                 if(url) {
                     WebBrowser.openBrowserAsync(url);
                     return false;
