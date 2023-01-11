@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { StyleSheet, StatusBar, ScrollView, Image, Switch, Platform, Button, Alert } from 'react-native';
 import { Text, View } from '../components/Themed';
-import Announcement from '../components/Announcement';
+import Announcement, { AnnouncementData } from '../components/Announcement';
 import FullAnnouncement from '../components/FullAnnouncement';
 import * as WebBrowser from 'expo-web-browser';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -23,8 +23,8 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
     const emptyOrgs: {name: string, icon: string}[] = [];
 
     // stores announcements
-    const [announcements, setAnnouncements] = useState<[string, any][]>([]);
-    const [myAnnouncements, setMyAnnouncements] = useState([]);
+    const [announcements, setAnnouncements] = useState<AnnouncementData[]>([]);
+    const [myAnnouncements, setMyAnnouncements] = useState<AnnouncementData[]>([]);
     const [orgs, setOrgs] = useState(emptyOrgs);
 
     const addOrgs = (id: number, name: string, icon: string) => {
@@ -57,7 +57,7 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
     }
     
     //displayed info if nothing in feed
-    const [noMyFeed, togglenoMyFeedText] = useState(false);
+    const [noMyFeed, setNoMyFeed] = useState(false);
 
     // scrollview reset to top on switch toggle
     const allA = React.useRef<ScrollView>(null);
@@ -82,19 +82,16 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
             }
         });
 
-        await loadResults(announcementsEndpoint);
-        await loadResults(myAnnouncementsEndpoint);
+        await loadAnnouncements();
+        await loadMyAnnouncements();
 
         if(myAnnouncements.length === 0) {
-            togglenoMyFeedText(true);
+            setNoMyFeed(true);
         }
         setLoading(false);
     }
-
-    const announcementsEndpoint = `/api/announcements?format=json&limit=${loadNum}&offset=${nextAnnSet}`;
-    const myAnnouncementsEndpoint = `/api/announcements/feed?format=json&limit=${loadNum}&offset=${nextMySet}`
     
-    const loadResults = async(endpoint: string) => {
+    const loadResults = async(endpoint: string, setAnnouncements: (a: typeof announcements) => any) => {
         if (loadingMore)
             return;
         setLoadingMore(true);
@@ -102,9 +99,9 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
         let errored = false;
         if (res.success) {
             try {
-                let jsonres = JSON.parse(res.response).results;
+                let jsonres: AnnouncementData[] = JSON.parse(res.response).results;
                 if (jsonres && Array.isArray(jsonres)) {
-                    jsonres.forEach((item: any) => {
+                    jsonres.forEach((item) => {
                         let orgId = item.organization.id; // gets the organization id
                         item.icon = orgs[orgId].icon;
                         item.name = orgs[orgId].name;
@@ -121,6 +118,9 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
         setLoadError(errored);
         setLoadingMore(false);
     }
+
+    const loadAnnouncements = async() => loadResults(`/api/announcements?format=json&limit=${loadNum}&offset=${nextAnnSet}`, setAnnouncements);
+    const loadMyAnnouncements = async() => loadResults(`/api/announcements/feed?format=json&limit=${loadNum}&offset=${nextMySet}`, setMyAnnouncements);
     
     // fetch data from API
     useEffect(() => { onStartup(); }, []);
@@ -144,7 +144,7 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
                 style={!isFilter && fullAnnId === "-1" ? styles.scrollView : {display: "none"}}
                 onScroll={({nativeEvent}) => {
                     if (isCloseToBottom(nativeEvent))
-                        loadResults(announcementsEndpoint);
+                        loadAnnouncements();
                 }}
                 scrollEventThrottle={0}
                 >
@@ -154,7 +154,7 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
                     {
                         loadError ? <View style={styles.error}>
                             <Text style={styles.errorMessage}>An error occured.</Text>
-                            <Button title="Retry" onPress={() => { loadResults(announcementsEndpoint); }}></Button>
+                            <Button title="Retry" onPress={() => { loadAnnouncements(); }}></Button>
                         </View> : undefined
                     }
             </ScrollView>
@@ -165,7 +165,7 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
                 style={isFilter && fullAnnId === "-1" ? styles.scrollView : {display: "none"}}
                 onScroll={({nativeEvent}) => {
                     if (isCloseToBottom(nativeEvent))
-                        loadResults(myAnnouncementsEndpoint);
+                        loadMyAnnouncements();
                 }}
                 scrollEventThrottle={0}
             >
@@ -175,10 +175,10 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
                 {
                     loadError ? <View style={styles.error}>
                         <Text style={styles.errorMessage}>An error occured.</Text>
-                        <Button title="Retry" onPress={() => { loadResults(myAnnouncementsEndpoint); }}></Button>
+                        <Button title="Retry" onPress={() => { loadMyAnnouncements(); }}></Button>
                     </View> : undefined
                 }
-                <View style={[noMyFeed ? {display: "none"} : {display: "flex"}, {backgroundColor: (colorScheme.scheme === "dark" ? "#252525" : "#eaeaea")}]}>     
+                <View style={[noMyFeed ? {display: "flex"} : {display: "flex", borderColor: "red", backgroundColor: "red"}, {backgroundColor: (colorScheme.scheme === "dark" ? "#252525" : "#eaeaea")}]}>     
                     <Text style={{textAlign: 'center'}}>There is nothing in your feed. Join some 
                         <Text style={{color: 'rgb(51,102,187)'}} onPress={() => { WebBrowser.openBrowserAsync(`${config.server}/clubs`) }}>{' '}clubs{' '}</Text>
                     to have their announcements show up here!</Text>
