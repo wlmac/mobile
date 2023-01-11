@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { StyleSheet, StatusBar, ScrollView, Image, Switch, Platform } from 'react-native';
+import { StyleSheet, StatusBar, ScrollView, Image, Switch, Platform, Button, Alert } from 'react-native';
 import { Text, View } from '../components/Themed';
 import Announcement from '../components/Announcement';
 import FullAnnouncement from '../components/FullAnnouncement';
@@ -23,7 +23,7 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
     const emptyOrgs: {name: string, icon: string}[] = [];
 
     // stores announcements
-    const [announcements, setAnnouncements] = useState([]);
+    const [announcements, setAnnouncements] = useState<[string, any][]>([]);
     const [myAnnouncements, setMyAnnouncements] = useState([]);
     const [orgs, setOrgs] = useState(emptyOrgs);
 
@@ -38,8 +38,9 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
     const [nextMySet, setNextMySet] = useState(0);
 
     // loading
-    const [isLoading, toggleLoading] = useState(true); // initial loading
+    const [isLoading, setLoading] = useState(true); // initial loading
     const [loadingMore, setLoadingMore] = useState(false); // loading more for lazy
+    const [loadError, setLoadError] = useState(false);
     const loadingIcon = require('../assets/images/loading.gif');
 
     // toggle between my feed and school feed
@@ -68,16 +69,6 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
         return layoutMeasurement.height + contentOffset.y >= contentSize.height - 5;
     }
 
-    // doesn't work properly for some reason :sob:
-    // // handle to name
-    // await apiRequest(`/api/user/${item.author.slug}?format=json`, '', 'GET').then((res) => {
-    //     if (res.success) {
-    //         let json = JSON.parse(res.response);
-    //         item.author.slug = json.first_name + " " + json.last_name;
-    //     }
-    // });
-
-
     const onStartup = async() => {
         // club name + club icon API requests
         await AsyncStorage.getItem("@orgs").then((res:any) => {
@@ -91,74 +82,48 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
             }
         });
 
-        await loadAnnResults();
-        await loadMyResults();
+        await loadResults(announcementsEndpoint);
+        await loadResults(myAnnouncementsEndpoint);
 
         if(myAnnouncements.length === 0) {
             togglenoMyFeedText(true);
         }
-        toggleLoading(false);
+        setLoading(false);
     }
 
-    // load more "all announcements"
-    const loadAnnResults = async() => {
-        if (loadingMore) {
+    const announcementsEndpoint = `/api/announcements?format=json&limit=${loadNum}&offset=${nextAnnSet}`;
+    const myAnnouncementsEndpoint = `/api/announcements/feed?format=json&limit=${loadNum}&offset=${nextMySet}`
+    
+    const loadResults = async(endpoint: string) => {
+        if (loadingMore)
             return;
-        }
         setLoadingMore(true);
-        await apiRequest(`/api/announcements?format=json&limit=${loadNum}&offset=${nextAnnSet}`, '', 'GET', true).then((res) => {
-            if (res.success) {
-                try {
-                    let jsonres = JSON.parse(res.response).results;
-                    if (jsonres && Array.isArray(jsonres)) {
-                        jsonres.forEach((item: any) => {
-                            let orgId = item.organization.id; // gets the organization id
-                            item.icon = orgs[orgId].icon;
-                            item.name = orgs[orgId].name;
-                        });
-                        // @ts-ignore
-                        setAnnouncements(announcements.concat(jsonres));
-                        setNextAnnSet(nextAnnSet + loadNum);
-                    }
-                } catch (_e) {}
+        const res = await apiRequest(endpoint, '', 'GET', true);
+        let errored = false;
+        if (res.success) {
+            try {
+                let jsonres = JSON.parse(res.response).results;
+                if (jsonres && Array.isArray(jsonres)) {
+                    jsonres.forEach((item: any) => {
+                        let orgId = item.organization.id; // gets the organization id
+                        item.icon = orgs[orgId].icon;
+                        item.name = orgs[orgId].name;
+                    });
+                    setAnnouncements(announcements.concat(jsonres));
+                    setNextAnnSet(nextAnnSet + loadNum);
+                }
+            } catch (_e) {
+                errored = true;
             }
-        })
-        setLoadingMore(false);
-    }
-
-    // load more "my announcements"
-    const loadMyResults = async() => {
-        if (loadingMore) {
-            return;
+        }else{
+            errored = true;
         }
-        setLoadingMore(true);
-
-        await apiRequest(`/api/announcements/feed?format=json&limit=${loadNum}&offset=${nextMySet}`, '', 'GET').then((res) => {
-            if (res.success) {
-                try {
-                    let jsonres = JSON.parse(res.response).results;
-                    if (jsonres && Array.isArray(jsonres)) {
-                        jsonres.forEach((item: any) => {
-                            let orgId = item.organization.id; // gets the organization id
-                            item.icon = orgs[orgId].icon;
-                            item.name = orgs[orgId].name;
-                        });
-                        // @ts-ignore
-                        setMyAnnouncements(myAnnouncements.concat(jsonres));
-                        setNextMySet(nextMySet + loadNum);
-                    }
-                } catch (_e) {}
-            }
-        });
-
+        setLoadError(errored);
         setLoadingMore(false);
     }
     
     // fetch data from API
-    useEffect(() => {
-        onStartup();
-    }, []);
-    
+    useEffect(() => { onStartup(); }, []);
 
     return (
         <>
@@ -178,15 +143,20 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
                 ref={allA} 
                 style={!isFilter && fullAnnId === "-1" ? styles.scrollView : {display: "none"}}
                 onScroll={({nativeEvent}) => {
-                    if (isCloseToBottom(nativeEvent)) {
-                        loadAnnResults();
-                    }
+                    if (isCloseToBottom(nativeEvent))
+                        loadResults(announcementsEndpoint);
                 }}
                 scrollEventThrottle={0}
                 >
                     {Object.entries(announcements).map(([key, ann]) => (
                         <Announcement key={key} ann={ann} fullAnn={setFullAnnId}/>
                     ))}
+                    {
+                        loadError ? <View style={styles.error}>
+                            <Text style={styles.errorMessage}>An error occured.</Text>
+                            <Button title="Retry" onPress={() => { loadResults(announcementsEndpoint); }}></Button>
+                        </View> : undefined
+                    }
             </ScrollView>
 
             {/* My Feed Announcement */}
@@ -194,15 +164,20 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
                 ref={myA} 
                 style={isFilter && fullAnnId === "-1" ? styles.scrollView : {display: "none"}}
                 onScroll={({nativeEvent}) => {
-                    if (isCloseToBottom(nativeEvent)) {
-                        loadMyResults();
-                    }
+                    if (isCloseToBottom(nativeEvent))
+                        loadResults(myAnnouncementsEndpoint);
                 }}
                 scrollEventThrottle={0}
             >
                 {Object.entries(myAnnouncements).map(([key, ann]) => (
                     <Announcement key={key} ann={ann} fullAnn={setFullAnnId}/>
                 ))}
+                {
+                    loadError ? <View style={styles.error}>
+                        <Text style={styles.errorMessage}>An error occured.</Text>
+                        <Button title="Retry" onPress={() => { loadResults(myAnnouncementsEndpoint); }}></Button>
+                    </View> : undefined
+                }
                 <View style={[noMyFeed ? {display: "none"} : {display: "flex"}, {backgroundColor: (colorScheme.scheme === "dark" ? "#252525" : "#eaeaea")}]}>     
                     <Text style={{textAlign: 'center'}}>There is nothing in your feed. Join some 
                         <Text style={{color: 'rgb(51,102,187)'}} onPress={() => { WebBrowser.openBrowserAsync(`${config.server}/clubs`) }}>{' '}clubs{' '}</Text>
@@ -289,4 +264,13 @@ const styles = StyleSheet.create({
     switch: {
         paddingHorizontal:8,
     },
+
+    error:{
+        backgroundColor: "transparent"
+    },
+    errorMessage: {
+        textAlign: "center",
+        marginTop: 5,
+        marginBottom: 5
+    }
 });
