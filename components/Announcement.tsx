@@ -35,16 +35,15 @@ export interface AnnouncementData{
 }
 
 function darkenColor(color: string){
-    let hsv = colorConvert.hex.hsv(color);
+    let hsv = colorConvert.hex.hsv.raw(color);
     hsv[1] = 100;
-    hsv[2] = hsv[2] * 0.5;;
+    hsv[2] = hsv[2] * 0.5;
     return "#" + colorConvert.hsv.hex(hsv);
 }
 
 export default function Announcement({ ann, fullAnn }: { ann: AnnouncementData, fullAnn: Function }) {
     
     const scheme = React.useContext(ThemeContext).scheme;
-    //console.log(ann.id, ann.title);
     return (
         <View style={[styles.announcement, { backgroundColor: scheme === 'light' ? '#f7f7f7' : '#1c1c1c', shadowColor: scheme === 'light' ? '#1c1c1c' : '#e6e6e6'}]}>
             {/* tags */}

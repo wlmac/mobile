@@ -91,7 +91,7 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
         setLoading(false);
     }
     
-    const loadResults = async(endpoint: string, setAnnouncements: (a: typeof announcements) => any) => {
+    const loadResults = async(endpoint: string, setAnnouncements: (a: typeof announcements) => any, setNextAnnSet: (a: typeof nextAnnSet) => any) => {
         if (loadingMore)
             return;
         setLoadingMore(true);
@@ -119,8 +119,8 @@ export default function AnnouncementScreen({ navigation }: { navigation: BottomT
         setLoadingMore(false);
     }
 
-    const loadAnnouncements = async() => loadResults(`/api/announcements?format=json&limit=${loadNum}&offset=${nextAnnSet}`, setAnnouncements);
-    const loadMyAnnouncements = async() => loadResults(`/api/announcements/feed?format=json&limit=${loadNum}&offset=${nextMySet}`, setMyAnnouncements);
+    const loadAnnouncements = async() => loadResults(`/api/announcements?format=json&limit=${loadNum}&offset=${nextAnnSet}`, setAnnouncements, setNextAnnSet);
+    const loadMyAnnouncements = async() => loadResults(`/api/announcements/feed?format=json&limit=${loadNum}&offset=${nextMySet}`, setMyAnnouncements, setNextMySet);
     
     // fetch data from API
     useEffect(() => { onStartup(); }, []);
