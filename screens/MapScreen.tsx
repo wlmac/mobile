@@ -12,7 +12,7 @@ import {
 } from "react-native";
 
 import { useState, useEffect } from "react";
-import MapView, { Marker, Overlay, PROVIDER_DEFAULT } from "react-native-maps";
+import MapView, { Marker, Overlay, PROVIDER_DEFAULT, Region } from "react-native-maps";
 import * as Location from "expo-location";
 import { Switch } from "react-native";
 import { TextInput } from "react-native";
@@ -28,10 +28,13 @@ export default function MapScreen({
 }: {
   navigation: BottomTabNavigationProp<BottomTabParamList, "Map">;
 }) {
-  const LATITUDE_DELTA = 0.00122;
-  const LONGITUDE_DELTA = 0.00061;
-  const latitude = 43.75376776088882;
-  const longitude = -79.46106695372214;
+  const initialRegion: Region = {
+    latitude: 43.75376776088882,
+    longitude: -79.46106695372214,
+    latitudeDelta: 0.00122,
+    longitudeDelta: 0.00061
+  }
+  const currRegion = React.useRef<Region>(initialRegion);
 
   const [location, setAlti] = useState<{ altitude: null | number }>({
     altitude: null,
@@ -39,8 +42,8 @@ export default function MapScreen({
   var altitude: number | null = null;
   const [errorMsg, setErrorMsg] = useState("");
 
-  const [isEnabled, setIsEnabled] = useState(false);
-  const toggleSwitch = () => setIsEnabled((isEnabled) => !isEnabled);
+  const [isFloorTwo, setIsFloorTwo] = useState(false);
+  const toggleSwitch = () => setIsFloorTwo((isEnabled) => !isEnabled);
   const [selectRoom, setSelectRoom] = useState({
     type: "Feature",
     geometry: {
@@ -63,8 +66,8 @@ export default function MapScreen({
         let location = await Location.getCurrentPositionAsync();
         altitude = location.coords.altitude;
         if (location.coords.altitude != null && location.coords.altitude > 147)
-          setIsEnabled(true);
-        else setIsEnabled(false);
+          setIsFloorTwo(true);
+        else setIsFloorTwo(false);
       }
     })();
   }, []);
@@ -84,38 +87,16 @@ export default function MapScreen({
     setChanged(!changed);
     setText(text);
     var formattedQuery = text.toLowerCase();
-    var nextData = filter(data, (search: any) => {
-      return contains(search, formattedQuery);
-    });
+    var nextData = filter(data, (search) => search.properties.title.includes(formattedQuery));
     setState({ fullData: nextData, query: text });
   };
 
-  const contains = ({ type, geometry, properties }: any, query: any) => {
-    if (properties.title.includes(query)) {
-      return true;
-    }
-    return false;
-  };
-
-  // const renderSeparator = () => {
-  //   return (
-  //     <View
-  //       style={{
-  //         height: 1,
-  //         width: '86%',
-  //         backgroundColor: '#CED0CE',
-  //         marginLeft: '5%'
-  //       }}
-  //     />
-  //   )
-  // }
-
-  const reset = (room: any) => {
+  const reset = (room: typeof maplocations.locations[0]) => {
     setText("");
     setState({ fullData: [], query: "" });
     setSelectRoom(room);
-    if (room.properties.floor == 1) setIsEnabled(false);
-    else if (room.properties.floor == 2) setIsEnabled(true);
+    if (room.properties.floor == 1) setIsFloorTwo(false);
+    else if (room.properties.floor == 2) setIsFloorTwo(true);
   };
 
   // -------------------------------------------
@@ -139,7 +120,7 @@ export default function MapScreen({
           colorScheme.scheme === "light" ? "#1c1c1c" : "#e0e0e0"
         }
         placeholder="Search"
-        onChangeText={(text) => handleSearch(text)}
+        onChangeText={handleSearch}
         defaultValue={text}
       />
 
@@ -209,18 +190,8 @@ export default function MapScreen({
       <MapView
         userInterfaceStyle={colorScheme.scheme === "dark" ? "dark" : "light"}
         style={styles.map}
-        initialRegion={{
-          latitude: latitude,
-          longitude: longitude,
-          latitudeDelta: LATITUDE_DELTA,
-          longitudeDelta: LONGITUDE_DELTA,
-        }}
-        region={{
-          latitude: latitude,
-          longitude: longitude,
-          latitudeDelta: LATITUDE_DELTA,
-          longitudeDelta: LONGITUDE_DELTA,
-        }}
+        initialRegion={initialRegion}
+        region={currRegion.current}
         provider={PROVIDER_DEFAULT}
         mapType="standard"
         zoomEnabled={true}
@@ -231,25 +202,18 @@ export default function MapScreen({
         showsBuildings={true}
         showsTraffic={true}
         showsIndoors={true}
+        onRegionChange={e => currRegion.current = e}
       >
-        {/* <Marker
-          coordinate={{ latitude, longitude }}
-          draggable
-          onDragEnd={(e: { nativeEvent: { coordinate: any } }) => {
-            console.log(
-              "latitude: " +
-                e.nativeEvent.coordinate.latitude +
-                ", longitude: " +
-                e.nativeEvent.coordinate.longitude
-            );
-          }}
-        ></Marker> */}
-
-        {roomIdentifier(
-          selectRoom.geometry.coordinates[1],
-          selectRoom.geometry.coordinates[0]
-        )}
-        {mapOverlay(location.altitude, isEnabled)}
+        {selectRoom.geometry.coordinates[1] && selectRoom.geometry.coordinates[0] && selectRoom.properties.floor == Number(isFloorTwo) + 1 ?
+          <Marker coordinate={{ latitude: selectRoom.geometry.coordinates[1], longitude: selectRoom.geometry.coordinates[0] }}></Marker> : undefined
+        }
+        <Overlay
+          image={isFloorTwo ? floorTwo : floorOne}
+          bounds={[
+            [43.752834542813886, -79.4626054388977],
+            [43.7540593854649, -79.46087161319494],
+          ]}
+        />
       </MapView>
       <View
         style={{
@@ -270,7 +234,7 @@ export default function MapScreen({
       >
         <Text
           style={{
-            color: isEnabled
+            color: isFloorTwo
               ? colorScheme.scheme === "dark"
                 ? "#434343"
                 : "#a8a8a8"
@@ -288,11 +252,11 @@ export default function MapScreen({
           trackColor={{ false: "#555555", true: "#828282" }}
           thumbColor={colorScheme.scheme === "dark" ? "#e0e0e0" : "#444444"}
           onValueChange={toggleSwitch}
-          value={isEnabled}
+          value={isFloorTwo}
         />
         <Text
           style={{
-            color: !isEnabled
+            color: !isFloorTwo
               ? colorScheme.scheme === "dark"
                 ? "#434343"
                 : "#a8a8a8"
@@ -314,36 +278,6 @@ export default function MapScreen({
 function readFloor(floor: any) {
   if (floor == 1) return false;
   else if (floor == 2) return true;
-}
-
-function mapOverlay(altitude: any, isEnabled: boolean) {
-  if (isEnabled) {
-    //|| altitude > 147
-    return (
-      <Overlay
-        image={floorTwo}
-        bounds={[
-          [43.752834542813886, -79.4626054388977],
-          [43.7540593854649, -79.46087161319494],
-        ]}
-      />
-    );
-  } else if (!isEnabled) {
-    return (
-      <Overlay
-        image={floorOne}
-        bounds={[
-          [43.752824542813886, -79.4626394388977],
-          [43.7540893854649, -79.46088161319494],
-        ]}
-      />
-    );
-  }
-}
-
-function roomIdentifier(latitude: any, longitude: any) {
-  if (latitude == null || longitude == null) return;
-  return <Marker coordinate={{ latitude, longitude }}></Marker>;
 }
 
 const styles = StyleSheet.create({
