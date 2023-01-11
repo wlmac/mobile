@@ -6,7 +6,7 @@ import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { Table, Rows } from 'react-native-table-component';
 
 import apiRequest from "../lib/apiRequest";
-import { Text, View, useThemeColor, TextProps } from "../components/Themed";
+import { Text, View, useThemeColor } from "../components/Themed";
 import config from "../config.json";
 import getSeason from "../lib/getSeason";
 import { BottomTabParamList } from "../types";
@@ -19,12 +19,6 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
   let season = getSeason();
   let textColor = useThemeColor({}, "text");
 
-  //i love typescript
-  // type textOrJSXType = string | JSX.Element[];
-  // function textOrJSXUseState(value: textOrJSXType, props: TextProps = {}): [JSX.Element[], React.Dispatch<string | JSX.Element[]>] {
-  //   let reactUseState = React.useState(typeof value == 'string' ? [<Text key={0} {...props}>{value}</Text>] : value as JSX.Element[]);
-  //   return [reactUseState[0], (v: string | JSX.Element[]) => reactUseState[1](typeof v == 'string' ? [<Text key={0} {...props}>{v}</Text>] : v as JSX.Element[])];
-  // }
 
   const [weatherIcon, updateIcon] = React.useState(require("../assets/images/loading.gif"));
   const [weather, updateWeather] = React.useState("c");
@@ -32,6 +26,9 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
   const [nextCourse, updateNextCourse] = React.useState<string | undefined>(undefined);
   const [timetableHeader, updateTimetableHeader] = React.useState<string | undefined>("Loading...");
   const [dataUploaded, updateDataUploaded] = React.useState<string | undefined>(undefined);
+  //https://stackoverflow.com/questions/66762778/how-to-access-state-in-a-react-functional-component-from-a-settimeout-or-setinte
+  const dataUploadedRef = React.useRef<string | undefined>();
+  dataUploadedRef.current = dataUploaded;
   const [preTimeText, updatePreTimeText] = React.useState<string | undefined>(undefined);
   const [course, updateCourse] = React.useState("Loading...");
   const [timeText, updateTimeText] = React.useState<string | undefined>("Loading...");
@@ -41,7 +38,7 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
     try{
       const res = await apiRequest(endpoint, "", "GET", !userSchedule);
       if (!res.success) {
-        if (!dataUploaded && !userSchedule) {
+        if (!dataUploadedRef.current && !userSchedule) {
           updatePreTimeText(undefined);
           updateCourse("Currently Offline");
           updateTimeText("No internet");
@@ -82,13 +79,13 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
         }
       }
       if(userSchedule){
-        if (dataUploaded == "public") {
+        if (dataUploadedRef.current == "public") {
           updateTimetable(displayedInfo);
           updateDataUploaded("personal");
         }
       }else{
         updateTimetableHeader(schedule[0].cycle);
-        if (!dataUploaded) {
+        if (!dataUploadedRef.current) {
           updateTimetable(displayedInfo);
           updateDataUploaded("public");
         }
@@ -108,7 +105,7 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
   }
 
   function updateInfo(){
-    if (!dataUploaded)
+    if (!dataUploadedRef.current)
       return;
     let time = Math.floor((Date.now() - new Date().setHours(0, 0, 0, 0)) / 1000), timeInMinutes = Math.floor(time / 60);
     if(criticalTimes.length > 0){
@@ -366,7 +363,7 @@ function getWeather() {
       json.consolidated_weather[0];
       let weather = new Weather(json.consolidated_weather[0].weather_state_abbr, json.consolidated_weather[0].the_temp);
       resolve(weather);
-    }).catch(err => reject("network"));
+    }).catch(() => reject("network"));
   })
 }
 
