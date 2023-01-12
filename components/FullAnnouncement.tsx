@@ -1,14 +1,16 @@
 import * as React from 'react';
-import { StyleSheet, Image, ScrollView } from 'react-native';
+import { StyleSheet, Image, ScrollView, Dimensions } from 'react-native';
 import { Text, View } from '../components/Themed';
 import Markdown, { MarkdownIt } from 'react-native-markdown-display';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import {ThemeContext} from '../hooks/useColorScheme';
 import * as WebBrowser from 'expo-web-browser';
 
+
 var lightC = "#3a6a96";
 var darkC = "#42a4ff";
 const markdownItInstance = MarkdownIt({linkify: true, typographer: true});
+const {width} = Dimensions.get('window');
 export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToScroll: Function}) {
     if (ann === undefined) { // prevent errors
         return(<></>);
@@ -81,7 +83,7 @@ function previewText(text: any) {
 
     return (
         <View style={[styles.text, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
-            <Markdown debugPrintTree={/*true*/ false} style={colorScheme.scheme === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={url => {
+            <Markdown debugPrintTree={true} style={colorScheme.scheme === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={url => {
                 if(url) {
                     WebBrowser.openBrowserAsync(url);
                     return false;
@@ -89,9 +91,50 @@ function previewText(text: any) {
                 else {
                     return true;
                 }
-            }} markdownit={markdownItInstance} defaultImageHandler="https://www.maclyonsden.com/">{text}</Markdown>
+            }} markdownit={markdownItInstance} rules={rules} defaultImageHandler="https://www.maclyonsden.com/">{text}</Markdown>
         </View>
     )
+}
+
+const rules = {
+  image: (
+    node: any,
+    children: any,
+    parent: any,
+    styles: any,
+    allowedImageHandlers: any,
+    defaultImageHandler: any,
+  ) => {
+    const {src, alt} = node.attributes;
+
+    // we check that the source starts with at least one of the elements in allowedImageHandlers
+    const show =
+      allowedImageHandlers.filter((value) => {
+        return src.toLowerCase().startsWith(value.toLowerCase());
+      }).length > 0;
+
+    if (show === false && defaultImageHandler === null) {
+      return null;
+    }
+
+    console.log("HI");
+    const url = show === true ? src : `${defaultImageHandler}${src}`;
+
+    return (
+        <Image key={node.key} style={[/*styles._VIEW_SAFE_image,*/ 
+            {
+                flex: 1,
+                display: 'flex',
+                width: width - 60,
+                height: 'auto', // ree this doesnt work
+                resizeMode: 'stretch',
+                borderColor: 'black', borderWidth: 5,
+                alignItems: 'center',
+                justifyContent: 'center',
+            }
+        ]} source={{uri: url}} />
+    );
+  },
 }
 
 
