@@ -19,8 +19,6 @@ export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToSc
 
     const colorScheme = React.useContext(ThemeContext);
 
-    //const ast = tokensToAST(stringToTokens(ann.body, markdownItInstance));
-
     return (
         <ScrollView style={[styles.announcement, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c', shadowColor: colorScheme.scheme === 'light' ? '#1c1c1c' : '#e6e6e6'}]} onStartShouldSetResponder={(e) => true} onResponderRelease={() => backToScroll(ann.id)}>
             <View style={[styles.tags, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
@@ -76,16 +74,11 @@ function annDetails(org: string, orgIcon: string, author: string, timeStamp: str
 
 // markdown to plaintext
 function previewText(text: any) {
-
     const colorScheme = React.useContext(ThemeContext);
-
-    //const html = markdownItInstance.render(text);
-    //console.log(html);
-
 
     return (
         <View style={[styles.text, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
-            <Markdown debugPrintTree={true} style={colorScheme.scheme === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={url => {
+            <Markdown debugPrintTree={false} style={colorScheme.scheme === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={url => {
                 if(url) {
                     WebBrowser.openBrowserAsync(url);
                     return false;
@@ -146,7 +139,6 @@ const rules = {
       return null;
     }
 
-    console.log("HI");
     const url = show === true ? `${src}?w=${width}&fmt=webp` : `${defaultImageHandler}${src}?w=${width}&fmt=webp`;
 
     return (
