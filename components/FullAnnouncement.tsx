@@ -1,14 +1,17 @@
 import * as React from 'react';
-import { StyleSheet, Image, ScrollView } from 'react-native';
+import { StyleSheet, Image, ScrollView, Dimensions } from 'react-native';
 import { Text, View } from '../components/Themed';
 import Markdown, { MarkdownIt } from 'react-native-markdown-display';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import {ThemeContext} from '../hooks/useColorScheme';
 import * as WebBrowser from 'expo-web-browser';
 
+
 var lightC = "#3a6a96";
 var darkC = "#42a4ff";
 const markdownItInstance = MarkdownIt({linkify: true, typographer: true});
+const {width} = Dimensions.get('window');
+const loadingImage = require('../assets/images/blank.png');
 export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToScroll: Function}) {
     if (ann === undefined) { // prevent errors
         return(<></>);
@@ -30,6 +33,7 @@ export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToSc
             
             {annDetails(ann.name, ann.icon, ann.author.slug, ann.created_date, colorScheme.scheme)}
             {previewText(ann.body)}
+
 
             {/* View More Details */}
             <View style={[styles.click, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
@@ -81,7 +85,7 @@ function previewText(text: any) {
 
     return (
         <View style={[styles.text, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
-            <Markdown debugPrintTree={/*true*/ false} style={colorScheme.scheme === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={url => {
+            <Markdown debugPrintTree={true} style={colorScheme.scheme === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={url => {
                 if(url) {
                     WebBrowser.openBrowserAsync(url);
                     return false;
@@ -89,9 +93,66 @@ function previewText(text: any) {
                 else {
                     return true;
                 }
-            }} markdownit={markdownItInstance} defaultImageHandler="https://www.maclyonsden.com/">{text}</Markdown>
+            }} markdownit={markdownItInstance} rules={rules} defaultImageHandler="https://www.maclyonsden.com/">{text}</Markdown>
         </View>
     )
+}
+
+
+// https://stackoverflow.com/questions/42170127/auto-scale-image-height-with-react-native/42170351#42170351
+const ImageResizeAfter = ({uri, desiredWidth}: {uri: string, desiredWidth: number}) => {
+    const [desiredHeight, setDesiredHeight] = React.useState(0);
+
+    Image.getSize(uri, (width, height) => {
+        setDesiredHeight(desiredWidth / width * height);
+    })
+    
+    return (
+        <Image
+            source={desiredHeight === 0 ? loadingImage : {uri}}
+            style={{
+                flex: 1,
+                display: 'flex',
+                resizeMode: 'contain',
+                // borderColor: 'black', 
+                // borderWidth: 5,
+                // alignItems: 'center',
+                // justifyContent: 'center',
+                width: desiredWidth,
+                height: desiredHeight === 0 ? desiredWidth : desiredHeight,
+            }}
+        />
+    )
+}
+
+const rules = {
+  image: (
+    node: any,
+    children: any,
+    parent: any,
+    styles: any,
+    allowedImageHandlers: any,
+    defaultImageHandler: any,
+  ) => {
+    const {src, alt} = node.attributes;
+
+    // we check that the source starts with at least one of the elements in allowedImageHandlers
+    const show =
+      allowedImageHandlers.filter((value: any) => {
+        return src.toLowerCase().startsWith(value.toLowerCase());
+      }).length > 0;
+
+    if (show === false && defaultImageHandler === null) {
+      return null;
+    }
+
+    console.log("HI");
+    const url = show === true ? `${src}?w=${width}&fmt=webp` : `${defaultImageHandler}${src}?w=${width}&fmt=webp`;
+
+    return (
+        <ImageResizeAfter key={node.key} uri={url} desiredWidth={width - 60}/>
+    );
+  },
 }
 
 
