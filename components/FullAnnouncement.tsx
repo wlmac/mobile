@@ -11,6 +11,7 @@ var lightC = "#3a6a96";
 var darkC = "#42a4ff";
 const markdownItInstance = MarkdownIt({linkify: true, typographer: true});
 const {width} = Dimensions.get('window');
+const loadingImage = require('../assets/images/blank.png');
 export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToScroll: Function}) {
     if (ann === undefined) { // prevent errors
         return(<></>);
@@ -32,6 +33,7 @@ export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToSc
             
             {annDetails(ann.name, ann.icon, ann.author.slug, ann.created_date, colorScheme.scheme)}
             {previewText(ann.body)}
+
 
             {/* View More Details */}
             <View style={[styles.click, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
@@ -96,6 +98,33 @@ function previewText(text: any) {
     )
 }
 
+
+// https://stackoverflow.com/questions/42170127/auto-scale-image-height-with-react-native/42170351#42170351
+const ImageResizeAfter = ({uri, desiredWidth}: {uri: string, desiredWidth: number}) => {
+    const [desiredHeight, setDesiredHeight] = React.useState(0);
+
+    Image.getSize(uri, (width, height) => {
+        setDesiredHeight(desiredWidth / width * height);
+    })
+    
+    return (
+        <Image
+            source={desiredHeight === 0 ? loadingImage : {uri}}
+            style={{
+                flex: 1,
+                display: 'flex',
+                resizeMode: 'contain',
+                // borderColor: 'black', 
+                // borderWidth: 5,
+                // alignItems: 'center',
+                // justifyContent: 'center',
+                width: desiredWidth,
+                height: desiredHeight === 0 ? desiredWidth : desiredHeight,
+            }}
+        />
+    )
+}
+
 const rules = {
   image: (
     node: any,
@@ -109,7 +138,7 @@ const rules = {
 
     // we check that the source starts with at least one of the elements in allowedImageHandlers
     const show =
-      allowedImageHandlers.filter((value) => {
+      allowedImageHandlers.filter((value: any) => {
         return src.toLowerCase().startsWith(value.toLowerCase());
       }).length > 0;
 
@@ -118,21 +147,10 @@ const rules = {
     }
 
     console.log("HI");
-    const url = show === true ? src : `${defaultImageHandler}${src}`;
+    const url = show === true ? `${src}?w=${width}&fmt=webp` : `${defaultImageHandler}${src}?w=${width}&fmt=webp`;
 
     return (
-        <Image key={node.key} style={[/*styles._VIEW_SAFE_image,*/ 
-            {
-                flex: 1,
-                display: 'flex',
-                width: width - 60,
-                height: 'auto', // ree this doesnt work
-                resizeMode: 'stretch',
-                borderColor: 'black', borderWidth: 5,
-                alignItems: 'center',
-                justifyContent: 'center',
-            }
-        ]} source={{uri: url}} />
+        <ImageResizeAfter key={node.key} uri={url} desiredWidth={width - 60}/>
     );
   },
 }
