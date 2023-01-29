@@ -12,7 +12,12 @@ import {
 } from "react-native";
 
 import { useState, useEffect } from "react";
-import MapView, { Marker, Overlay, PROVIDER_DEFAULT, Region } from "react-native-maps";
+import MapView, {
+  Marker,
+  Overlay,
+  PROVIDER_DEFAULT,
+  Region,
+} from "react-native-maps";
 import * as Location from "expo-location";
 import { Switch } from "react-native";
 import { TextInput } from "react-native";
@@ -32,8 +37,8 @@ export default function MapScreen({
     latitude: 43.75376776088882,
     longitude: -79.46106695372214,
     latitudeDelta: 0.00122,
-    longitudeDelta: 0.00061
-  }
+    longitudeDelta: 0.00061,
+  };
   const currRegion = React.useRef<Region>(initialRegion);
 
   const [location, setAlti] = useState<{ altitude: null | number }>({
@@ -87,7 +92,9 @@ export default function MapScreen({
     setChanged(!changed);
     setText(text);
     var formattedQuery = text.toLowerCase();
-    var nextData = filter(data, (search) => search.properties.title.includes(formattedQuery));
+    var nextData = filter(data, (search) =>
+      search.properties.title.includes(formattedQuery)
+    );
     setState({ fullData: nextData, query: text });
   };
 
@@ -130,7 +137,48 @@ export default function MapScreen({
           backgroundColor: "transparent",
         }}
       />
-
+      <MapView
+        userInterfaceStyle={colorScheme.scheme === "dark" ? "dark" : "light"}
+        style={{
+          position: "absolute",
+          top: 53.5,
+          bottom: 64.5,
+          flex: 1,
+          width: "100%",
+          borderTopColor: "#073763",
+        }}
+        initialRegion={initialRegion}
+        region={currRegion.current}
+        provider={PROVIDER_DEFAULT}
+        mapType="standard"
+        zoomEnabled={true}
+        pitchEnabled={true}
+        showsUserLocation={true}
+        // followsUserLocation={true}
+        showsCompass={true}
+        showsBuildings={true}
+        showsTraffic={true}
+        showsIndoors={true}
+        onRegionChange={(e) => (currRegion.current = e)}
+      >
+        {selectRoom.geometry.coordinates[1] &&
+        selectRoom.geometry.coordinates[0] &&
+        selectRoom.properties.floor == Number(isFloorTwo) + 1 ? (
+          <Marker
+            coordinate={{
+              latitude: selectRoom.geometry.coordinates[1],
+              longitude: selectRoom.geometry.coordinates[0],
+            }}
+          ></Marker>
+        ) : undefined}
+        <Overlay
+          image={isFloorTwo ? floorTwo : floorOne}
+          bounds={[
+            [43.752834542813886, -79.4626054388977],
+            [43.7540593854649, -79.46087161319494],
+          ]}
+        />
+      </MapView>
       <View
         style={[
           styles.row2,
@@ -150,6 +198,10 @@ export default function MapScreen({
                   ? 150
                   : state.fullData.length * 40
                 : 0,
+            position: "absolute",
+            top: 50,
+            width: "100%",
+            paddingHorizontal: 8,
           }}
           data={state.fullData}
           keyExtractor={(item) => item.properties.title}
@@ -181,42 +233,24 @@ export default function MapScreen({
       </View>
       <View
         style={{
+          position: "absolute",
+          top:
+            50 +
+            (state.query.length > 0
+              ? state.fullData.length * 40 > 150
+                ? 150
+                : state.fullData.length * 40
+              : 0),
           height: 3.5,
           width: "100%",
           backgroundColor:
             colorScheme.scheme === "dark" ? "#252525" : "#d4d4d4",
         }}
       />
-      <MapView
-        userInterfaceStyle={colorScheme.scheme === "dark" ? "dark" : "light"}
-        style={styles.map}
-        initialRegion={initialRegion}
-        region={currRegion.current}
-        provider={PROVIDER_DEFAULT}
-        mapType="standard"
-        zoomEnabled={true}
-        pitchEnabled={true}
-        showsUserLocation={true}
-        // followsUserLocation={true}
-        showsCompass={true}
-        showsBuildings={true}
-        showsTraffic={true}
-        showsIndoors={true}
-        onRegionChange={e => currRegion.current = e}
-      >
-        {selectRoom.geometry.coordinates[1] && selectRoom.geometry.coordinates[0] && selectRoom.properties.floor == Number(isFloorTwo) + 1 ?
-          <Marker coordinate={{ latitude: selectRoom.geometry.coordinates[1], longitude: selectRoom.geometry.coordinates[0] }}></Marker> : undefined
-        }
-        <Overlay
-          image={isFloorTwo ? floorTwo : floorOne}
-          bounds={[
-            [43.752834542813886, -79.4626054388977],
-            [43.7540593854649, -79.46087161319494],
-          ]}
-        />
-      </MapView>
       <View
         style={{
+          position: "absolute",
+          bottom: 61,
           height: 3.5,
           width: "100%",
           backgroundColor:
@@ -288,6 +322,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   searchBar: {
+    position: "absolute",
+    top: 0,
     width: "100%",
     height: 50,
     textAlign: "center",
@@ -301,23 +337,22 @@ const styles = StyleSheet.create({
     height: 1,
     width: "80%",
   },
-  map: {
-    flex: 1,
-    height: "100%",
-    width: "100%",
-    borderTopColor: "#073763",
-  },
   row: {
     flexDirection: "row",
     justifyContent: "center",
     // flexWrap: "wrap",
     width: "100%",
     paddingVertical: 15,
+    position: "absolute",
+    bottom: 0,
   },
   row2: {
     flexDirection: "row",
     // flexWrap: "wrap",
-    paddingHorizontal: 8,
+    //paddingHorizontal: 8,
+    position: "absolute",
+    top: 0,
+    width: "100%",
   },
   switch: {
     paddingHorizontal: 8,
