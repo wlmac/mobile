@@ -102,7 +102,6 @@ export default function NewsScreen({
   const [fullAnnId, setAnnId] = useState("-1");
   function setFullAnnId(id: string) {
     setAnnId(id);
-    console.log(id);
     fullA?.current?.scrollTo({ x: 0, y: 0, animated: false });
   }
 
