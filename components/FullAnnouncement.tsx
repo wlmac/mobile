@@ -12,7 +12,7 @@ var darkC = "#42a4ff";
 const markdownItInstance = MarkdownIt({linkify: true, typographer: true});
 const {width} = Dimensions.get('window');
 const loadingImage = require('../assets/images/blank.png');
-export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToScroll: Function}) {
+export default function FullAnnouncement({ann, backToScroll, isBlog}:{ann: any, backToScroll: Function, isBlog: boolean}) {
     if (ann === undefined) { // prevent errors
         return(<></>);
     }
@@ -29,14 +29,15 @@ export default function FullAnnouncement({ann, backToScroll}:{ann: any, backToSc
 
             {createHeader(ann.title)}
             
-            {annDetails(ann.name, ann.icon, ann.author.slug, ann.created_date, colorScheme.scheme)}
+            {annDetails(isBlog? ann.author_slug : ann.name, ann.icon, ann.author.slug, ann.created_date, colorScheme.scheme)}
+            {isBlog ? <ImageResizeAfter uri={ann.featured_image} desiredWidth={width}/> : <></>}
             {previewText(ann.body)}
 
 
             {/* View More Details */}
             <View style={[styles.click, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
                 <TouchableOpacity onPress={() => backToScroll("-1")}>
-                    <Text style={[{color: colorScheme.scheme === "light" ? lightC : darkC}, {fontSize: 16}]}>{"<  Return to Announcements"}</Text>
+                    <Text style={[{color: colorScheme.scheme === "light" ? lightC : darkC}, {fontSize: 16}]}>{"<  Return to " + (isBlog ? "Blogs" : "Announcements")}</Text>
                 </TouchableOpacity>
             </View>
         </ScrollView>

@@ -23,6 +23,7 @@
     "react-dom": "18.0.0",
     "react-modal": "^3.16.1",
     "react-native": "0.69.6",
+    "react-native-dropdown-picker": "^5.4.4",
     "react-native-gesture-handler": "~2.5.0",
     "react-native-maps": "^0.31.1",
     "react-native-safe-area-context": "4.3.1",

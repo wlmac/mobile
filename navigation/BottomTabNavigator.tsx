@@ -11,11 +11,11 @@ import * as React from 'react';
 import Colors from '../constants/Colors';
 import {ThemeContext} from '../hooks/useColorScheme';
 import HomeScreen from '../screens/HomeScreen';
-import AnnouncementScreen from '../screens/AnnouncementScreen';
+import NewsScreen from '../screens/NewsScreen';
 import CalendarScreen from '../screens/CalendarScreen';
 import MapScreen from '../screens/MapScreen';
 import SettingsScreen from '../screens/SettingsScreen';
-import { BottomTabParamList, HomeParamList, AnnouncementParamList, CalendarParamList, MapParamList, SettingsParamList } from '../types';
+import { BottomTabParamList, HomeParamList, NewsParamList, CalendarParamList, MapParamList, SettingsParamList } from '../types';
 
 const BottomTab = createBottomTabNavigator<BottomTabParamList>();
 
@@ -38,8 +38,8 @@ export default function BottomTabNavigator() {
         }}
       />
       <BottomTab.Screen
-        name="Announcements"
-        component={AnnouncementNavigator}
+        name="News"
+        component={NewsNavigator}
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="megaphone" color={color} />,
         }}
@@ -94,17 +94,17 @@ function HomeNavigator() {
   );
 }
 
-const AnnouncementStack = createStackNavigator<AnnouncementParamList>();
+const NewsStack = createStackNavigator<NewsParamList>();
 
-function AnnouncementNavigator() {
+function NewsNavigator() {
   return (
-    <AnnouncementStack.Navigator>
-      <AnnouncementStack.Screen
-        name="AnnouncementScreen"
-        component={AnnouncementScreen}
+    <NewsStack.Navigator>
+      <NewsStack.Screen
+        name="NewsScreen"
+        component={NewsScreen}
         options={{ headerTitle: () => { return null; }, headerShown: false }}
       />
-    </AnnouncementStack.Navigator>
+    </NewsStack.Navigator>
   );
 }
 
