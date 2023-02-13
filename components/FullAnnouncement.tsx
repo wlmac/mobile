@@ -87,7 +87,7 @@ function previewText(text: any) {
                 else {
                     return true;
                 }
-            }} markdownit={markdownItInstance} rules={rules} defaultImageHandler="https://www.maclyonsden.com/">{text}</Markdown>
+            }} markdownit={markdownItInstance} rules={rules} defaultImageHandler="https://www.maclyonsden.com">{text}</Markdown>
         </View>
     )
 }
@@ -140,7 +140,7 @@ const rules = {
       return null;
     }
 
-    const url = show === true ? `${src}?w=${width}&fmt=webp` : `${defaultImageHandler}${src}?w=${width}&fmt=webp`;
+    const url = show === true ? `${src}?w=${width}&fmt=webp` : `${defaultImageHandler}${src}?w=${Math.round(width)}&fmt=webp`;
 
     return (
         <ImageResizeAfter key={node.key} uri={url} desiredWidth={width - 60}/>
