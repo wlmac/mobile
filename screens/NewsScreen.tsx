@@ -344,7 +344,7 @@ export default function NewsScreen({
               ]
         }
       >
-        {dropdown()}
+        {fullAnnId === "-1" ? dropdown() : <></>}
         {/* School Announcements */}
         <ScrollView
           ref={allA}
@@ -563,7 +563,7 @@ export default function NewsScreen({
                 ]
           }
         >
-          {dropdown()}
+          {fullAnnId === "-1" ? dropdown() : <></>}
           {/* Blog */}
           <ScrollView
             ref={allB}
