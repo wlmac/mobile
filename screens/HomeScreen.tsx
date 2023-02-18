@@ -149,7 +149,10 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
     let interval: number;
     setSchedule("/api/term/current/schedule", false).then(
       () => setSchedule("/api/me/schedule", true))
-      .then(() => interval = window.setInterval(() => updateInfo(), 1000));
+      .then(() => {
+        interval = window.setInterval(() => updateInfo(), 1000);
+        updateInfo();
+      });
     return () => window.clearInterval(interval);
   }, []);
 
