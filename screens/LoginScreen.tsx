@@ -46,7 +46,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
           updateLoginResText(String(val));
           setDisabled(false);
         }
-      }).catch(err => console.log(err));
+      }).catch(err => console.error(err));
     //}
   }
   if (!loginNeeded) {
@@ -305,41 +305,33 @@ function handleForgotPasswordPress() {
   WebBrowser.openBrowserAsync(`${config.server}/accounts/password/reset/`).catch(err => console.error("Couldn't load page", err));
 }
 
-function login() {
-  return new Promise((resolve, reject) => {
-    fetch(`${config.server}/api/auth/token`, { //refresh token endpoint
-      method: "POST",
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        username: state.username,
-        password: state.password
-      })
-    }).then((response) => response.json())
-      .then((json) => {
-        if (json.access && json.refresh) {
-          AsyncStorage.setItem('@accesstoken', json.access).then(() => {
-            AsyncStorage.setItem('@refreshtoken', json.refresh).then(() => {
-              resolve("success");
-            }).catch(err => {
-              console.log(err);
-              resolve("Error occurred. Was storage permission denied?");
-            });
-          }).catch(err => {
-            console.log(err);
-            resolve("Error occurred. Was storage permission denied?");
-          });
-        }
-        else if (json.detail) {
-          resolve("Username or password incorrect");
-        }
-        else {
-          resolve("Something went wrong. Please try again later.");
-        }
-      }).catch(err => {
-        console.log(err);
-        resolve("Network error. Please try again later.");
+async function login() {
+  return new Promise(async (resolve, reject) => {
+    try{
+      let response = await fetch(`${config.server}/api/auth/token`, { //refresh token endpoint
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username: state.username,
+          password: state.password
+        })
       });
+      let json = await response.json();
+      if (json.access && json.refresh) {
+        await AsyncStorage.setItem('@accesstoken', json.access);
+        await AsyncStorage.setItem('@refreshtoken', json.refresh);
+      }
+      else if (json.detail) {
+        resolve("Username or password incorrect");
+      }
+      else {
+        resolve("Something went wrong. Please try again later.");
+      }
+    }catch(err){
+      console.error(err);
+      resolve("Network error. Please try again later.");
+    }
   })
 }
