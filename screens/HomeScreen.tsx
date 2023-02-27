@@ -49,13 +49,11 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
       }
       let schedule = JSON.parse(res.response);
       if (!(schedule && schedule[0])) {
-        if(userSchedule){
-          updatePreTimeText(undefined);
-          updateCourse("NO CLASS TODAY");
-          updateTimeText(undefined);
-          updateTimetableHeader(undefined);
-          updateTimetable(undefined);
-        }
+        updatePreTimeText(undefined);
+        updateCourse("NO CLASS TODAY");
+        updateTimeText(undefined);
+        updateTimetableHeader(undefined);
+        updateTimetable(undefined);
         return;
       }
       let displayedInfo: any[][] = [];
@@ -147,12 +145,10 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
     });
 
     let interval: number;
-    setSchedule("/api/term/current/schedule", false).then(
-      () => setSchedule("/api/me/schedule", true))
-      .then(() => {
-        interval = window.setInterval(() => updateInfo(), 1000);
-        updateInfo();
-      });
+    setSchedule((guestMode.guest ? "/api/term/current/schedule" : "/api/me/schedule")/* + "?date=2023-02-22"*/, !guestMode.guest).then(() => {
+      interval = window.setInterval(() => updateInfo(), 1000);
+      updateInfo();
+    });
     return () => window.clearInterval(interval);
   }, []);
 
