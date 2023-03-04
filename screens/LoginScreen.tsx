@@ -22,33 +22,45 @@ let state = {
 export default function LoginScreen({ route, navigation }: { route: RouteProp<RootStackParamList, 'Login'>, navigation: StackNavigationProp<RootStackParamList, 'Login'> }) {
   const colorScheme = React.useContext(ThemeContext);
   const guestMode = React.useContext(GuestModeContext);
-  const [disabled,setDisabled] = React.useState(false);
-
 
   let [loginResText, updateLoginResText] = React.useState("");
   let [keyboardUp, updateKeyboardUp] = React.useState(false);
 
-
+  let [hasPressedLogin, setHasPressedLogin] = React.useState(false);
 
   const { loginNeeded } = route.params;
-  let loginPress = () => {
-   // if (!loggingIn) {
+  const loginPress = async() => {
+    if(!hasPressedLogin){
+      setHasPressedLogin(true);
       updateLoginResText("Logging in... Please wait");
-      setDisabled(true);
-      login().then(val => {
+      try{
+        let val = await login();
         if (val == "success") {
           updateLoginResText("Success! Preparing app...");
-          cacheResources().then(() => {
-            navigation.replace('Root');
-          })
+          await cacheResources();
+          navigation.replace('Root');
+          return;
         }
         else {
           updateLoginResText(String(val));
-          setDisabled(false);
         }
-      }).catch(err => console.log(err));
-    //}
+      }catch(err){
+        console.error(err);
+      }
+      setHasPressedLogin(false);
+    }
   }
+
+  const guestLoginPress = async () => {
+    if(!hasPressedLogin){
+      updateLoginResText("Please wait...");
+      guestMode.updateGuest(true);
+      setHasPressedLogin(true);
+      await cacheResources();
+      navigation.replace('Root');
+    }
+  }
+
   if (!loginNeeded) {
     React.useEffect(() => {
       navigation.replace('Root');
@@ -130,7 +142,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
 
           <View style={styles.logInButton}>
             <TouchableOpacity style={styles.logInButton}
-              disabled={disabled}
+              disabled={hasPressedLogin}
               onPress={loginPress}
             >
               <Text style={{color: "white"}}> Login </Text>
@@ -151,13 +163,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
           </TouchableOpacity>
         </View>
         <View style={styles.helpContainer}>
-        <TouchableOpacity style={styles.helpLink} onPress={() => {
-          updateLoginResText("Please wait...");
-          guestMode.updateGuest(true);
-          cacheResources().then(() => {
-            navigation.replace('Root');
-          })
-        }}>
+        <TouchableOpacity style={styles.helpLink} onPress={guestLoginPress} disabled={hasPressedLogin}>
             <Text style={[styles.helpLinkText, {color: colorScheme.scheme == 'light' ? Colors.light.text : Colors.dark.text}]} lightColor={Colors.light.tint} darkColor={Colors.dark.tint}>
               Continue in Guest Mode
             </Text>
@@ -305,9 +311,9 @@ function handleForgotPasswordPress() {
   WebBrowser.openBrowserAsync(`${config.server}/accounts/password/reset/`).catch(err => console.error("Couldn't load page", err));
 }
 
-function login() {
-  return new Promise((resolve, reject) => {
-    fetch(`${config.server}/api/auth/token`, { //refresh token endpoint
+async function login() {
+  try{
+    let response = await fetch(`${config.server}/api/auth/token`, { //refresh token endpoint
       method: "POST",
       headers: {
         'Content-Type': 'application/json'
@@ -316,30 +322,21 @@ function login() {
         username: state.username,
         password: state.password
       })
-    }).then((response) => response.json())
-      .then((json) => {
-        if (json.access && json.refresh) {
-          AsyncStorage.setItem('@accesstoken', json.access).then(() => {
-            AsyncStorage.setItem('@refreshtoken', json.refresh).then(() => {
-              resolve("success");
-            }).catch(err => {
-              console.log(err);
-              resolve("Error occurred. Was storage permission denied?");
-            });
-          }).catch(err => {
-            console.log(err);
-            resolve("Error occurred. Was storage permission denied?");
-          });
-        }
-        else if (json.detail) {
-          resolve("Username or password incorrect");
-        }
-        else {
-          resolve("Something went wrong. Please try again later.");
-        }
-      }).catch(err => {
-        console.log(err);
-        resolve("Network error. Please try again later.");
-      });
-  })
+    });
+    let json = await response.json();
+    if (json.access && json.refresh) {
+      await AsyncStorage.setItem('@accesstoken', json.access);
+      await AsyncStorage.setItem('@refreshtoken', json.refresh);
+      return "success";
+    }
+    else if (json.detail) {
+      return "Username or password incorrect";
+    }
+    else {
+      return "Something went wrong. Please try again later.";
+    }
+  }catch(err){
+    console.error(err);
+    return "Network error. Please try again later.";
+  }
 }
