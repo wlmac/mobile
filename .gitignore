@@ -16,3 +16,4 @@ mobile_prev
 .DS_Store
 
 /app.json
+/eas.json
