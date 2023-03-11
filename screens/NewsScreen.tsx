@@ -326,9 +326,11 @@ export default function NewsScreen({
   ) : (
     <>
       {/* Loading Icon */}
-      <View style={isLoading ? styles.container : { display: "none" }}>
-        <Image style={styles.loading} source={loadingIcon} />
-      </View>
+      {isLoading && 
+        <View style={styles.container}>
+          <Image style={styles.loading} source={loadingIcon} />
+        </View>
+      }
 
       {/* After Everything is Loaded */}
       <View
@@ -339,40 +341,38 @@ export default function NewsScreen({
                 styles.container,
                 {
                   backgroundColor:
-                    colorScheme.scheme === "dark" ? "#252525" : "#eaeaea",
+                    colorScheme.scheme === "dark" ? "#252525" : "#eaeaea"
                 },
               ]
         }
       >
-        {fullAnnId === "-1" ? dropdown() : <></>}
+        {fullAnnId === "-1" && dropdown()}
         {/* School Announcements */}
-        <ScrollView
-          ref={allA}
-          style={
-            !isFilter && fullAnnId === "-1"
-              ? styles.scrollView
-              : { display: "none" }
-          }
-          onScroll={({ nativeEvent }) => {
-            if (isCloseToBottom(nativeEvent)) loadAnnouncements();
-          }}
-          scrollEventThrottle={0}
-        >
-          {Object.entries(announcements).map(([key, ann]) => (
-            <Announcement key={key} ann={ann} fullAnn={setFullAnnId} />
-          ))}
-          {loadError ? (
-            <View style={styles.error}>
-              <Text style={styles.errorMessage}>An error occured.</Text>
-              <Button
-                title="Retry"
-                onPress={() => {
-                  loadAnnouncements();
-                }}
-              ></Button>
-            </View>
-          ) : undefined}
-        </ScrollView>
+        {
+          !isFilter && fullAnnId === "-1" && <ScrollView
+            ref={allA}
+            style={styles.scrollView}
+            onScroll={({ nativeEvent }) => {
+              if (isCloseToBottom(nativeEvent)) loadAnnouncements();
+            }}
+            scrollEventThrottle={0}
+          >
+            {Object.entries(announcements).map(([key, ann]) => (
+              <Announcement key={key} ann={ann} fullAnn={setFullAnnId} />
+            ))}
+            {loadError ? (
+              <View style={styles.error}>
+                <Text style={styles.errorMessage}>An error occured.</Text>
+                <Button
+                  title="Retry"
+                  onPress={() => {
+                    loadAnnouncements();
+                  }}
+                ></Button>
+              </View>
+            ) : undefined}
+          </ScrollView>
+        }
 
         {/* My Feed Announcement */}
         <ScrollView
@@ -500,6 +500,7 @@ export default function NewsScreen({
             colorScheme.scheme === "dark" ? "#1c1c1c" : "#d4d4d4",
           borderBottomWidth: 3.5,
           borderRadius: 0,
+          zIndex: 1,
         }}
         dropDownContainerStyle={{
           borderColor: "transparent",
@@ -563,7 +564,7 @@ export default function NewsScreen({
                 ]
           }
         >
-          {fullAnnId === "-1" ? dropdown() : <></>}
+          {fullAnnId === "-1" && dropdown()}
           {/* Blog */}
           <ScrollView
             ref={allB}
@@ -622,8 +623,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "column",
     alignItems: "center",
-    justifyContent: "center",
-    marginTop: StatusBar.currentHeight || 0,
+    justifyContent: "center"
   },
   loading: {
     width: 40,
