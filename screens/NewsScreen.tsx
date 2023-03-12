@@ -118,6 +118,8 @@ export default function NewsScreen({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isBlog, setBlog] = useState(false);
 
+  const [pfps, setPfps] = useState<string[]>([]);
+
   // lazy loading check if user at bottom
   function isCloseToBottom({
     layoutMeasurement,
@@ -226,6 +228,39 @@ export default function NewsScreen({
     setLoadingMore(false);
   };
 
+  function loadPfp(author: number): Promise<string> {
+    return new Promise((resolve, reject) => {
+      if(pfps[author]) {
+        console.log("cached pfp");
+        resolve(pfps[author]);
+        return;
+      }
+      console.log("loading pfp");
+      apiRequest(
+        `/api/v3/obj/user/retrieve/${author}`,
+        "",
+        "GET",
+        true
+      ).then((res) => {
+        if (res.success) {
+          let jsonres = JSON.parse(res.response);
+          if (jsonres) {
+            let tmp: string = jsonres.email_hash;
+            try {
+              const decode = (str: string): string =>
+                Buffer.from(str, "base64").toString("hex");
+              resolve("https://www.gravatar.com/avatar/" + decode(tmp));
+            } catch (e) {
+              reject(e);
+            }
+          }
+        } else {
+          console.log("API request error: " + res.response);
+        }
+      });
+    });
+  }
+
   const loadBlogResults = async (
     endpoint: string,
     setBlogs: (a: typeof blogs) => any,
@@ -240,23 +275,31 @@ export default function NewsScreen({
       try {
         let jsonres: BlogData[] = JSON.parse(res.response).results;
         if (jsonres && Array.isArray(jsonres)) {
-          jsonres.forEach((item) => {
-            let tmp: { id: number; name: string; color: string }[] = [];
-            let tagIds = item.tags; // gets the tags
-            tagIds.forEach((tag) => {
-              tmp.push({
-                id: tag,
-                name: tags[tag].name,
-                color: tags[tag].color,
-              });
+          jsonres.forEach((item) => authors.push(item.author));
+          await Promise.all(authors.map(loadPfp)).then((res) => {
+            let tmp = pfps;
+            res.forEach((item, index) => {
+              tmp[authors[index]] = item;
             });
-            item.tags_slugs = tmp;
-            item.author_slug = users[item.author].username;
-            item.author_first_name = users[item.author].first_name;
-            authors.push(item.author);
+            setPfps(tmp);
+            jsonres.forEach((item) => {
+              let tmp: { id: number; name: string; color: string }[] = [];
+              let tagIds = item.tags; // gets the tags
+              tagIds.forEach((tag) => {
+                tmp.push({
+                  id: tag,
+                  name: tags[tag].name,
+                  color: tags[tag].color,
+                });
+              });
+              item.tags_slugs = tmp;
+              item.author_slug = users[item.author].username;
+              item.author_first_name = users[item.author].first_name;
+              item.icon = pfps[item.author];
+            });
+            setBlogs(blogs.concat(jsonres));
+            setNextBlogSet(nextBlogSet + loadNum);
           });
-          setBlogs(blogs.concat(jsonres));
-          setNextBlogSet(nextBlogSet + loadNum);
         }
       } catch (_e) {
         errored = true;
@@ -264,36 +307,6 @@ export default function NewsScreen({
     } else {
       errored = true;
     }
-    let pfps: string[] = [];
-    for (let i = 0; i < authors.length; i++) {
-      if (pfps[authors[i]]) continue;
-      await apiRequest(
-        `/api/v3/obj/user/retrieve/${authors[i]}`,
-        "",
-        "GET",
-        true
-      ).then((res) => {
-        if (res.success) {
-          let jsonres = JSON.parse(res.response);
-          if (jsonres) {
-            let tmp: string = jsonres.email_hash;
-            try {
-              const decode = (str: string): string =>
-                Buffer.from(str, "base64").toString("hex");
-              pfps[authors[i]] =
-                "https://www.gravatar.com/avatar/" + decode(tmp);
-            } catch (e) {
-              errored = true;
-            }
-          }
-        } else {
-          console.log("API request error: " + res.response);
-        }
-      });
-    }
-    blogs.forEach((blog) => {
-      blog.icon = pfps[blog.author];
-    });
     setLoadError(errored);
     setLoadingMore(false);
   };
