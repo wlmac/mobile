@@ -102,7 +102,7 @@ export default function NewsScreen({
   const [fullAnnId, setAnnId] = useState("-1");
   function setFullAnnId(id: string) {
     setAnnId(id);
-    fullA?.current?.scrollTo({ x: 0, y: 0, animated: false });
+    fullA.current?.scrollTo({ x: 0, y: 0, animated: false });
   }
 
   //displayed info if nothing in feed
@@ -231,11 +231,9 @@ export default function NewsScreen({
   function loadPfp(author: number): Promise<string> {
     return new Promise((resolve, reject) => {
       if(pfps[author]) {
-        console.log("cached pfp");
         resolve(pfps[author]);
         return;
       }
-      console.log("loading pfp");
       apiRequest(
         `/api/v3/obj/user/retrieve/${author}`,
         "",
@@ -325,7 +323,7 @@ export default function NewsScreen({
     );
   const loadBlogs = async () =>
     loadBlogResults(
-      `/api/v3/obj/blog-post?format=json&limit=${loadNum}&offset=${nextAnnSet}`,
+      `/api/v3/obj/blog-post?format=json&limit=${loadNum}&offset=${nextBlogSet}`,
       setBlogs,
       setNextBlogSet
     );
