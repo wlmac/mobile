@@ -1,30 +1,29 @@
 import * as React from 'react';
-import { StyleSheet, Alert, TouchableOpacity, Linking } from 'react-native';
+import { ScrollView, StyleSheet, Alert, TouchableOpacity, Linking } from 'react-native';
 import { Text, View } from '../components/Themed';
 import * as WebBrowser from 'expo-web-browser';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {ThemeContext} from '../hooks/useColorScheme';
 import config from '../config.json';
-
 export default function About({ back }: { back: Function }) {
-
     const colorScheme = React.useContext(ThemeContext);
-    const bgColor = colorScheme.scheme === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
+    const btnBgColor = colorScheme.scheme === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
     return (
-        <View style={[styles.container, {backgroundColor: bgColor}]}>
+        <View style={[styles.container, {backgroundColor: colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525'}]}>
             <Text style={styles.title}>
                 About
             </Text>
-            <View style={[styles.container, {backgroundColor: bgColor}]}>
+            <View style={[styles.container, {backgroundColor: colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525'}]}>
                 <Text>The Metropolis app is the mobile app for {' '}
                     <TouchableOpacity onPress={() => { WebBrowser.openBrowserAsync(config.server) }}>
                         <Text style={styles.link}>
                             {config.server}
                         </Text>
                     </TouchableOpacity>
-                    {'\n\n'}
+                    {'\n'}{'\n'}
                     We operate in conjunction with the main site, providing features and functionality that aim to be consistent with the site.
                     However, we are planning to update the app with more features exclusive to the mobile experience. You can view updates in the changelog.
-                    {'\n\n'}
+                    {'\n'}{'\n'}
                     By using this app, you consent to the {}
                     <Text style={styles.link} onPress={() => { WebBrowser.openBrowserAsync(config.server + '/privacy') }}>
                         privacy policy
@@ -37,13 +36,12 @@ export default function About({ back }: { back: Function }) {
                     Credits
                 </Text>
                 <Text style={{ marginBottom: 12 }}>
-                    <Text style={{ fontWeight: 'bold' }}>Lead Developer:</Text> Patrick Lin {'\n'}
-                    <Text style={{ fontWeight: 'bold' }}>Other Developers:</Text> Aaron Zhu, Shane Chen, Aava Sapkota, Vlad Surdu, Jeremy Liang {'\n'}
+                    <Text style={{ fontWeight: 'bold' }}>Lead Developers:</Text> Patrick Lin, Shane Chen {'\n'}
+                    <Text style={{ fontWeight: 'bold' }}>Other Developers:</Text> Aaron Zhu, Aava Sapkota, Vlad Surdu, Jeremy Liang, Max Sun, Colin Cai {'\n'}
                     <Text style={{ fontWeight: 'bold' }}>Backend:</Text> Ken Shibata, Paul Lee {'\n'}
-                    <Text style={{ fontWeight: 'bold' }}>Graphics and Design:</Text> Chelsea Wong, Justin Lu, Nicole Cui {'\n'}
+                    <Text style={{ fontWeight: 'bold' }}>Graphics and Design:</Text> Chelsea Wong, Annie Wong, Justin Lu, Nicole Cui {'\n'}
                     <Text style={{ fontWeight: 'bold' }}>Support:</Text> Project Metropolis, SAC, WLMAC {'\n'}
                 </Text>
-
                 <Text style={styles.subtitle}>
                     Contact
                 </Text>
@@ -67,14 +65,13 @@ export default function About({ back }: { back: Function }) {
                 </Text>
             </View>
             <View style={{ justifyContent: 'space-between' , backgroundColor: colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525'}}>
-                <TouchableOpacity style={[styles.button, { backgroundColor: colorScheme.scheme === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)" }]} onPress={() => { back(-1) }}>
+                <TouchableOpacity style={[styles.button, { backgroundColor: btnBgColor }]} onPress={() => { back(-1) }}>
                     <Text> Back </Text>
                 </TouchableOpacity>
             </View>
         </View>
     )
 }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
