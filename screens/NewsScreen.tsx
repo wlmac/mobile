@@ -48,9 +48,7 @@ export default function NewsScreen({
   // stores announcements
   const [announcements, setAnnouncements] = useState<AnnouncementData[]>([]);
   const [blogs, setBlogs] = useState<BlogData[]>([]);
-  const [myAnnouncements, setMyAnnouncements] = useState<AnnouncementData[]>(
-    []
-  );
+  const [myAnnouncements, setMyAnnouncements] = useState<AnnouncementData[]>([]);
   const [orgs, setOrgs] = useState(emptyOrgs);
   const [tags, setTags] = useState(emptyTags);
   const [users, setUsers] = useState(emptyUsers);
@@ -115,6 +113,7 @@ export default function NewsScreen({
   const fullA = React.useRef<ScrollView>(null);
 
   const [dropdownSelection, setDropdown] = useState("All Announcements");
+  const [lastdropdown, setLastDropdown] = useState("All Announcements");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isBlog, setBlog] = useState(false);
 
@@ -130,15 +129,19 @@ export default function NewsScreen({
   }
 
   function changeDropdown(): void {
+    if(lastdropdown == dropdownSelection) return;
     if (dropdownSelection === "All Announcements") {
+      console.log("All Announcements scroll to top");
       allA.current?.scrollTo({ x: 0, y: 0, animated: false });
       setFilter(false);
     }
     if (dropdownSelection === "My Announcements") {
+      console.log("My Announcements scroll to top");
       myA.current?.scrollTo({ x: 0, y: 0, animated: false });
       setFilter(true);
     }
     if (dropdownSelection === "Blog") {
+      console.log("Blog scroll to top");
       allB.current?.scrollTo({ x: 0, y: 0, animated: false });
       setBlog(true);
     } else {
@@ -386,13 +389,9 @@ export default function NewsScreen({
         }
 
         {/* My Feed Announcement */}
-        <ScrollView
+        { isFilter && fullAnnId === "-1" && <ScrollView
           ref={myA}
-          style={
-            isFilter && fullAnnId === "-1"
-              ? styles.scrollView
-              : { display: "none" }
-          }
+          style={styles.scrollView}
           onScroll={({ nativeEvent }) => {
             if (isCloseToBottom(nativeEvent)) loadMyAnnouncements();
           }}
@@ -463,12 +462,12 @@ export default function NewsScreen({
               to view your personal feed here!
             </Text>
           </View>
-        </ScrollView>
+        </ScrollView> }
 
         {/* Full Announcement */}
-        <ScrollView
+        {fullAnnId !== "-1" && <ScrollView
           ref={fullA}
-          style={fullAnnId !== "-1" ? styles.scrollView : { display: "none" }}
+          style={styles.scrollView}
         >
           <FullAnnouncement
             ann={announcements
@@ -477,7 +476,7 @@ export default function NewsScreen({
             backToScroll={setFullAnnId}
             isBlog={false}
           />
-        </ScrollView>
+        </ScrollView> }
 
         {/* Divider */}
         <View
@@ -495,16 +494,22 @@ export default function NewsScreen({
   function dropdown() {
     return (
       <DropDownPicker
+        theme={colorScheme.scheme == "dark" ? "DARK" : "LIGHT"}
         items={[
           { label: "All Announcements", value: "All Announcements" },
           { label: "My Announcements", value: "My Announcements" },
           { label: "Blog", value: "Blog" },
         ]}
         multiple={false}
-        setValue={(v) => {
-          setDropdown(v);
-        }}
+        setValue={setDropdown}
         value={dropdownSelection}
+        onChangeValue={(v) => {
+          if(v != null && v != lastdropdown) {
+            console.log(lastdropdown + " -> " + v);
+            changeDropdown();
+            setLastDropdown(v);
+          }
+        }}
         containerStyle={{
           opacity: 50,
           borderBottomColor:
@@ -542,13 +547,8 @@ export default function NewsScreen({
           borderColor: "transparent",
           borderRadius: 0,
         }}
-        onChangeValue={(value) => {
-          changeDropdown();
-        }}
         open={dropdownOpen}
-        setOpen={(open) => {
-          setDropdownOpen(open);
-        }}
+        setOpen={setDropdownOpen}
       />
     );
   }
@@ -577,9 +577,9 @@ export default function NewsScreen({
         >
           {fullAnnId === "-1" && dropdown()}
           {/* Blog */}
-          <ScrollView
+          { fullAnnId === "-1" && <ScrollView
             ref={allB}
-            style={fullAnnId === "-1" ? styles.scrollView : { display: "none" }}
+            style={styles.scrollView}
             onScroll={({ nativeEvent }) => {
               if (isCloseToBottom(nativeEvent)) loadBlogs();
             }}
@@ -599,19 +599,19 @@ export default function NewsScreen({
                 ></Button>
               </View>
             ) : undefined}
-          </ScrollView>
+          </ScrollView> }
 
           {/* Full Announcement */}
-          <ScrollView
+          {fullAnnId !== "-1" && <ScrollView
             ref={fullA}
-            style={fullAnnId !== "-1" ? styles.scrollView : { display: "none" }}
+            style={styles.scrollView}
           >
             <FullAnnouncement
               ann={blogs.find((e: any) => e.id === fullAnnId)}
               backToScroll={setFullAnnId}
               isBlog={true}
             />
-          </ScrollView>
+          </ScrollView>}
 
           {/* Divider */}
           <View
