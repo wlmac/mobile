@@ -10,6 +10,7 @@ import { Text, View, useThemeColor } from "../components/Themed";
 import config from "../config.json";
 import getSeason from "../lib/getSeason";
 import { BottomTabParamList } from "../types";
+import { ChangeLogModal } from '../components/Changelog';
 
 export default function HomeScreen({ navigation }: { navigation: BottomTabNavigationProp<BottomTabParamList, "Home"> }) {
   const colorScheme = React.useContext(ThemeContext);
@@ -235,6 +236,7 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
 
 
           {/* ---  Main Page Container ---*/}
+          {ChangeLogModal()}
         </View>
       </ImageBackground>
     </ImageBackground>
