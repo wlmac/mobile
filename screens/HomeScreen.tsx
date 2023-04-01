@@ -1,9 +1,10 @@
 import * as React from "react";
-import { StyleSheet, Image, ImageBackground } from "react-native";
+import { StyleSheet, Image, ImageBackground, FlatList, Pressable } from "react-native";
 import { ThemeContext } from "../hooks/useColorScheme";
 import { GuestModeContext } from "../hooks/useGuestMode";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { Table, Rows } from 'react-native-table-component';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 import apiRequest from "../lib/apiRequest";
 import { Text, View, useThemeColor } from "../components/Themed";
@@ -11,6 +12,9 @@ import config from "../config.json";
 import getSeason from "../lib/getSeason";
 import { BottomTabParamList } from "../types";
 import { ChangeLogModal } from '../components/Changelog';
+import { Header } from '@react-navigation/stack';
+import { ScrollView } from 'react-native-gesture-handler';
+
 
 export default function HomeScreen({ navigation }: { navigation: BottomTabNavigationProp<BottomTabParamList, "Home"> }) {
   const colorScheme = React.useContext(ThemeContext);
@@ -134,6 +138,11 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
       }
     }
   }
+
+  // rename this later
+  function showImportantThings(){
+    alert("not implemented yet :P");
+  }
   
   React.useEffect(() => {
     getWeather().then((data) => {
@@ -170,6 +179,35 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
 
         {/* ---  Main Page Container ---*/}
         <View style={[styles.container, { backgroundColor: theme.tint }]}>
+
+          {/* --- Alert Box --- */}
+          <View style={styles.alertBox}>
+            <View style={styles.alertBoxTitle}>
+              {/* css doesn't work for icons apparently */}
+              <Ionicons name='warning-outline' size={25} color={theme.color2}></Ionicons>
+              <Text style={[styles.alertBoxTitleText, { color: theme.color2 }]}>Important</Text>
+            </View>
+            <ScrollView persistentScrollbar={true}>
+              <FlatList data = {[
+                "AAAAHHHH OH MY GOD EVERYTHING'S ON FIRE",
+                "PLEASE I HAVE A FAMILY",
+                "OH GOD OH F*CK",
+                "padding1",
+                "padding2",
+                "padding3",
+                "padding4",
+                "padding5",
+                "padding6",
+                "padding7",
+                "padding8",
+              ]} renderItem={({item}) => <Text style={{ color: theme.color2 }}>&bull; {item}</Text>}/>
+            </ScrollView>
+            {/* not implemented :P should it open the announcements in a modal or
+                resize the alert box to fit the screen?*/}
+            <Pressable onPress={showImportantThings}>
+              <Text style={[styles.alertBoxScrollText, { color: theme.color2 }]}>More...</Text>
+            </Pressable>
+          </View>
 
           {/* ---WEATHER CONTAINER ---*/}
           <View style={styles.weatherContainer}>
@@ -266,6 +304,50 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
+  /*---------- ALERT BOX ---------*/
+
+  alertBox: {
+    display: "flex",
+    flexDirection: "column",
+
+    position: "absolute",
+    top: 10,
+    left: 10,
+    padding: 10,
+
+    maxWidth: 190,
+    height: 200,
+
+    backgroundColor: "rgba(255, 255, 0, 0.15)",
+
+    borderWidth: 3.4,
+    borderRadius: 5,
+    borderColor: "rgb(255, 255, 0)",
+    borderStyle: "dashed",
+  },
+
+  alertBoxTitle: {
+    fontSize: 25,
+    marginBottom: 10,
+
+    flexDirection: "row",
+
+    backgroundColor: "transparent",
+  },
+
+  alertBoxTitleText: {
+    fontSize: 23,
+    marginLeft: 3,
+    
+    fontWeight: "bold",
+  },
+
+  alertBoxScrollText: {
+    alignSelf: "flex-end",
+    textAlign: "left",
+    textDecorationLine: "underline",
+  },
+  
   /* -------- TEMPERATURE --------*/
   temperatureText: {
     fontWeight: "bold",
