@@ -335,9 +335,7 @@ export default function NewsScreen({
   useEffect(() => {
     onStartup();
   }, []);
-  return isBlog ? (
-    genBlog()
-  ) : (
+  return (
     <>
       {/* Loading Icon */}
       {isLoading && 
@@ -361,9 +359,46 @@ export default function NewsScreen({
         }
       >
         {fullAnnId === "-1" && dropdown()}
+
+        { isBlog && fullAnnId === "-1" && <ScrollView
+            ref={allB}
+            style={styles.scrollView}
+            onScroll={({ nativeEvent }) => {
+              if (isCloseToBottom(nativeEvent)) loadBlogs();
+            }}
+            scrollEventThrottle={0}
+          >
+            {Object.entries(blogs).map(([key, ann]) => (
+              <Blog key={key} ann={ann} fullAnn={setFullAnnId} />
+            ))}
+            {loadError ? (
+              <View style={styles.error}>
+                <Text style={styles.errorMessage}>An error occured.</Text>
+                <Button
+                  title="Retry"
+                  onPress={() => {
+                    loadBlogs();
+                  }}
+                ></Button>
+              </View>
+            ) : undefined}
+          </ScrollView> }
+
+          {/* Full Blog */}
+          {isBlog && fullAnnId !== "-1" && <ScrollView
+            ref={fullA}
+            style={styles.scrollView}
+          >
+            <FullAnnouncement
+              ann={blogs.find((e: any) => e.id === fullAnnId)}
+              backToScroll={setFullAnnId}
+              isBlog={true}
+            />
+          </ScrollView>}
+
         {/* School Announcements */}
         {
-          !isFilter && fullAnnId === "-1" && <ScrollView
+          !isBlog && !isFilter && fullAnnId === "-1" && <ScrollView
             ref={allA}
             style={styles.scrollView}
             onScroll={({ nativeEvent }) => {
@@ -389,7 +424,7 @@ export default function NewsScreen({
         }
 
         {/* My Feed Announcement */}
-        { isFilter && fullAnnId === "-1" && <ScrollView
+        { !isBlog && isFilter && fullAnnId === "-1" && <ScrollView
           ref={myA}
           style={styles.scrollView}
           onScroll={({ nativeEvent }) => {
@@ -465,7 +500,7 @@ export default function NewsScreen({
         </ScrollView> }
 
         {/* Full Announcement */}
-        {fullAnnId !== "-1" && <ScrollView
+        {!isBlog && fullAnnId !== "-1" && <ScrollView
           ref={fullA}
           style={styles.scrollView}
         >
@@ -550,80 +585,6 @@ export default function NewsScreen({
         open={dropdownOpen}
         setOpen={setDropdownOpen}
       />
-    );
-  }
-
-  function genBlog() {
-    return (
-      <>
-        {/* Loading Icon */}
-        <View style={isLoading ? styles.container : { display: "none" }}>
-          <Image style={styles.loading} source={loadingIcon} />
-        </View>
-
-        {/* After Everything is Loaded */}
-        <View
-          style={
-            isLoading
-              ? { display: "none" }
-              : [
-                  styles.container,
-                  {
-                    backgroundColor:
-                      colorScheme.scheme === "dark" ? "#252525" : "#eaeaea",
-                  },
-                ]
-          }
-        >
-          {fullAnnId === "-1" && dropdown()}
-          {/* Blog */}
-          { fullAnnId === "-1" && <ScrollView
-            ref={allB}
-            style={styles.scrollView}
-            onScroll={({ nativeEvent }) => {
-              if (isCloseToBottom(nativeEvent)) loadBlogs();
-            }}
-            scrollEventThrottle={0}
-          >
-            {Object.entries(blogs).map(([key, ann]) => (
-              <Blog key={key} ann={ann} fullAnn={setFullAnnId} />
-            ))}
-            {loadError ? (
-              <View style={styles.error}>
-                <Text style={styles.errorMessage}>An error occured.</Text>
-                <Button
-                  title="Retry"
-                  onPress={() => {
-                    loadBlogs();
-                  }}
-                ></Button>
-              </View>
-            ) : undefined}
-          </ScrollView> }
-
-          {/* Full Announcement */}
-          {fullAnnId !== "-1" && <ScrollView
-            ref={fullA}
-            style={styles.scrollView}
-          >
-            <FullAnnouncement
-              ann={blogs.find((e: any) => e.id === fullAnnId)}
-              backToScroll={setFullAnnId}
-              isBlog={true}
-            />
-          </ScrollView>}
-
-          {/* Divider */}
-          <View
-            style={{
-              height: 3.5,
-              width: "100%",
-              backgroundColor:
-                colorScheme.scheme === "dark" ? "#1c1c1c" : "#d4d4d4",
-            }}
-          />
-        </View>
-      </>
     );
   }
 }
