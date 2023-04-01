@@ -22,7 +22,10 @@ export default function FullAnnouncement({ann, backToScroll, isBlog}:{ann: any, 
     return (
         <ScrollView style={[styles.announcement, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c', shadowColor: colorScheme.scheme === 'light' ? '#1c1c1c' : '#e6e6e6'}]} onStartShouldSetResponder={(e) => true} onResponderRelease={() => backToScroll(ann.id)}>
             <View style={[styles.tags, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
-                {Object.entries(ann.tags).map(([key, tag]) => (
+                {isBlog && Object.entries(ann.tags_slugs).map(([key, tags_slugs]) => (
+                    createTag(key, tags_slugs)
+                ))}
+                {!isBlog && Object.entries(ann.tags).map(([key, tag]) => (
                     createTag(key, tag)
                 ))}
             </View>

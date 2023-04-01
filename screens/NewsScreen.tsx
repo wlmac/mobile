@@ -131,17 +131,14 @@ export default function NewsScreen({
   function changeDropdown(): void {
     if(lastdropdown == dropdownSelection) return;
     if (dropdownSelection === "All Announcements") {
-      console.log("All Announcements scroll to top");
       allA.current?.scrollTo({ x: 0, y: 0, animated: false });
       setFilter(false);
     }
     if (dropdownSelection === "My Announcements") {
-      console.log("My Announcements scroll to top");
       myA.current?.scrollTo({ x: 0, y: 0, animated: false });
       setFilter(true);
     }
     if (dropdownSelection === "Blog") {
-      console.log("Blog scroll to top");
       allB.current?.scrollTo({ x: 0, y: 0, animated: false });
       setBlog(true);
     } else {
@@ -540,7 +537,6 @@ export default function NewsScreen({
         value={dropdownSelection}
         onChangeValue={(v) => {
           if(v != null && v != lastdropdown) {
-            console.log(lastdropdown + " -> " + v);
             changeDropdown();
             setLastDropdown(v);
           }
