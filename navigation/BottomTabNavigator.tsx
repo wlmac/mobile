@@ -35,6 +35,7 @@ export default function BottomTabNavigator() {
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
           headerTitle: "Home",
+          headerTitleAlign: "center",
         }}
       />
       <BottomTab.Screen
@@ -42,6 +43,8 @@ export default function BottomTabNavigator() {
         component={NewsNavigator}
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="megaphone" color={color} />,
+          headerTitle: "News",
+          headerTitleAlign: "center",
         }}
       />
       <BottomTab.Screen
@@ -50,6 +53,7 @@ export default function BottomTabNavigator() {
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="calendar" color={color} />,
           headerTitle: "Calendar",
+          headerTitleAlign: "center",
         }}
       />
       <BottomTab.Screen
@@ -58,6 +62,7 @@ export default function BottomTabNavigator() {
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="map" color={color} />,
           headerTitle: "School Map",
+          headerTitleAlign: "center",
         }}
       />
       <BottomTab.Screen
@@ -66,6 +71,7 @@ export default function BottomTabNavigator() {
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="settings" color={color} />,
           headerTitle: "Settings",
+          headerTitleAlign: "center",
         }}
       />
     </BottomTab.Navigator>
