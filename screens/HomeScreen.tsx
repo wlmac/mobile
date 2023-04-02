@@ -187,25 +187,23 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
               <Ionicons name='warning-outline' size={25} color={theme.color2}></Ionicons>
               <Text style={[styles.alertBoxTitleText, { color: theme.color2 }]}>Important</Text>
             </View>
-            <ScrollView persistentScrollbar={true}>
-              <FlatList data = {[
-                "AAAAHHHH OH MY GOD EVERYTHING'S ON FIRE",
-                "PLEASE I HAVE A FAMILY",
-                "OH GOD OH F*CK",
-                "padding1",
-                "padding2",
-                "padding3",
-                "padding4",
-                "padding5",
-                "padding6",
-                "padding7",
-                "padding8",
-              ]} renderItem={({item}) => <Text style={{ color: theme.color2 }}>&bull; {item}</Text>}/>
-            </ScrollView>
+            <FlatList data={[
+              "AAAAHHHH OH MY GOD EVERYTHING'S ON FIRE",
+              "PLEASE I HAVE A FAMILY",
+              "padding1",
+              "padding2",
+              "padding3",
+              "padding4",
+              "padding5",
+              "padding6",
+              "padding7",
+              "padding8",
+            ]} renderItem={({ item }) => <Text style={{ color: theme.color2 }}>&bull; {item}</Text>}/>
+            <Text style={[styles.alertBoxScrollText, { color: theme.color2 }]}>More...</Text>
             {/* not implemented :P should it open the announcements in a modal or
                 resize the alert box to fit the screen?*/}
+            {/* also btw don't let this get to prod */}
             <Pressable onPress={showImportantThings}>
-              <Text style={[styles.alertBoxScrollText, { color: theme.color2 }]}>More...</Text>
             </Pressable>
           </View>
 

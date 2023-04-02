@@ -9,6 +9,7 @@ import { EventCard } from '../components/EventCard';
 import {ThemeContext} from '../hooks/useColorScheme';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { CalendarData } from '../constants/Types';
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -40,14 +41,14 @@ export default function CalendarScreen({ navigation }: { navigation: BottomTabNa
   const [selectedDay, setSelectedDay] = useState(today);
   const [displayedDate, setDisplayedDate] = useState(today);
   const [currentKey, setCurrentKey] = useState(new Date());
-  const [data, setData] = useState(undefined as any);
+  const [data, setData] = useState<CalendarData[] | undefined | null>(undefined);
   const [eventDays, setEventDays] = useState([] as any[]);
   const [eventsToday, setEventsToday] = useState([] as any[]);
 
   // use effect on component load
   useEffect (() => {
     // load from AsyncStorage
-    AsyncStorage.getItem("@events").then((events: any) => {
+    AsyncStorage.getItem("@events").then((events: string | null) => {
       if (events) {
         setData(JSON.parse(events)); // set data
       }
@@ -60,13 +61,14 @@ export default function CalendarScreen({ navigation }: { navigation: BottomTabNa
 
   // use effect on data change
   useEffect (() => {
+    console.log("data:", data)
     setSelectedDay(today);
     setDisplayedDate(today);
     // add every single event day to the set
     if (data) {
       let tempEventDays = new Set<string>();
       for (let i = 0; i < data.length; i++) {
-        let event: any = data[i];
+        let event: CalendarData = data[i];
         let startDate: YMDDate = new YMDDate(event.start_date.split('T')[0]);
         let endDate: YMDDate = new YMDDate(event.end_date.split('T')[0]);
 
