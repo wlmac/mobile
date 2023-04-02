@@ -53,7 +53,7 @@
       "package": "com.maclyonsden.metropolis",
       "config": {
         "googleMaps": {
-          "apiKey": "${env:GOOGLE_MAPS_API_KEY}"
+          "apiKey": "Api key here"
         }
       },
       "versionCode": 9
