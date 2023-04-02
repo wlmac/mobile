@@ -1,0 +1,70 @@
+{
+  "expo": {
+    "name": "Metropolis",
+    "slug": "metropolis",
+    "privacy": "hidden",
+    "version": "1.1.2",
+    "githubUrl": "https://github.com/wlmac/mobile",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "metropolis",
+    "userInterfaceStyle": "automatic",
+    "notification": {
+      "color": "#073763",
+      "iosDisplayInForeground": true
+    },
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1c233f"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.maclyonsden.metropolis",
+      "buildNumber": "5",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app accesses location information to display location in respect to the school",
+        "UISupportedInterfaceOrientations": [
+          "UIInterfaceOrientationPortrait"
+        ],
+        "UISupportedInterfaceOrientations~ipad": [
+          "UIInterfaceOrientationLandscapeRight",
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIDeviceOrientationPortrait",
+          "UIDeviceOrientationPortraitUpsideDown"
+        ]
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ],
+      "package": "com.maclyonsden.metropolis",
+      "config": {
+        "googleMaps": {
+          "apiKey": "${env:GOOGLE_MAPS_API_KEY}"
+        }
+      },
+      "versionCode": 9
+    },
+    "web": {
+      "favicon": "./assets/images/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "7cece997-cdba-4ad5-917e-7ef47015ac99"
+      }
+    }
+  }
+}
