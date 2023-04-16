@@ -1,5 +1,5 @@
 import * as React from "react";
-import { StyleSheet, Image, ImageBackground } from "react-native";
+import { StyleSheet, Image, ImageBackground, Button, Platform, } from "react-native";
 import { ThemeContext } from "../hooks/useColorScheme";
 import { GuestModeContext } from "../hooks/useGuestMode";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
@@ -11,15 +11,19 @@ import config from "../config.json";
 import getSeason from "../lib/getSeason";
 import { BottomTabParamList } from "../types";
 import { ChangeLogModal } from '../components/Changelog';
+import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
 
 export default function HomeScreen({ navigation }: { navigation: BottomTabNavigationProp<BottomTabParamList, "Home"> }) {
   const colorScheme = React.useContext(ThemeContext);
   const guestMode = React.useContext(GuestModeContext);
 
+  const notificationListener = React.useRef<any>();
+  const responseListener = React.useRef<any>();
+
   let criticalTimes: {start: number, end: number, course: string}[] = [];
   let season = getSeason();
   let textColor = useThemeColor({}, "text");
-
 
   const [weatherIcon, updateIcon] = React.useState(require("../assets/images/loading.gif"));
   const [weather, updateWeather] = React.useState("c");
@@ -34,6 +38,36 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
   const [course, updateCourse] = React.useState("Loading...");
   const [timeText, updateTimeText] = React.useState<string | undefined>("Loading...");
   const [timetable, updateTimetable] = React.useState<string | any[][] | undefined>("Fetching data...");
+  const [expoNotificationToken, updateExpoNotificationToken] = React.useState<string | undefined>(undefined);
+  const [notification, setNotification] = React.useState<any>(false);
+
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+    }),
+  });  
+
+  async function sendPushNotification(expoNotificationToken : string | undefined) {
+    const message = {
+      to: expoNotificationToken,
+      sound: 'default',
+      title: 'Original Title',
+      body: 'And here is the body!',
+      data: { someData: 'goes here' },
+    };
+  
+    await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Accept-encoding': 'gzip, deflate',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(message),
+    });
+  }
 
   async function setSchedule(endpoint: string, userSchedule: boolean){
     try{
@@ -164,6 +198,65 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
     websiteColor: "rgb(58, 106, 150)",
     tint: "rgba(0, 0, 0, 0.3)"
   };
+
+  async function setupNotifToken(): Promise<string | null> {
+    if (!Device.isDevice) {
+      console.error("Not a device");
+      return null;
+    }
+
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== 'granted') {
+      alert('Failed to get push token for push notification!');
+      return null;
+    }
+
+    if (Platform.OS === 'android') {
+      Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      });
+    }
+
+    let expoPushToken = (await Notifications.getExpoPushTokenAsync()).data;
+    await apiRequest("/api/v3/notif/token", JSON.stringify({expoPushToken}), "PUT", false).then((res) => {
+      if (!res.success) {
+        console.error("An error occurred while trying to set the expo notification token: " + res.error);
+        return null;
+      } else {
+        console.log("Successfully updated notif token " + res.response);
+        updateExpoNotificationToken(expoPushToken);
+      }
+    }).catch((err) => {
+      console.error("An error occurred while trying to set the expo notification token: " + err);
+      // no notifs allowed
+    });
+    return expoPushToken;
+  }
+
+  React.useEffect(() => {
+
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      setNotification(notification);
+    });
+
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log(response);
+    });
+
+    return () => {
+      Notifications.removeNotificationSubscription(notificationListener.current);
+      Notifications.removeNotificationSubscription(responseListener.current);
+    };
+  }, []);
+
   return (
     <ImageBackground source={seasonBase[season]} resizeMode="cover" style={styles.backgroundImage}>
       <ImageBackground source={wLayers[weather][season]} resizeMode="cover" style={styles.backgroundImage}>
@@ -190,6 +283,18 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
 
           {preTimeText && <Text style={[styles.timeText, { color: theme.color2 }]}>{preTimeText}</Text>}
 
+          {!guestMode.guest && 
+          <View>
+            <Button title="Refresh" onPress={setupNotifToken} />
+            <Text>{expoNotificationToken}</Text>
+            <Button
+            title="Press to Send Notification"
+            onPress={async () => {
+              await sendPushNotification(expoNotificationToken);
+            }}
+          />
+          </View>
+          }
           {/* --- COURSE ---*/}
           <Text style={[styles.courseTitle, { color: theme.color2 }]}>{course}</Text>
 

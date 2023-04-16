@@ -32,6 +32,8 @@ import About from '../components/About';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemeContext } from '../hooks/useColorScheme';
 import { GuestModeContext } from '../hooks/useGuestMode';
+import apiRequest from '../lib/apiRequest';
+import * as Notifications from 'expo-notifications';
 
 export default function SettingsScreen({ navigation }: { navigation: StackNavigationProp<RootStackParamList, 'Root'> }) {
   const [curView, setView] = React.useState(-1);
@@ -67,13 +69,20 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
   }
 
   function logout(){
-    AsyncStorage.clear().then(() => {
+    AsyncStorage.clear().then(async () => {
       if (guestMode.guest) {
         scheme.updateScheme(scheme.scheme);
         guestMode.updateGuest(false);
         navigation.replace('Login', { loginNeeded: true });
       }
       else {
+        let expo_push_token = (await Notifications.getExpoPushTokenAsync()).data
+        let res = await apiRequest("/api/v3/notif/token", JSON.stringify({expo_push_token}), "DELETE")
+        if (!res.success) {
+          // kaboom
+          console.log(res.error);
+          Alert.alert('Error', 'Failed to log out (clearing server-side notification settings failed)', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
+        }
         Alert.alert('Success', 'Logged out successfully', [{ text: 'Ok', onPress: () => navigation.replace('Login', { loginNeeded: true }) }], { cancelable: false });
       }
     });
