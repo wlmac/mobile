@@ -11,7 +11,8 @@
     "userInterfaceStyle": "automatic",
     "notification": {
       "color": "#073763",
-      "iosDisplayInForeground": true
+      "iosDisplayInForeground": true,
+      "icon": "./assets/images/icon.png"
     },
     "splash": {
       "image": "./assets/images/splash.png",

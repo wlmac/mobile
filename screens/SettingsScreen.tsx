@@ -1,25 +1,3 @@
-/*
-import * as React from "react";
-import { Text, View } from '../components/Themed';
-import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { BottomTabParamList } from '../types';
-
-import {
-  FlatList,
-  Platform,
-  StyleSheet,
-  TouchableOpacity,
-} from "react-native";
-
-export default function SettingsScreen({ navigation }: { navigation: BottomTabNavigationProp<BottomTabParamList, 'Settings'> }) {
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Settings</Text>
-    </View>
-  );
-}
-*/
-
 import React, { useState, useEffect } from 'react';
 import { ScrollView, StyleSheet, Alert, TouchableOpacity, useColorScheme, StyleProp } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -68,24 +46,37 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
     return curView == view ? style : { display: "none" };
   }
 
-  function logout(){
-    AsyncStorage.clear().then(async () => {
-      if (guestMode.guest) {
+
+  async function deletePushToken() {
+    let expoPushToken = (await Notifications.getExpoPushTokenAsync()).data;
+    expoPushToken = expoPushToken.slice(18, -1);
+    let res = await apiRequest("/api/v3/notif/token", JSON.stringify({"expo_push_token": expoPushToken}), "DELETE", false);
+    console.log(JSON.stringify(res));
+    if (!res.success) {
+      console.log(res.error);
+      Alert.alert('Error', 'Failed to log out (clearing server-side notification settings failed)', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
+    }
+    Alert.alert('Success', 'Logged out successfully', [{ text: 'Ok', onPress: () => navigation.replace('Login', { loginNeeded: true }) }], { cancelable: false });
+  }
+  
+  function logout() {
+    if (guestMode.guest) {
+      AsyncStorage.clear().then(() => {
         scheme.updateScheme(scheme.scheme);
         guestMode.updateGuest(false);
         navigation.replace('Login', { loginNeeded: true });
-      }
-      else {
-        let expo_push_token = (await Notifications.getExpoPushTokenAsync()).data
-        let res = await apiRequest("/api/v3/notif/token", JSON.stringify({expo_push_token}), "DELETE")
-        if (!res.success) {
-          // kaboom
-          console.log(res.error);
-          Alert.alert('Error', 'Failed to log out (clearing server-side notification settings failed)', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
-        }
-        Alert.alert('Success', 'Logged out successfully', [{ text: 'Ok', onPress: () => navigation.replace('Login', { loginNeeded: true }) }], { cancelable: false });
-      }
-    });
+      }).catch(() => {
+        Alert.alert('Error', 'Failed to log out (clearing local data failed)', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
+      });
+    } else {
+      deletePushToken().then(() => {
+        AsyncStorage.clear().then(() => {
+          console.log("Logged out");
+        }).catch(() => {
+          Alert.alert('Error', 'Failed to log out (clearing local data failed)', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
+        });
+      });
+    }
   }
 
   useEffect(() => {

@@ -38,8 +38,20 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
   const [course, updateCourse] = React.useState("Loading...");
   const [timeText, updateTimeText] = React.useState<string | undefined>("Loading...");
   const [timetable, updateTimetable] = React.useState<string | any[][] | undefined>("Fetching data...");
-  const [expoNotificationToken, updateExpoNotificationToken] = React.useState<string | undefined>(undefined);
-  const [notification, setNotification] = React.useState<any>(false);
+  const [expoNotificationToken, setExpoNotificationToken] = React.useState<string | undefined>(undefined);
+  const [notification, setNotification] = React.useState<Object | undefined>(undefined);
+
+  const theme = colorScheme.scheme === "light" ? {
+    color1: "#005C99",
+    color2: "#003D66",
+    websiteColor: "rgb(58, 106, 150)",
+    tint: "transparent"
+  } : {
+    color1: "#e6e6e6",
+    color2: "#e0e0e0",
+    websiteColor: "rgb(58, 106, 150)",
+    tint: "rgba(0, 0, 0, 0.3)"
+  };
 
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -48,26 +60,6 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
       shouldSetBadge: false,
     }),
   });  
-
-  async function sendPushNotification(expoNotificationToken : string | undefined) {
-    const message = {
-      to: expoNotificationToken,
-      sound: 'default',
-      title: 'Original Title',
-      body: 'And here is the body!',
-      data: { someData: 'goes here' },
-    };
-  
-    await fetch('https://exp.host/--/api/v2/push/send', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Accept-encoding': 'gzip, deflate',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(message),
-    });
-  }
 
   async function setSchedule(endpoint: string, userSchedule: boolean){
     try{
@@ -168,8 +160,72 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
       }
     }
   }
-  
+
+
+  async function setupNotifToken(): Promise<string | null> {
+    if (!Device.isDevice) {
+      console.error("Not a device");
+      return null;
+    }
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== 'granted') {
+      // remove in production
+      alert('Failed to get push token for push notification! Perhaps your system permissions do not allow notifications?');
+      return null;
+    }
+    if (Platform.OS === 'android') {
+      Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      });
+    }
+    let expoPushToken = (await Notifications.getExpoPushTokenAsync()).data;
+    expoPushToken = expoPushToken.slice(18, -1);
+    await apiRequest("/api/v3/notif/token", JSON.stringify({"expo_push_token": expoPushToken}), "PUT", false).then((res) => {
+      if (!res.success) {
+        console.error("An error occurred while trying to set the expo notification token: " + res.error);
+        return null;
+      } else {
+        console.log("Successfully updated notif token " + res.response);
+        setExpoNotificationToken(expoPushToken);
+      }
+    }).catch((err) => {
+      console.error("An error occurred while trying to set the expo notification token: " + err);
+      // no notifs allowed
+    });
+    return expoPushToken;
+  }
+
+  function configureNotificationListeners() {
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      setNotification(notification);
+    });
+
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log(response);
+    });
+
+    return () => {
+      Notifications.removeNotificationSubscription(notificationListener.current);
+      Notifications.removeNotificationSubscription(responseListener.current);
+    };
+  }
+
   React.useEffect(() => {
+    if (!guestMode.guest) {
+      setupNotifToken().then(token => {
+        setExpoNotificationToken(token === null ? undefined : token);
+      });
+    }
+    configureNotificationListeners();
+
     getWeather().then((data) => {
       updateIcon(wIcons[data.weather_state_abbr]);
       updateTemperature(`${data.the_temp}°`);
@@ -185,76 +241,6 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
       updateInfo();
     });
     return () => window.clearInterval(interval);
-  }, []);
-
-  const theme = colorScheme.scheme === "light" ? {
-    color1: "#005C99",
-    color2: "#003D66",
-    websiteColor: "rgb(58, 106, 150)",
-    tint: "transparent"
-  } : {
-    color1: "#e6e6e6",
-    color2: "#e0e0e0",
-    websiteColor: "rgb(58, 106, 150)",
-    tint: "rgba(0, 0, 0, 0.3)"
-  };
-
-  async function setupNotifToken(): Promise<string | null> {
-    if (!Device.isDevice) {
-      console.error("Not a device");
-      return null;
-    }
-
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
-    if (finalStatus !== 'granted') {
-      alert('Failed to get push token for push notification!');
-      return null;
-    }
-
-    if (Platform.OS === 'android') {
-      Notifications.setNotificationChannelAsync('default', {
-        name: 'default',
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#FF231F7C',
-      });
-    }
-
-    let expoPushToken = (await Notifications.getExpoPushTokenAsync()).data;
-    await apiRequest("/api/v3/notif/token", JSON.stringify({expoPushToken}), "PUT", false).then((res) => {
-      if (!res.success) {
-        console.error("An error occurred while trying to set the expo notification token: " + res.error);
-        return null;
-      } else {
-        console.log("Successfully updated notif token " + res.response);
-        updateExpoNotificationToken(expoPushToken);
-      }
-    }).catch((err) => {
-      console.error("An error occurred while trying to set the expo notification token: " + err);
-      // no notifs allowed
-    });
-    return expoPushToken;
-  }
-
-  React.useEffect(() => {
-
-    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-      setNotification(notification);
-    });
-
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log(response);
-    });
-
-    return () => {
-      Notifications.removeNotificationSubscription(notificationListener.current);
-      Notifications.removeNotificationSubscription(responseListener.current);
-    };
   }, []);
 
   return (
@@ -279,22 +265,10 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
             {/* ---WEATHER CONTAINER ---*/}
           </View>
 
-
-
           {preTimeText && <Text style={[styles.timeText, { color: theme.color2 }]}>{preTimeText}</Text>}
 
-          {!guestMode.guest && 
-          <View>
-            <Button title="Refresh" onPress={setupNotifToken} />
-            <Text>{expoNotificationToken}</Text>
-            <Button
-            title="Press to Send Notification"
-            onPress={async () => {
-              await sendPushNotification(expoNotificationToken);
-            }}
-          />
-          </View>
-          }
+          {/* <Text>{expoNotificationToken}</Text> */}
+
           {/* --- COURSE ---*/}
           <Text style={[styles.courseTitle, { color: theme.color2 }]}>{course}</Text>
 
