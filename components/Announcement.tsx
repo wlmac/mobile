@@ -4,41 +4,16 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Text, View } from '../components/Themed';
 import { ThemeContext } from '../hooks/useColorScheme';
 import removeMd from 'remove-markdown';
-import * as colorConvert from 'color-convert';
+import { hexToHsl, hslToHex } from '../lib/colors';
 
 var lightC = "#3a6a96";
 var darkC = "#42a4ff";
 
-export interface AnnouncementData{
-    id: number,
-    title: string,
-    name: string,
-    author: {
-        id: number,
-        slug: string
-    },
-    organization: {
-        id: number,
-        slug: string
-    }
-    body: string,
-    created_date: string,
-    last_modified_date: string,
-    show_after: string,
-    icon: string,
-    is_public: boolean,
-    tags: {
-        id: number,
-        name: string,
-        color: string
-    }[]
-}
-
 function darkenColor(color: string){
-    let hsv = colorConvert.hex.hsv.raw(color);
+    let hsv = hexToHsl(color);
     hsv[1] = 100;
     hsv[2] = hsv[2] * 0.5;
-    return "#" + colorConvert.hsv.hex(hsv);
+    return hslToHex(hsv);
 }
 
 export default function Announcement({ ann, fullAnn }: { ann: AnnouncementData, fullAnn: Function }) {
