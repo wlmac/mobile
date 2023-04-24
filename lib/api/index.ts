@@ -49,7 +49,7 @@ export const axiosInstance = axios.create({
 
 // If you're confused on how to use this:
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of
-async function* objectListRequest<objType extends ObjectType, T = StringToListType<objType>>(type: objType, options?: AxiosRequestConfig<LimitOffsetPagination<T>>, limit=50, offset=0): AsyncIterableIterator<T>{
+async function* requestObjectList<objType extends ObjectType, T = StringToListType<objType>>(type: objType, options?: AxiosRequestConfig<LimitOffsetPagination<T>>, limit=50, offset=0): AsyncIterableIterator<T>{
     let url: URLString | null = `v3/obj/${type}?limit=${limit}&offset=${offset}`;
     do{
         let response: LimitOffsetPagination<T> = (await axiosInstance.get<LimitOffsetPagination<T>>(url, options)).data;
@@ -59,6 +59,9 @@ async function* objectListRequest<objType extends ObjectType, T = StringToListTy
     }while(url !== null);
 }
 
+async function requestObject<objType extends ObjectType, T = StringToListType<objType>>(type: objType, id: ID<T>, options?: AxiosRequestConfig<T>): Promise<T>{
+    return (await axiosInstance.get<T>(`v3/obj/${type}/retrieve/${id}`, options)).data;
+}
 
 // Login-related functions
 
@@ -186,7 +189,7 @@ export async function getEventsOnDay(date: DateTimeString, options?: AxiosReques
 
 export async function getEventsInRange(start: DateTimeString, end: DateTimeString, options?: AxiosRequestConfig<LimitOffsetPagination<EventData>>){
     const events: EventData[] = [];
-    for await (const event of objectListRequest("event", { ...options, 
+    for await (const event of requestObjectList("event", { ...options, 
         params: {
             start,
             end,

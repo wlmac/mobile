@@ -19,12 +19,11 @@ export default function useCachedResources() {
     async function loadResourcesAndDataAsync() {
       try {
         SplashScreen.preventAutoHideAsync();
-        await defaultLogin().then(res => {
-          setDefaultLoginDone(res);
-          if(!res) {
-            cacheResources();
-          }
-        })
+        let res = await defaultLogin();
+        setDefaultLoginDone(res);
+        if(!res) {
+          cacheResources();
+        }
 
         await AsyncStorage.getItem("@scheme").then((scheme: any) => {
           

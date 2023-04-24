@@ -207,7 +207,7 @@ export default function NewsScreen({
   ) => {
     if (loadingMore) return;
     setLoadingMore(true);
-    const res = await apiRequest(endpoint, "", "GET", true);
+    const res = await apiRequest(endpoint, undefined, "GET", true);
     let errored = false;
     if (res.success) {
       try {
@@ -270,7 +270,7 @@ export default function NewsScreen({
     if (loadingMore) return;
     setLoadingMore(true);
     let authors: number[] = [];
-    const res = await apiRequest(endpoint, "", "GET", true);
+    const res = await apiRequest(endpoint, undefined, "GET", true);
     let errored = false;
     if (res.success) {
       try {

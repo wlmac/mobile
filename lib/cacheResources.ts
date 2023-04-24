@@ -1,63 +1,33 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiRequest from '../lib/apiRequest';
+import { Identifiable, LimitOffsetPagination, OrganizationData, TagData } from './ApiTypes';
+import Storage from './Storage';
 
-export default async function cacheResources(): Promise<void> {
+async function cacheResources() {
     await storeApiCalls();
 }
 
-export async function storeApiCalls(): Promise<void> {
-    var orgs: Object[] = new Array(1000);
-    var tags: Object[] = new Array(1000);
-    var users = new Array(1000);
-    // organizations
+async function storeApiCalls() {
+
+    async function fetchListAndSet<T extends Identifiable>(endpoint: string, key: string){
+        let ans = new Map<number, T>();
+        let res = await apiRequest<LimitOffsetPagination<T>>(endpoint, '', 'GET', true);
+        if(res.success){
+            let jsonres = res.data as LimitOffsetPagination<T>;
+            for(let item of jsonres.results){
+                ans.set(item.id, item);
+            }
+        }else{
+            console.error("API request error: " + res.error);
+        }
+        console.log(key + ":");
+        console.table(ans.entries());
+        Storage.set(key, ans);
+    }
 
     await Promise.all([
-        apiRequest('/api/organizations?format=json', '', 'GET', true).then((res) => {
-            if (res.success) {
-                let jsonres = JSON.parse(res.response);
-                if(jsonres && Array.isArray(jsonres)) {
-                    for(let org of jsonres){
-                        orgs[org.id] = {name: org.name, icon: org.icon};
-                    }
-                }
-            } else {
-                console.error("API request error: " + res.response);
-            }
-            AsyncStorage.setItem("@orgs", JSON.stringify(orgs));
-        }),
-        apiRequest('/api/v3/obj/tag?format=json&limit=5000', '', 'GET', true).then((res) => {
-            if (res.success) {
-                let jsonres = JSON.parse(res.response);
-                if(jsonres && Array.isArray(jsonres.results)) {
-                    for(let tag of jsonres.results){
-                        tags[tag.id] = {name: tag.name, color: tag.color};
-                    }
-                }
-            } else {
-                console.error("API request error: " + res.response);
-            }
-            AsyncStorage.setItem("@tags", JSON.stringify(tags));
-        }),
-        apiRequest('/api/v3/obj/user?format=json&limit=5000', '', 'GET', true).then((res) => {
-            if (res.success) {
-                let jsonres = JSON.parse(res.response);
-                if(jsonres && Array.isArray(jsonres.results)) {
-                    for(let user of jsonres.results){
-                        let { username, first_name, last_name, graduating_year } = user;
-                        users[user.id] = { username, first_name, last_name, graduating_year };
-                    }
-                }
-            } else {
-                console.error("API request error: " + res.response);
-            }
-            AsyncStorage.setItem("@users", JSON.stringify(users));
-        }),
-        apiRequest(`/api/events?start=2021-09-20`, '', 'GET', true).then((res) => {
-            if (res.success) {
-                AsyncStorage.setItem("@events", res.response);
-            } else {
-                console.error("API request error: " + res.response);
-            }
-        })
+        fetchListAndSet('/api/v3/obj/organization', 'orgs'),
+        fetchListAndSet('/api/v3/obj/tag?limit=5000&offset=0', 'tags'),
+        fetchListAndSet('/api/v3/obj/user?limit=5000&offset=0', 'users'),
+        fetchListAndSet('/api/v3/obj/events?start=2021-09-20', 'events'),
     ]);
 }

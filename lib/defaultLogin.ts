@@ -4,7 +4,7 @@ import NetInfo from "@react-native-community/netinfo";
 import config from '../config.json';
 
 // btw: this returns false if success and true if fail for some reason
-export default async function defaultLogin(): Promise<boolean> {
+async function defaultLogin(): Promise<boolean> {
     try{
         const refreshtoken = AsyncStorage.getItem("@refreshtoken");
         if (!refreshtoken) {

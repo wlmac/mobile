@@ -5,12 +5,12 @@ import { GuestModeContext } from "../hooks/useGuestMode";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { Table, Rows } from 'react-native-table-component';
 
-import apiRequest from "../lib/apiRequest";
 import { Text, View, useThemeColor } from "../components/Themed";
 import config from "../config.json";
 import getSeason from "../lib/getSeason";
 import { BottomTabParamList } from "../types";
 import { ChangeLogModal } from '../components/Changelog';
+import { getSchedule } from '../lib/api';
 
 export default function HomeScreen({ navigation }: { navigation: BottomTabNavigationProp<BottomTabParamList, "Home"> }) {
   const colorScheme = React.useContext(ThemeContext);
@@ -34,11 +34,12 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
   const [course, updateCourse] = React.useState("Loading...");
   const [timeText, updateTimeText] = React.useState<string | undefined>("Loading...");
   const [timetable, updateTimetable] = React.useState<string | any[][] | undefined>("Fetching data...");
+  const [timetableData, updateTimetableData] = React.useState<string | any[][] | undefined>(undefined);
 
   async function setSchedule(endpoint: string, userSchedule: boolean){
     try{
-      const res = await apiRequest(endpoint, "", "GET", !userSchedule);
-      if (!res.success) {
+      let schedule = await getSchedule(!userSchedule);
+      if (typeof schedule == "string"){
         if (!dataUploadedRef.current && !userSchedule) {
           updatePreTimeText(undefined);
           updateCourse("Currently Offline");
@@ -48,7 +49,7 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
         }
         return;
       }
-      let schedule = JSON.parse(res.response);
+      updateTimetableData(schedule);
       if (!(schedule && schedule[0])) {
         updatePreTimeText(undefined);
         updateCourse("NO CLASS TODAY");

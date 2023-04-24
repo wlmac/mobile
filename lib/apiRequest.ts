@@ -3,19 +3,17 @@ import { Buffer } from 'buffer';
 
 import config from '../config.json';
 import defaultLogin from './defaultLogin';
+import axios from 'axios';
 
-export default async function apiRequest(endpoint: string, body: string, method: string, noAuth?: boolean): Promise<ApiResponse> {
+async function apiRequest<T>(endpoint: string, body: string | undefined, method: string, noAuth?: boolean): Promise<ApiResponse<T>> {
     if (noAuth) {
         try{
-            let response = await fetch(`${config.server}${endpoint}`, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body
-            });
-            return new ApiResponse(true, await response.text(), '');
+            let response = await axiosInstance<T>(endpoint, { method, data: body });
+            console.log(response);
+            return ApiResponse.success(response.data);
         }catch(err){
             console.error(err);
-            return new ApiResponse(false, '', 'API error');
+            return ApiResponse.error('API error');
         }
     }
     else {
@@ -23,48 +21,48 @@ export default async function apiRequest(endpoint: string, body: string, method:
         try{
             let accesstoken = await AsyncStorage.getItem("@accesstoken");
             let decoded = JSON.parse(String(Buffer.from(String(accesstoken).split('.')[1], 'base64')));
-            if (parseInt(decoded.exp) <= Math.round(Date.now() / 1000.0) - 30) {
+            if (parseInt(decoded.exp) <= Math.round(Date.now() / 1000) - 30) {
                 // is this try/catch unnecessary?
-                try{
-                    if(await defaultLogin()){
-                        return new ApiResponse(false, '', 'An unknown error occurred');
-                    }else{
-                        return apiRequest(endpoint, body, method);
-                    }
-                }catch(err){
-                    console.error(err);
-                    return new ApiResponse(false, '', 'Error fetching refresh token');
+                if(await defaultLogin()){
+                    return ApiResponse.error('An unknown error occurred');
+                }else{
+                    return apiRequest(endpoint, body, method);
                 }
             } else {
                 try{
-                    let response = await fetch(`${config.server}${endpoint}`, {
+                    let response = await axiosInstance<T>(endpoint, {
                         method,
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${accesstoken}`
-                        },
-                        body
+                        }
                     });
-                    return new ApiResponse(true, await response.text(), '');
+                    return ApiResponse.success(response.data);
                 }catch(err){
                     console.error(err);
-                    return new ApiResponse(false, '', 'Error fetching refresh token');
+                    return ApiResponse.error('Error fetching refresh token');
                 }
             }
         }catch(err){
             console.error(err);
-            return new ApiResponse(false, '', 'Storage access error');
+            return ApiResponse.error('Storage access error');
         }
     }
 }
 
-class ApiResponse {
+class ApiResponse<T> {
     success: boolean;
-    response: string;
-    error: string;
-    constructor(success: boolean, response: string, error: string) {
+    data?: T;
+    error?: string;
+    private constructor(success: boolean, data?: T, error?: string) {
         this.success = success;
-        this.response = response;
+        this.data = data;
         this.error = error;
+    }
+    static success<T>(data: T){
+        return new ApiResponse<T>(true, data, undefined);
+    }
+    static error<T>(msg: string){
+        return new ApiResponse<T>(false, undefined, msg);
     }
 }

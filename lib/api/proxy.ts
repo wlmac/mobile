@@ -1,6 +1,7 @@
 
 // Types
 
+import { AxiosResponse } from 'axios';
 import { Base64String, DateTimeString, ID, Nullable, TermType, TimezoneString, URLString, axiosInstance} from '.';
 
 // i know this looks like garbage but trust me it'll be a lot cleaner where it's actually used
@@ -8,7 +9,7 @@ import { Base64String, DateTimeString, ID, Nullable, TermType, TimezoneString, U
 export type ObjectType = "tag" | "organization" | "comment" | "banner" | "news" |
                   "announcement" | "blog-post" | "event" | "flatpage" | "user";
 
-export type StringToType<T> = (
+export type StringToType<T extends ObjectType> = (
     T extends "tag" ? TagData :
     T extends "organization" ? OrganizationData :
     T extends "announcement" ? AnnouncementData :
@@ -33,58 +34,44 @@ export type StringToListType<T extends ObjectType> = (
 const OBJ_NAMES_ARRAY: ObjectType[] = ["tag", "organization", "comment", "banner", "news",
                                        "announcement", "blog-post", "event", "flatpage", "user"]
 
-type PropsWithId<T extends {[key: string]: any}> = { [key in (keyof T | "id")]: (key extends "id" ? ID<T> : T[key]) };
-type OptionalPropsWithId<T extends {[key: string]: any}> = { [key in (keyof T | "id")]: (key extends "id" ? ID<T> : T[key] | undefined) };
+type KeyMapToWrapper<T> = { [key in keyof T]: key extends ID<infer U> ? IDObjectWrapper<U> : never };
+type KeyArray<T> = Exclude<keyof T, keyof KeyMapToWrapper<T>>[];
 
-class IDProxy<T extends {[key: string]: any}>{
-    apiString: string;
-    cache: Map<ID<T>, T>;
-    preprocess: (rawData: any) => T;
+class IDObjectWrapper<T>{
+    private readonly TYPE: ObjectType;
 
-    constructor(apiString: string, preprocess: (rawData: any) => T = (rawData) => rawData){
-        this.apiString = apiString;
-        this.cache = new Map();
-        this.preprocess = preprocess;
+    private cache: Map<ID<T>, T> = new Map();
+    
+    private readonly props: KeyArray<T>;
+    private readonly idProps: KeyMapToWrapper<T>;
+    private readonly idArrayProps: KeyMapToWrapper<T>;
+
+    constructor(type: ObjectType, props: KeyArray<T>, idProps: KeyMapToWrapper<T>, idArrayProps: KeyMapToWrapper<T>){
+        this.TYPE = type;
+
+        this.props = props;
+        this.idProps = idProps;
+        this.idArrayProps = idArrayProps;
     }
 
-    get<K extends keyof T>(value: OptionalPropsWithId<T>, key: string | symbol, receiver: any){
-        return this._get(value, key as K);
-    }
+    async get(id: ID<T>): Promise<T>{
+        if(this.cache.has(id))
+            return this.cache.get(id) as T;
+        const res = await axiosInstance.get<T>(`/v3/obj/${this.TYPE}/retrieve/${id}/`);
+        const data = res.data;
+        const obj: any = {};
 
-    // This assumes that the backend never returns data where a key is nonexistent (i.e. where keys can be undefined)
-    // The backend should return null instead
-    _get<K extends keyof T>(value: OptionalPropsWithId<T>, key: K): () => Promise<T[K]>{
-        if(value[key] !== undefined){
-            return async () => (value[key] as T[K]);
-        }
+        for(const prop of this.props)
+            obj[prop] = data[prop];
         
-        if(this.cache.has(value.id)){
-            Object.assign(value, this.cache.get(value.id));
-            return async () => (value[key] as T[K]);
+        for(const prop in this.idProps){
+            Object.defineProperty(obj, prop, {
+                get: () => this.idProps[prop].get(data[prop])
+            });
         }
 
-        return async () => {
-            // Fetch object
-
-            const request = await axiosInstance.get(`v3/obj/${this.apiString}/retrieve/${value.id}`);
-            
-            const result = this.preprocess(request.data);
-
-            this.cache.set(value.id, result);
-            
-            Object.assign(value, result);
-
-            return value[key] as T[K];
-        }
-    }
-
-    create(id: ID<T>, data?: OptionalPropsWithId<T>){
-        const obj = { id } as OptionalPropsWithId<T>;
-        if(data){
-            Object.assign(obj, data);
-        }
-        // Use of "any" here is to appease TypeScript because it doesn't see that get is overriden
-        return new Proxy<PropsWithId<T>>(obj as any, this);
+        this.cache.set(id, data);
+        return data;
     }
 }
 
@@ -93,11 +80,13 @@ function convertIdArrayToProxyArray<T extends {[key: string]: any}>(array: ID<T>
     return array.map((id) => proxy.create(id));
 }
 
+// Data types
+
 interface _TagData{
     name: string,
     color: string
 }
-export type TagData = PropsWithId<_TagData>;
+export type TagData = WrapType<_TagData>;
 const TagProxy = new IDProxy<_TagData>("tag");
 
 interface _NewsData{
@@ -110,7 +99,7 @@ interface _NewsData{
     likes: number,
     comments: CommentDescriptor[],
 }
-export type NewsData = PropsWithId<_NewsData>;
+export type NewsData = WrapType<_NewsData>;
 const NewsProxy = new IDProxy<_NewsData>("news", (data) => {
     data.author = UserProxy.create(data.author);
     data.tags = convertIdArrayToProxyArray(data.tags, TagProxy);
@@ -125,7 +114,7 @@ interface _AnnouncementData{
     organization: ID<OrganizationData>,
     supervisor: Nullable<ID<UserData>>,
 }
-export type AnnouncementData = PropsWithId<_AnnouncementData>;
+export type AnnouncementData = WrapType<_AnnouncementData>;
 const AnnouncementProxy = new IDProxy<_AnnouncementData>("announcement", (data) => {
     data.organization = OrganizationProxy.create(data.organization);
     if(data.supervisor !== null)
@@ -140,7 +129,7 @@ interface _BlogPostData{
     featured_image_description: string,
     is_published: boolean,
 }
-export type BlogPostData = PropsWithId<_BlogPostData>
+export type BlogPostData = WrapType<_BlogPostData>
 const BlogPostProxy = new IDProxy<_BlogPostData>("blog-post");
 
 interface _EventData{
@@ -157,7 +146,7 @@ interface _EventData{
     is_public: boolean,
     tags: ID<TagData>[],
 }
-export type EventData = PropsWithId<_EventData>;
+export type EventData = WrapType<_EventData>;
 const EventProxy = new IDProxy<_EventData>("event", (data) => {
     data.organization = OrganizationProxy.create(data.organization);
     data.tags = convertIdArrayToProxyArray(data.tags, TagProxy);
@@ -179,7 +168,7 @@ interface _UserData{
     saved_blogs: ID<BlogPostData>[],
     saved_announcements: ID<AnnouncementData>[],
 }
-export type UserData = PropsWithId<_UserData>;
+export type UserData = WrapType<_UserData>;
 const UserProxy = new IDProxy<_UserData>("user", (data) => {
     data.organizations = convertIdArrayToProxyArray(data.organizations, OrganizationProxy);
     data.following = convertIdArrayToProxyArray(data.following, UserProxy);
@@ -207,7 +196,7 @@ interface _OrganizationData{
     icon: URLString,
     links: string[],
 }
-export type OrganizationData = PropsWithId<_OrganizationData>;
+export type OrganizationData = WrapType<_OrganizationData>;
 const OrganizationProxy = new IDProxy<_OrganizationData>("organization", (data) => {
     data.owner = UserProxy.create(data.owner);
     data.supervisors = convertIdArrayToProxyArray(data.supervisors, UserProxy);
@@ -217,6 +206,23 @@ const OrganizationProxy = new IDProxy<_OrganizationData>("organization", (data) 
     return data;
 });
 
+interface _CommentData{
+    author: Nullable<ID<UserData>>,
+    body: Nullable<string>,
+    created_at: Nullable<DateTimeString>,
+    likes: number,
+    edited: boolean,
+    children: CommentDescriptor[],
+}
+export type CommentData = WrapType<_CommentData>;
+const CommentProxy = new IDProxy<_CommentData>("comment", (data) => {
+    if(data.author !== null)
+        data.author = UserProxy.create(data.author);
+    return data;
+});
+
+// Unused for now
+
 interface CommentDescriptor{
     id: CommentData,
     has_children: boolean,
@@ -224,21 +230,6 @@ interface CommentDescriptor{
     author: ID<UserData>,
     likes: number,
 }
-
-interface _CommentData{
-    author: Nullable<ID<UserData>>,
-    body: Nullable<string>,
-    created_at: DateTimeString,
-    likes: number,
-    edited: boolean,
-    children: CommentDescriptor[],
-}
-export type CommentData = PropsWithId<_CommentData>;
-const CommentProxy = new IDProxy<_CommentData>("comment", (data) => {
-    if(data.author !== null)
-        data.author = UserProxy.create(data.author);
-    return data;
-});
 
 interface BannerData{
     current: { content: string }[],
