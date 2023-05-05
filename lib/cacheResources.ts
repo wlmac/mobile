@@ -1,33 +1,22 @@
-import apiRequest from '../lib/apiRequest';
-import { Identifiable, LimitOffsetPagination, OrganizationData, TagData } from './ApiTypes';
-import Storage from './Storage';
 
-async function cacheResources() {
-    await storeApiCalls();
-}
+import { EventDataHandler, OrganizationDataHandler, TagDataHandler, UserDataHandler } from '../api';
+import { Handler, IDObject } from '../api/obj';
 
-async function storeApiCalls() {
-
-    async function fetchListAndSet<T extends Identifiable>(endpoint: string, key: string){
-        let ans = new Map<number, T>();
-        let res = await apiRequest<LimitOffsetPagination<T>>(endpoint, '', 'GET', true);
-        if(res.success){
-            let jsonres = res.data as LimitOffsetPagination<T>;
-            for(let item of jsonres.results){
-                ans.set(item.id, item);
-            }
-        }else{
-            console.error("API request error: " + res.error);
+export default async function cacheResources() {
+    async function cacheObjects<T extends IDObject<T>>(handler: Handler<T>, options: { [key: string]: any } = {}){
+        try{
+            for await(const data of handler.list(5000, 0, options)){}
+            console.log(handler.type + ":");
+            console.table(handler._cache);
+        }catch(e){
+            console.error(e);
         }
-        console.log(key + ":");
-        console.table(ans.entries());
-        Storage.set(key, ans);
     }
 
     await Promise.all([
-        fetchListAndSet('/api/v3/obj/organization', 'orgs'),
-        fetchListAndSet('/api/v3/obj/tag?limit=5000&offset=0', 'tags'),
-        fetchListAndSet('/api/v3/obj/user?limit=5000&offset=0', 'users'),
-        fetchListAndSet('/api/v3/obj/events?start=2021-09-20', 'events'),
+        cacheObjects(OrganizationDataHandler),
+        cacheObjects(TagDataHandler),
+        cacheObjects(UserDataHandler),
+        cacheObjects(EventDataHandler, { params: { start: '2021-09-20' } })
     ]);
 }

@@ -12,6 +12,7 @@ import { Text, View } from '../components/Themed';
 import Colors from '../constants/Colors';
 import { RootStackParamList } from '../types';
 import cacheResources from '../lib/cacheResources';
+import { login } from '../api';
 
 let state = {
   username: "",
@@ -34,8 +35,8 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
       setHasPressedLogin(true);
       updateLoginResText("Logging in... Please wait");
       try{
-        let val = await login();
-        if (val == "success") {
+        let val = await login(state.username, state.password);
+        if (val === undefined) {
           updateLoginResText("Success! Preparing app...");
           await cacheResources();
           navigation.replace('Root');
@@ -309,34 +310,4 @@ function handleRegisterPress() {
 
 function handleForgotPasswordPress() {
   WebBrowser.openBrowserAsync(`${config.server}/accounts/password/reset/`).catch(err => console.error("Couldn't load page", err));
-}
-
-async function login() {
-  try{
-    let response = await fetch(`${config.server}/api/auth/token`, { //refresh token endpoint
-      method: "POST",
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        username: state.username,
-        password: state.password
-      })
-    });
-    let json = await response.json();
-    if (json.access && json.refresh) {
-      await AsyncStorage.setItem('@accesstoken', json.access);
-      await AsyncStorage.setItem('@refreshtoken', json.refresh);
-      return "success";
-    }
-    else if (json.detail) {
-      return "Username or password incorrect";
-    }
-    else {
-      return "Something went wrong. Please try again later.";
-    }
-  }catch(err){
-    console.error(err);
-    return "Network error. Please try again later.";
-  }
 }

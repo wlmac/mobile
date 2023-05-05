@@ -9,6 +9,7 @@ import { EventCard } from '../components/EventCard';
 import {ThemeContext} from '../hooks/useColorScheme';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { EventDataHandler } from '../api';
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -40,62 +41,44 @@ export default function CalendarScreen({ navigation }: { navigation: BottomTabNa
   const [selectedDay, setSelectedDay] = useState(today);
   const [displayedDate, setDisplayedDate] = useState(today);
   const [currentKey, setCurrentKey] = useState(new Date());
-  const [data, setData] = useState(undefined as any);
   const [eventDays, setEventDays] = useState([] as any[]);
-  const [eventsToday, setEventsToday] = useState([] as any[]);
 
   // use effect on component load
-  useEffect (() => {
-    // load from AsyncStorage
-    AsyncStorage.getItem("@events").then((events: any) => {
-      if (events) {
-        setData(JSON.parse(events)); // set data
-      }
-    }).catch((err) => {
-      console.log("Async storage error: " + err);
-      setData(null); // set data to null if error, this will show up as an error on the frontend
-    });
-  }, []);
-
-
-  // use effect on data change
   useEffect (() => {
     setSelectedDay(today);
     setDisplayedDate(today);
     // add every single event day to the set
-    if (data) {
-      let tempEventDays = new Set<string>();
-      for (let i = 0; i < data.length; i++) {
-        let event: any = data[i];
-        let startDate: YMDDate = new YMDDate(event.start_date.split('T')[0]);
-        let endDate: YMDDate = new YMDDate(event.end_date.split('T')[0]);
+    let tempEventDays = new Set<string>();
+    
+    for (const event of EventDataHandler.listCached()) {
+      let startDate: YMDDate = new YMDDate(event.start_date);
+      let endDate: YMDDate = new YMDDate(event.end_date);
 
-        let currentYear: number = startDate.year;
-        let currentMonth: number = startDate.month;
-        let currentDay: number = startDate.day;
-        
-        // number of days between start and end dates
-        let daysBetween: number = endDate.dayDifference(startDate);
-        
-        // iterate through all days between start and end dates
-        for (let j = 1; j <= daysBetween; j++) {
-          // add to set (formatting is funny because they need the 0 for single digits)
-          tempEventDays.add(`${currentYear}-${currentMonth < 10 ? '0'+currentMonth : currentMonth}-${currentDay < 10 ? '0'+currentDay : currentDay}`);
-          currentDay++;
-          if (currentDay > daysInMonth[currentMonth]) {
-            currentDay = 1;
-            currentMonth++;
-            if (currentMonth > 12) {
-              currentMonth = 1;
-              currentYear++;
-            }
+      let currentYear: number = startDate.year;
+      let currentMonth: number = startDate.month;
+      let currentDay: number = startDate.day;
+      
+      // number of days between start and end dates
+      let daysBetween: number = endDate.dayDifference(startDate);
+      
+      // iterate through all days between start and end dates
+      for (let j = 1; j <= daysBetween; j++) {
+        // add to set (formatting is funny because they need the 0 for single digits)
+        tempEventDays.add(`${currentYear}-${currentMonth < 10 ? '0'+currentMonth : currentMonth}-${currentDay < 10 ? '0'+currentDay : currentDay}`);
+        currentDay++;
+        if (currentDay > daysInMonth[currentMonth]) {
+          currentDay = 1;
+          currentMonth++;
+          if (currentMonth > 12) {
+            currentMonth = 1;
+            currentYear++;
           }
         }
       }
-      // convert set to array, and set as eventDays
-      setEventDays(Array.from(tempEventDays));
     }
-  }, [data]);
+    // convert set to array, and set as eventDays
+    setEventDays(Array.from(tempEventDays));
+  }, []);
 
 
   // use effect on color scheme change
@@ -103,24 +86,22 @@ export default function CalendarScreen({ navigation }: { navigation: BottomTabNa
     setCurrentKey(new Date());
   }, [colorScheme.scheme]);
 
-  // update events on day change using useeffect
-  useEffect(() => {
-    if (data) {
-      let tempEventsToday: any = [];
-      for (let i = 0; i < data.length; i++) {
-        let event: any = data[i];
-        let startDate: YMDDate = new YMDDate(event.start_date.split('T')[0]);
-        let endDate: YMDDate = new YMDDate(event.end_date.split('T')[0]);
-        // startDate is before or on selected day and endDate is after or on selected day add to tempEventsToday (use the compare method)
-        if (startDate.compareDays(selectedDay) <= 0 && endDate.compareDays(selectedDay) >= 0) {
-          tempEventsToday.push(event);
-        }
+  function getEventsOnDay(day: YMDDate) {
+    let tempEventsToday: any = [];
+    for (const event of EventDataHandler.listCached()) {
+      let startDate: YMDDate = new YMDDate(event.start_date);
+      let endDate: YMDDate = new YMDDate(event.end_date);
+      // startDate is before or on selected day and endDate is after or on selected day add to tempEventsToday (use the compare method)
+      if (startDate.compareDays(selectedDay) <= 0 && endDate.compareDays(selectedDay) >= 0) {
+        tempEventsToday.push(event);
       }
-      setEventsToday(tempEventsToday);
-    } else {
-      setEventsToday([]);
     }
-  }, [selectedDay]);
+    return tempEventsToday;
+  }
+
+  const eventsToday = getEventsOnDay(selectedDay);
+
+  console.log("eventsToday: ", eventsToday);
 
   return (
     <View style={[styles.container, {backgroundColor: colorScheme.scheme === 'dark' ? '#252525' : '#e0e0e0'}]}>
@@ -250,8 +231,7 @@ export default function CalendarScreen({ navigation }: { navigation: BottomTabNa
         <View style={[styles.eventsTitle, {backgroundColor: colorScheme.scheme === 'dark' ? '#252525' : '#e0e0e0'}]}>
           
           {
-          // if the data is null, there is an error
-          data === null
+            EventDataHandler.errored()
           ? 
           <Text style={[styles.eventsCountText, {color: '#ff0000'}]}>Error Fetching Data</Text> 
           : 
@@ -305,22 +285,32 @@ function YMDToLong(ymd: YMDDate): string {
 }
 
 // date class, but only year month and day
-class YMDDate {
+export class YMDDate {
   year: number;
   month: number;
   day: number;
 
   strform: string;
 
-  // constructor that takes in string in YYYY-MM-DD format
-  constructor(dateString: string) {
-    // split by -
-    this.strform = dateString;
-    let dateArray = dateString.split('-');
-    this.year = parseInt(dateArray[0]);
-    this.month = parseInt(dateArray[1]);
-    this.day = parseInt(dateArray[2]);
+  // constructor that takes in string in YYYY-MM-DD format or date object
+  constructor(date: string | Date) {
+    if(typeof date === "string"){
+      // split by -
+      this.strform = date;
+
+      let dateArray = date.split('-');
+      this.year = parseInt(dateArray[0]);
+      this.month = parseInt(dateArray[1]);
+      this.day = parseInt(dateArray[2]);
+    }else{
+      this.year = date.getFullYear();
+      this.month = date.getMonth() + 1;
+      this.day = date.getDate();
+
+      this.strform = `${this.year}-${this.month.toString().padStart(2, '0')}-${this.day.toString().padStart(2, '0')}`;
+    }
   }
+  
 
   // compare two dates, date specific
   // returns -1 if this is before date, 0 if equal, 1 if after

@@ -11,7 +11,7 @@ import {
   Alert,
 } from "react-native";
 import { Text, View } from "../components/Themed";
-import Announcement, { AnnouncementData } from "../components/Announcement";
+import Announcement from "../components/Announcement";
 import Blog, { BlogData } from "../components/Blog";
 import FullAnnouncement from "../components/FullAnnouncement";
 import * as WebBrowser from "expo-web-browser";
@@ -21,10 +21,11 @@ import { Buffer } from "buffer";
 
 import { ThemeContext } from "../hooks/useColorScheme";
 import { GuestModeContext } from "../hooks/useGuestMode";
-import apiRequest from "../lib/apiRequest";
 import config from "../config.json";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BottomTabParamList } from "../types";
+import { AnnouncementData, UserData, apiRequest } from '../api';
+import { UserDataHandler } from '../api/impl';
 
 export default function NewsScreen({
   navigation,
@@ -207,16 +208,17 @@ export default function NewsScreen({
   ) => {
     if (loadingMore) return;
     setLoadingMore(true);
-    const res = await apiRequest(endpoint, undefined, "GET", true);
+    const res = await apiRequest(endpoint, undefined, "GET", !guestMode);
+    console.log(res);
     let errored = false;
-    if (res.success) {
+    if (typeof res === "object") {
       try {
-        let jsonres: AnnouncementData[] = JSON.parse(res.response).results;
+        let jsonres: AnnouncementData[] = (res as any).results;
         if (jsonres && Array.isArray(jsonres)) {
           jsonres.forEach((item) => {
-            let orgId = item.organization.id; // gets the organization id
-            item.icon = orgs[orgId].icon;
-            item.name = orgs[orgId].name;
+            // let orgId = item.organization.id; // gets the organization id
+            // item.icon = orgs[orgId].icon;
+            // item.name = orgs[orgId].name;
           });
           setAnnouncements(announcements.concat(jsonres));
           setNextAnnSet(nextAnnSet + loadNum);
@@ -231,34 +233,24 @@ export default function NewsScreen({
     setLoadingMore(false);
   };
 
-  function loadPfp(author: number): Promise<string> {
+  async function loadPfp(author: number): Promise<string> {
     return new Promise((resolve, reject) => {
       if(pfps[author]) {
         resolve(pfps[author]);
         return;
       }
-      apiRequest(
-        `/api/v3/obj/user/retrieve/${author}`,
-        "",
-        "GET",
-        true
-      ).then((res) => {
-        if (res.success) {
-          let jsonres = JSON.parse(res.response);
-          if (jsonres) {
-            let tmp: string = jsonres.email_hash;
-            try {
-              const decode = (str: string): string =>
-                Buffer.from(str, "base64").toString("hex");
-              resolve("https://www.gravatar.com/avatar/" + decode(tmp));
-            } catch (e) {
-              reject(e);
-            }
+      UserDataHandler.get(author).then((res: UserData) => {
+        if (res) {
+          let tmp: string = res.email_hash;
+          try {
+            const decode = (str: string): string =>
+              Buffer.from(str, "base64").toString("hex");
+            resolve("https://www.gravatar.com/avatar/" + decode(tmp));
+          } catch (e) {
+            reject(e);
           }
-        } else {
-          console.log("API request error: " + res.response);
         }
-      });
+      }).catch((err) => console.log("API request error: " + err));
     });
   }
 
@@ -270,7 +262,7 @@ export default function NewsScreen({
     if (loadingMore) return;
     setLoadingMore(true);
     let authors: number[] = [];
-    const res = await apiRequest(endpoint, undefined, "GET", true);
+    const res = await apiRequest(endpoint, undefined, "GET", true) as any; // TODO don't use any
     let errored = false;
     if (res.success) {
       try {
@@ -314,19 +306,19 @@ export default function NewsScreen({
 
   const loadAnnouncements = async () =>
     loadResults(
-      `/api/announcements?format=json&limit=${loadNum}&offset=${nextAnnSet}`,
+      `announcements?limit=${loadNum}&offset=${nextAnnSet}`,
       setAnnouncements,
       setNextAnnSet
     );
   const loadMyAnnouncements = async () =>
     loadResults(
-      `/api/announcements/feed?format=json&limit=${loadNum}&offset=${nextMySet}`,
+      `announcements/feed?limit=${loadNum}&offset=${nextMySet}`,
       setMyAnnouncements,
       setNextMySet
     );
   const loadBlogs = async () =>
     loadBlogResults(
-      `/api/v3/obj/blog-post?format=json&limit=${loadNum}&offset=${nextBlogSet}`,
+      `v3/obj/blog-post?limit=${loadNum}&offset=${nextBlogSet}`,
       setBlogs,
       setNextBlogSet
     );

@@ -6,15 +6,16 @@ import { View, Text } from './Themed';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 import {ThemeContext} from '../hooks/useColorScheme';
+import { YMDDate } from '../screens/CalendarScreen';
+import { EventData, TagData } from '../api';
 
 let theme;
 
 // Event card
-export function EventCard({ event } : { event: any }) {
-
+export function EventCard({ event } : { event: EventData }) {
   theme = React.useContext(ThemeContext);
 
-  const color = event.tags.length == 0 ? '#74e1ed' : event.tags[0].color;
+  const color = event.tags.length == 0 ? '#74e1ed' : event.tags[0].getUnchecked()!.color;
 
   // selected state
   const [selected, setSelected] = React.useState(false);
@@ -45,7 +46,7 @@ export function EventCard({ event } : { event: any }) {
             {event.tags.length > 0 && (
               <View style={styles.tags}>
                 {Object.entries(event.tags).map(([key, tag]) => (
-                  <Tag key={key} tag={tag}/>
+                  <Tag key={key} tag={tag.getUnchecked()!}/>
                 ))}
               </View>
             )}
@@ -69,7 +70,7 @@ export function EventCard({ event } : { event: any }) {
   );
 }
 
-export function Tag({tag} : {tag: any}) {
+export function Tag({tag} : {tag: TagData}) {
   return (
     <View style={[styles.tag, {backgroundColor: tag.color}]}>
     <Text style={styles.tagText}>{tag.name}</Text>
@@ -77,10 +78,11 @@ export function Tag({tag} : {tag: any}) {
   );
 }
 
-function timeRange(startDate: string, endDate: string, color: string) {
+function timeRange(startDate: Date, endDate: Date, color: string) {
   
-  const startDateSplit: string[] = startDate.split('T');
-  const endDateSplit: string[] = endDate.split('T');
+  // TODO refactor
+  const startDateSplit: string[] = startDate.toISOString().split('T');
+  const endDateSplit: string[] = endDate.toISOString().split('T');
 
   const startDateYMD: string[] = startDateSplit[0].split('-');
   const endDateYMD: string[] = endDateSplit[0].split('-');

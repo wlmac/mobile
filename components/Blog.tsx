@@ -5,7 +5,6 @@ import { Text, View } from "./Themed";
 import { ThemeContext } from "../hooks/useColorScheme";
 import removeMd from "remove-markdown";
 import * as colorConvert from "color-convert";
-import { AnnouncementData } from "./Announcement";
 
 var lightC = "#3a6a96";
 var darkC = "#42a4ff";

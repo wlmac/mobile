@@ -2,11 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import * as React from 'react';
-import defaultLogin from '../lib/defaultLogin';
 import cacheResources from '../lib/cacheResources';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useColorScheme } from 'react-native';
+import { refreshLogin } from '../api';
 
 export default function useCachedResources() {
   const colorScheme = useColorScheme();
@@ -19,7 +19,7 @@ export default function useCachedResources() {
     async function loadResourcesAndDataAsync() {
       try {
         SplashScreen.preventAutoHideAsync();
-        let res = await defaultLogin();
+        let res = await refreshLogin();
         setDefaultLoginDone(res);
         if(!res) {
           cacheResources();

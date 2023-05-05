@@ -10,7 +10,7 @@ import config from "../config.json";
 import getSeason from "../lib/getSeason";
 import { BottomTabParamList } from "../types";
 import { ChangeLogModal } from '../components/Changelog';
-import { getSchedule } from '../lib/api';
+import { getSchedule } from '../api';
 
 export default function HomeScreen({ navigation }: { navigation: BottomTabNavigationProp<BottomTabParamList, "Home"> }) {
   const colorScheme = React.useContext(ThemeContext);
@@ -34,7 +34,6 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
   const [course, updateCourse] = React.useState("Loading...");
   const [timeText, updateTimeText] = React.useState<string | undefined>("Loading...");
   const [timetable, updateTimetable] = React.useState<string | any[][] | undefined>("Fetching data...");
-  const [timetableData, updateTimetableData] = React.useState<string | any[][] | undefined>(undefined);
 
   async function setSchedule(endpoint: string, userSchedule: boolean){
     try{
@@ -49,7 +48,6 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
         }
         return;
       }
-      updateTimetableData(schedule);
       if (!(schedule && schedule[0])) {
         updatePreTimeText(undefined);
         updateCourse("NO CLASS TODAY");
@@ -63,10 +61,9 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
         const course = schedule[i].course ?? `Period ${i + 1}`;
 
         displayedInfo.push([schedule[i].description.time, course]);
-
-        let start = ((Date.parse(schedule[i].time.start) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
-          end = ((Date.parse(schedule[i].time.end) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000;
         
+        let { start, end } = schedule[i];
+
         if(userSchedule){
           for (let j = 0; j < criticalTimes.length; j++) {
             if (criticalTimes[j].start == start && criticalTimes[j].end == end) {
@@ -147,10 +144,16 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
     });
 
     let interval: number;
-    setSchedule((guestMode.guest ? "/api/term/current/schedule" : "/api/me/schedule")/* + "?date=2023-02-22"*/, !guestMode.guest).then(() => {
+    // TODO refactor this
+    const fun = () => setSchedule((guestMode.guest ? "term/current/schedule" : "me/schedule")/* + "?date=2023-02-22"*/, !guestMode.guest).then(() => {
       interval = window.setInterval(() => updateInfo(), 1000);
       updateInfo();
     });
+    if(guestMode.guest){
+      fun();
+    }else{
+      setSchedule("term/current/schedule", false).then(fun);
+    }
     return () => window.clearInterval(interval);
   }, []);
 
