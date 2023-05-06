@@ -6,7 +6,7 @@ import config from '../config.json';
 // btw: this returns false if success and true if fail for some reason
 export default async function defaultLogin(): Promise<boolean> {
     try{
-        const refreshtoken = AsyncStorage.getItem("@refreshtoken");
+        const refreshtoken = await AsyncStorage.getItem("@refreshtoken");
         if (!refreshtoken) {
             return true;
         }
