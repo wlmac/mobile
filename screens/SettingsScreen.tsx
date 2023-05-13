@@ -3,6 +3,8 @@ import { ScrollView, StyleSheet, Alert, TouchableOpacity, useColorScheme, StyleP
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
 
+
+import apiRequest from "../lib/apiRequest";
 import { Text, View } from '../components/Themed';
 import { RootStackParamList } from '../types';
 import Changelog from '../components/Changelog';
@@ -10,20 +12,27 @@ import About from '../components/About';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemeContext } from '../hooks/useColorScheme';
 import { GuestModeContext } from '../hooks/useGuestMode';
-import apiRequest from '../lib/apiRequest';
-import * as Notifications from 'expo-notifications';
+
+
+import { Logs } from 'expo'
+
+
+Logs.enableExpoCliLogging()
 
 export default function SettingsScreen({ navigation }: { navigation: StackNavigationProp<RootStackParamList, 'Root'> }) {
   const [curView, setView] = React.useState(-1);
+  const [username, setUsername] = React.useState<string>("");
+
 
   /*
-  curView: 
+  curView:
   -1 = Nothing viewed. Buttons visible
   1 = Changelog
   2 = About
   */
   const scheme = React.useContext(ThemeContext);
   const guestMode = React.useContext(GuestModeContext);
+
 
   //this took me an hour to figure out ffs
   const schemeStyle = scheme.scheme == 'light' ? lightStyle : darkStyle;
@@ -37,9 +46,12 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
       styles[k] = v;
   }
 
+
   // scroll to top
   const topChangeLog = React.useRef<ScrollView>(null);
   const topAbout = React.useRef<ScrollView>(null);
+  const topUserProfile = React.useRef<ScrollView>(null);
+
 
   //helper function
   function styleIf(view: number, style: any){
@@ -47,37 +59,35 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
   }
 
 
-  async function deletePushToken() {
-    let expoPushToken = (await Notifications.getExpoPushTokenAsync()).data;
-    expoPushToken = expoPushToken.slice(18, -1);
-    let res = await apiRequest("/api/v3/notif/token", JSON.stringify({"expo_push_token": expoPushToken}), "DELETE", false);
-    console.log(JSON.stringify(res));
-    if (!res.success) {
-      console.log(res.error);
-      Alert.alert('Error', 'Failed to log out (clearing server-side notification settings failed)', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
-    }
-    Alert.alert('Success', 'Logged out successfully', [{ text: 'Ok', onPress: () => navigation.replace('Login', { loginNeeded: true }) }], { cancelable: false });
-  }
-  
-  function logout() {
-    if (guestMode.guest) {
-      AsyncStorage.clear().then(() => {
+
+
+  function logout(){
+    AsyncStorage.clear().then(() => {
+      if (guestMode.guest) {
         scheme.updateScheme(scheme.scheme);
         guestMode.updateGuest(false);
         navigation.replace('Login', { loginNeeded: true });
-      }).catch(() => {
-        Alert.alert('Error', 'Failed to log out (clearing local data failed)', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
-      });
-    } else {
-      deletePushToken().then(() => {
-        AsyncStorage.clear().then(() => {
-          console.log("Logged out");
-        }).catch(() => {
-          Alert.alert('Error', 'Failed to log out (clearing local data failed)', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
-        });
-      });
-    }
+      }
+      else {
+        Alert.alert('Success', 'Logged out successfully', [{ text: 'Ok', onPress: () => navigation.replace('Login', { loginNeeded: true }) }], { cancelable: false });
+      }
+    });
   }
+ 
+    useEffect(() => {
+      const fetchData = async() => {
+        if (!guestMode.guest) {  
+          const data = await apiRequest("/api/me", "", "GET", guestMode.guest);
+          let info = JSON.parse(data.response);
+          console.log("error: " + info.username);
+          setUsername(info.username);
+        }
+        return;
+      }
+      fetchData();
+      return;
+    }, []);
+
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("blur", () => {
@@ -85,6 +95,7 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
     });
     return unsubscribe;
   }, [navigation]);
+
 
   return (
     <View style={styles.container}>
@@ -94,7 +105,19 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
       <ScrollView ref={topChangeLog} style={styleIf(1, { flex: 1, width: "100%" })}>
         <Changelog back={setView}></Changelog>
       </ScrollView>
+     
+      <ScrollView ref={topUserProfile} style={styleIf(3, { flex: 1, width: "100%" })}>
 
+
+      </ScrollView>
+     
+      <TouchableOpacity style={curView == -1 ? [styles.userProfile] : { display: "none" }}
+        onPress={() => { topUserProfile?.current?.scrollTo({ x: 0, y: 0, animated: false }); setView(3) }}
+        >
+          <Text style={{ color: "#b8b8b8", fontSize: 12 }}> Logged In As </Text>
+          <Text style={{ color: "white", fontSize: 26 }}> {guestMode.guest ? 'Guest' : username}</Text>
+      </TouchableOpacity>
+     
       <TouchableOpacity
         style={curView == -1 ? [styles.button] : { display: "none" }}
         onPress={() => {
@@ -104,6 +127,9 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
         <Text> Appearance: {scheme.scheme} </Text>
         <Ionicons name="color-palette-outline" size={18} style={styles.icon} />
       </TouchableOpacity>
+
+
+
 
       <TouchableOpacity style={styleIf(-1, styles.button)} onPress={() => { topAbout?.current?.scrollTo({ x: 0, y: 0, animated: false }); setView(2) }}>
         <Text> About </Text>
@@ -121,6 +147,7 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
     </View>
   );
 }
+
 
 const baseStyle = StyleSheet.create({
   container: {
@@ -146,6 +173,20 @@ const baseStyle = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
+  userProfile: {
+    width: "80%",
+    borderRadius: 5,
+    alignItems: 'flex-start',
+    height: 100,
+    padding: 17,
+    marginBottom: 30,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    backgroundColor: '#073763',
+    fontWeight: "500",
+    textAlign: "left",
+    color: '#e2e2e2'
+  },
   logoutButton: {
     width: "80%",
     borderRadius: 5,
@@ -155,7 +196,8 @@ const baseStyle = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
 
-    //there was a commented out section: scheme.scheme === "light" ? "rgb(17, 111, 207)" : "rgb(58, 106, 150)"; 
+
+    //there was a commented out section: scheme.scheme === "light" ? "rgb(17, 111, 207)" : "rgb(58, 106, 150)";
     //if anybody decides to bring back different colors for different schemes make an entry in lightStyles and darkStyles
     backgroundColor: '#073763'
   },
@@ -163,6 +205,7 @@ const baseStyle = StyleSheet.create({
     color: '#e2e2e2'
   }
 });
+
 
 const lightStyle = StyleSheet.create({
   container: {
@@ -176,6 +219,7 @@ const lightStyle = StyleSheet.create({
   }
 });
 
+
 const darkStyle = StyleSheet.create({
   container: {
     backgroundColor: '#252525'
@@ -187,3 +231,4 @@ const darkStyle = StyleSheet.create({
     color: '#bdbdbd'
   }
 });
+
