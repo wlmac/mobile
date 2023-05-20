@@ -271,7 +271,10 @@ export default function NewsScreen({
     let errored = false;
     if (res.success) {
       try {
-        let jsonres: BlogData[] = JSON.parse(res.response).results;
+        let response = JSON.parse(res.response).results;
+        response.forEach((item: any) => { item.author = item.author.id; });
+        response.forEach((item: any) => { item.tags = item.tags.map((tag: any) => tag.id); });
+        let jsonres: BlogData[] = response;
         if (jsonres && Array.isArray(jsonres)) {
           jsonres.forEach((item) => authors.push(item.author));
           await Promise.all(authors.map(loadPfp)).then((res) => {
@@ -311,13 +314,13 @@ export default function NewsScreen({
 
   const loadAnnouncements = async () =>
     loadResults(
-      `/api/announcements?format=json&limit=${loadNum}&offset=${nextAnnSet}`,
+      `/api/v3/obj/announcement?format=json&limit=${loadNum}&offset=${nextAnnSet}`,
       setAnnouncements,
       setNextAnnSet
     );
   const loadMyAnnouncements = async () =>
     loadResults(
-      `/api/announcements/feed?format=json&limit=${loadNum}&offset=${nextMySet}`,
+      `/api/v3/obj/announcement/feed?format=json&limit=${loadNum}&offset=${nextMySet}`,
       setMyAnnouncements,
       setNextMySet
     );
