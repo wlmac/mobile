@@ -210,11 +210,6 @@ export default function NewsScreen({
       try {
         let jsonres: AnnouncementData[] = JSON.parse(res.response).results;
         if (jsonres && Array.isArray(jsonres)) {
-          jsonres.forEach((item) => {
-            let orgId = item.organization.id; // gets the organization id
-            item.icon = orgs[orgId].icon;
-            item.name = orgs[orgId].name;
-          });
           setAnnouncements(announcements.concat(jsonres));
           setNextAnnSet(nextAnnSet + loadNum);
         }
@@ -271,36 +266,17 @@ export default function NewsScreen({
     let errored = false;
     if (res.success) {
       try {
-        let response = JSON.parse(res.response).results;
-        response.forEach((item: any) => { item.author = item.author.id; });
-        response.forEach((item: any) => { item.tags = item.tags.map((tag: any) => tag.id); });
-        let jsonres: BlogData[] = response;
+        let jsonres: BlogData[] = JSON.parse(res.response).results;
         if (jsonres && Array.isArray(jsonres)) {
-          jsonres.forEach((item) => authors.push(item.author));
+          jsonres.forEach((item) => authors.push(item.author.id));
           await Promise.all(authors.map(loadPfp)).then((res) => {
-            let tmp = pfps;
             res.forEach((item, index) => {
-              tmp[authors[index]] = item;
+              pfps[authors[index]] = item;
             });
-            setPfps(tmp);
-            jsonres.forEach((item) => {
-              let tmp: { id: number; name: string; color: string }[] = [];
-              let tagIds = item.tags; // gets the tags
-              tagIds.forEach((tag) => {
-                tmp.push({
-                  id: tag,
-                  name: tags[tag].name,
-                  color: tags[tag].color,
-                });
-              });
-              item.tags_slugs = tmp;
-              item.author_slug = users[item.author].username;
-              item.author_first_name = users[item.author].first_name;
-              item.icon = pfps[item.author];
-            });
-            setBlogs(blogs.concat(jsonres));
-            setNextBlogSet(nextBlogSet + loadNum);
           });
+          jsonres.forEach((item) => item.icon = pfps[item.author.id]);
+          setBlogs(blogs.concat(jsonres));
+          setNextBlogSet(nextBlogSet + loadNum);
         }
       } catch (_e) {
         errored = true;

@@ -27,16 +27,18 @@ export interface BlogData {
   slug: string;
   featured_image: string;
   is_published: boolean;
-  author: number;
-  tags_slugs: {
+  author: {
+    id: number,
+    username: string,
+    first_name: string,
+    last_name: string,
+  };
+  tags: {
     id: number;
     name: string;
     color: string;
   }[];
-  tags: number[];
   icon: string;
-  author_first_name: string;
-  author_slug: string;
 }
 
 export default function Blog({
@@ -64,7 +66,7 @@ export default function Blog({
           { backgroundColor: scheme === "light" ? "#f7f7f7" : "#1c1c1c" },
         ]}
       >
-        {Object.entries(ann.tags_slugs).map(([key, tags_slugs]) => (
+        {Object.entries(ann.tags).map(([key, tags_slugs]) => (
           <Text
             key={key}
             style={[
@@ -110,7 +112,7 @@ export default function Blog({
               { color: scheme === "light" ? lightC : darkC },
             ]}
           >
-            {ann.author_slug}
+            {ann.author.username}
           </Text>
         </View>
         {/* time */}
@@ -123,7 +125,7 @@ export default function Blog({
           <Text style={styles.timeStamp}>
             {new Date(ann.created_date).toLocaleString("en-US", {
               timeZone: "EST",
-            })}
+            }).replace(/(.*)\D\d+/, '$1')}
           </Text>
           <Text
             style={[
@@ -131,7 +133,7 @@ export default function Blog({
               { color: scheme === "light" ? lightC : darkC },
             ]}
           >
-            {ann.author_first_name}
+            {ann.author.first_name + " " + ann.author.last_name}
           </Text>
         </View>
       </View>

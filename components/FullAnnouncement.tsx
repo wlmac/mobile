@@ -5,7 +5,7 @@ import Markdown, { MarkdownIt } from 'react-native-markdown-display';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import {ThemeContext} from '../hooks/useColorScheme';
 import * as WebBrowser from 'expo-web-browser';
-
+import config from "../config.json";
 
 var lightC = "#3a6a96";
 var darkC = "#42a4ff";
@@ -22,17 +22,14 @@ export default function FullAnnouncement({ann, backToScroll, isBlog}:{ann: any, 
     return (
         <ScrollView style={[styles.announcement, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c', shadowColor: colorScheme.scheme === 'light' ? '#1c1c1c' : '#e6e6e6'}]} onStartShouldSetResponder={(e) => true} onResponderRelease={() => backToScroll(ann.id)}>
             <View style={[styles.tags, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
-                {isBlog && Object.entries(ann.tags_slugs).map(([key, tags_slugs]) => (
-                    createTag(key, tags_slugs)
-                ))}
-                {!isBlog && Object.entries(ann.tags).map(([key, tag]) => (
+                {Object.entries(ann.tags).map(([key, tag]) => (
                     createTag(key, tag)
                 ))}
             </View>
 
             {createHeader(ann.title)}
             
-            {annDetails(isBlog? ann.author_slug : ann.name, ann.icon, ann.author.slug, ann.created_date, colorScheme.scheme)}
+            {annDetails(isBlog ? ann.author.username : ann.organization.name, isBlog ? ann.icon : config.server + ann.organization.icon, ann.author.first_name + " " + ann.author.last_name, ann.created_date, colorScheme.scheme)}
             {isBlog ? <ImageResizeAfter uri={ann.featured_image} desiredWidth={width}/> : <></>}
             {previewText(ann.body)}
 
@@ -69,7 +66,7 @@ function annDetails(org: string, orgIcon: string, author: string, timeStamp: str
                 <Text style={[styles.clubName, {color: colorScheme === "light" ? lightC : darkC}]}>{org}</Text>
             </View>
             <View style={[styles.detailsSubheading, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
-                <Text style={styles.timeStamp}>{new Date(timeStamp).toLocaleString("en-US", {timeZone: "EST"})}</Text>
+                <Text style={styles.timeStamp}>{new Date(timeStamp).toLocaleString("en-US", {timeZone: "EST"}).replace(/(.*)\D\d+/, '$1')}</Text>
                 <Text style={[styles.author, {color: colorScheme === "light" ? lightC : darkC}]}>{author}</Text>
             </View>
         </View>

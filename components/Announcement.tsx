@@ -5,6 +5,7 @@ import { Text, View } from '../components/Themed';
 import { ThemeContext } from '../hooks/useColorScheme';
 import removeMd from 'remove-markdown';
 import * as colorConvert from 'color-convert';
+import config from "../config.json";
 
 var lightC = "#3a6a96";
 var darkC = "#42a4ff";
@@ -12,20 +13,22 @@ var darkC = "#42a4ff";
 export interface AnnouncementData{
     id: number,
     title: string,
-    name: string,
     author: {
         id: number,
-        slug: string
+        username: string, 
+        first_name: string,
+        last_name: string,
     },
     organization: {
         id: number,
-        slug: string
+        slug: string,
+        name: string,
+        icon: string,
     }
     body: string,
     created_date: string,
     last_modified_date: string,
     show_after: string,
-    icon: string,
     is_public: boolean,
     tags: {
         id: number,
@@ -64,15 +67,15 @@ export default function Announcement({ ann, fullAnn }: { ann: AnnouncementData, 
                 <View style={[styles.detailsHeading, { backgroundColor: scheme === 'light' ? '#f7f7f7' : '#1c1c1c' }]}>
                     {/* icon */}
                     <View style={[styles.iconShadow,  { shadowColor: scheme === "light" ? "black" : "white" }]}>
-                        <Image style={styles.orgIcon} source={{uri: ann.icon}}/>
+                        <Image style={styles.orgIcon} source={{uri: config.server + ann.organization.icon}}/>
                     </View>
                     {/* name */}
-                    <Text style={[styles.clubName, { color: scheme === "light" ? lightC : darkC }]}>{ann.name}</Text>
+                    <Text style={[styles.clubName, { color: scheme === "light" ? lightC : darkC }]}>{ann.organization.name}</Text>
                 </View>
                 {/* time */}
                 <View style={[styles.detailsSubheading, { backgroundColor: scheme === 'light' ? '#f7f7f7' : '#1c1c1c' }]}>
-                    <Text style={styles.timeStamp}>{new Date(ann.created_date).toLocaleString("en-US", { timeZone: "EST" })}</Text>
-                    <Text style={[styles.author, { color: scheme === "light" ? lightC : darkC }]}>{ann.author.slug}</Text>
+                    <Text style={styles.timeStamp}>{new Date(ann.created_date).toLocaleString("en-US", { timeZone: "EST" }).replace(/(.*)\D\d+/, '$1')}</Text>
+                    <Text style={[styles.author, { color: scheme === "light" ? lightC : darkC }]}>{ann.author.first_name + " " + ann.author.last_name}</Text>
                 </View>
             </View>
 
