@@ -62,10 +62,10 @@ export function ChangeLogModal() {
     };
     React.useEffect(() => {
         AsyncStorage.getItem('@changelogseenver').then(val => {
-            console.log(val);
-            console.log(Constants.manifest?.version ?? '0.0.0');
-            console.log(changelog[0].version);
-            // val = '1.0.0'; // testing modal
+            console.log("Version stored: " + val);
+            console.log("Version found: " + Constants.manifest?.version ?? '0.0.0');
+            console.log("Latest changelog: " + changelog[0].version);
+            //val = '1.1.1'; // testing modal
             if ((!val || val !== Constants.manifest?.version) && changelog[0].version === Constants.manifest?.version) {
                 setModalVisible(true);
             } 

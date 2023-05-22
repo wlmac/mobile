@@ -12,6 +12,7 @@ import { Text, View } from '../components/Themed';
 import Colors from '../constants/Colors';
 import { RootStackParamList } from '../types';
 import cacheResources from '../lib/cacheResources';
+import apiRequest from '../lib/apiRequest';
 
 let state = {
   username: "",
@@ -29,6 +30,18 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
   let [hasPressedLogin, setHasPressedLogin] = React.useState(false);
 
   const { loginNeeded } = route.params;
+
+  async function storeUserinfo(): Promise<void> {
+    console.log("storing user info");
+    await apiRequest("/api/me", '', "GET", false).then(res => {
+      if (res.success) {
+        AsyncStorage.setItem("@userinfo", res.response);
+      }
+    }).catch(err => {
+      console.error(err);
+    });
+  }
+
   const loginPress = async() => {
     if(!hasPressedLogin){
       setHasPressedLogin(true);
@@ -38,6 +51,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
         if (val == "success") {
           updateLoginResText("Success! Preparing app...");
           await cacheResources();
+          await storeUserinfo();
           navigation.replace('Root');
           return;
         }
@@ -63,6 +77,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
 
   if (!loginNeeded) {
     React.useEffect(() => {
+      storeUserinfo();
       navigation.replace('Root');
     }, []);
   }

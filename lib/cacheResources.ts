@@ -6,9 +6,9 @@ export default async function cacheResources(): Promise<void> {
 }
 
 export async function storeApiCalls(): Promise<void> {
-    var orgs: Object[] = new Array(10000);
-    var tags: Object[] = new Array(10000);
-    var users: Object[] = new Array(10000);
+    var orgs: Object[] = new Array(5000);
+    var tags: Object[] = new Array(5000);
+    var users: Object[] = new Array(5000);
     // organizations
 
     await Promise.all([
@@ -25,7 +25,7 @@ export async function storeApiCalls(): Promise<void> {
             }
             AsyncStorage.setItem("@orgs", JSON.stringify(orgs));
         }),
-        apiRequest('/api/v3/obj/tag?limit=5000', '', 'GET', true).then((res) => {
+        apiRequest('/api/v3/obj/tag?format=json&limit=5000', '', 'GET', true).then((res) => {
             if (res.success) {
                 let jsonres = JSON.parse(res.response);
                 if(jsonres && Array.isArray(jsonres.results)) {
@@ -38,7 +38,7 @@ export async function storeApiCalls(): Promise<void> {
             }
             AsyncStorage.setItem("@tags", JSON.stringify(tags));
         }),
-        apiRequest('/api/v3/obj/user?limit=5000', '', 'GET', true).then((res) => {
+        apiRequest('/api/v3/obj/user?format=json&limit=5000', '', 'GET', true).then((res) => {
             if (res.success) {
                 let jsonres = JSON.parse(res.response);
                 if(jsonres && Array.isArray(jsonres.results)) {

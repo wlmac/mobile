@@ -9,9 +9,11 @@ import { Text, View } from '../components/Themed';
 import { RootStackParamList } from '../types';
 import Changelog from '../components/Changelog';
 import About from '../components/About';
+import Profile from '../components/Profile';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemeContext } from '../hooks/useColorScheme';
 import { GuestModeContext } from '../hooks/useGuestMode';
+import * as Notifications from 'expo-notifications';
 
 
 import { Logs } from 'expo'
@@ -21,8 +23,7 @@ Logs.enableExpoCliLogging()
 
 export default function SettingsScreen({ navigation }: { navigation: StackNavigationProp<RootStackParamList, 'Root'> }) {
   const [curView, setView] = React.useState(-1);
-  const [username, setUsername] = React.useState<string>("");
-
+  const [userinfo, setUserinfo] = React.useState<any>({});
 
   /*
   curView:
@@ -58,29 +59,48 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
     return curView == view ? style : { display: "none" };
   }
 
-
-
-
-  function logout(){
-    AsyncStorage.clear().then(() => {
-      if (guestMode.guest) {
+  async function deletePushToken() {
+    let expoPushToken = (await Notifications.getExpoPushTokenAsync()).data;
+    expoPushToken = expoPushToken.slice(18, -1);
+    let res = await apiRequest("/api/v3/notif/token", JSON.stringify({"expo_push_token": expoPushToken}), "DELETE", false);
+    if (!res.success) {
+      Alert.alert('Error', 'Failed to log out (clearing server-side notification settings failed)', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
+    }
+    Alert.alert('Success', 'Logged out successfully', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
+  }
+  
+  function logout() {
+    if (guestMode.guest) {
+      AsyncStorage.clear().then(() => {
         scheme.updateScheme(scheme.scheme);
         guestMode.updateGuest(false);
         navigation.replace('Login', { loginNeeded: true });
-      }
-      else {
-        Alert.alert('Success', 'Logged out successfully', [{ text: 'Ok', onPress: () => navigation.replace('Login', { loginNeeded: true }) }], { cancelable: false });
-      }
-    });
+      }).catch(() => {
+        Alert.alert('Error', 'Failed to log out (clearing local data failed)', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
+      });
+    } else {
+      deletePushToken().then(() => {
+        AsyncStorage.clear().then(() => {
+          scheme.updateScheme(scheme.scheme);
+          guestMode.updateGuest(false);
+          navigation.replace('Login', { loginNeeded: true });
+        }).catch(() => {
+          Alert.alert('Error', 'Failed to log out (clearing local data failed)', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
+        });
+      });
+    }
   }
  
     useEffect(() => {
       const fetchData = async() => {
         if (!guestMode.guest) {  
-          const data = await apiRequest("/api/me", "", "GET", guestMode.guest);
-          let info = JSON.parse(data.response);
-          console.log("error: " + info.username);
-          setUsername(info.username);
+          AsyncStorage.getItem("@userinfo").then((data: string | null) => {
+            if (data !== null) {
+              let info = JSON.parse(data);
+              setUserinfo(info);
+            }
+          }).catch(err => {console.log(err)});          
+
         }
         return;
       }
@@ -107,15 +127,16 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
       </ScrollView>
      
       <ScrollView ref={topUserProfile} style={styleIf(3, { flex: 1, width: "100%" })}>
-
-
+        <Profile back={setView} userinfo={userinfo}></Profile>
       </ScrollView>
      
       <TouchableOpacity style={curView == -1 ? [styles.userProfile] : { display: "none" }}
-        onPress={() => { topUserProfile?.current?.scrollTo({ x: 0, y: 0, animated: false }); setView(3) }}
+        onPress={() => { 
+          if (!guestMode.guest) {topUserProfile?.current?.scrollTo({ x: 0, y: 0, animated: false }); setView(3) }
+        }}
         >
-          <Text style={{ color: "#b8b8b8", fontSize: 12 }}> Logged In As </Text>
-          <Text style={{ color: "white", fontSize: 26 }}> {guestMode.guest ? 'Guest' : username}</Text>
+          <Text style={{ color: "#b8b8b8", fontSize: 12 }}> {guestMode.guest ? 'Not Logged In' : 'Logged In As'} </Text>
+          <Text style={{ color: "white", fontSize: 26 }}> {guestMode.guest ? 'Guest' : userinfo.username}</Text>
       </TouchableOpacity>
      
       <TouchableOpacity
@@ -177,9 +198,9 @@ const baseStyle = StyleSheet.create({
     width: "80%",
     borderRadius: 5,
     alignItems: 'flex-start',
-    height: 100,
-    padding: 17,
-    marginBottom: 30,
+    height: "15%",
+    padding: "4%",
+    marginBottom: "10%",
     flexDirection: 'column',
     justifyContent: 'space-between',
     backgroundColor: '#073763',
