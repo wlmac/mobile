@@ -1,37 +1,37 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Font from 'expo-font';
-import * as SplashScreen from 'expo-splash-screen';
 import * as React from 'react';
 import cacheResources from '../lib/cacheResources';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useColorScheme } from 'react-native';
 import { refreshLogin } from '../api';
+import { SessionContext } from '../util/session';
 
-export default function useCachedResources() {
+export default function loadResources() {
   const colorScheme = useColorScheme();
 
   const [isLoadingComplete, setLoadingComplete] = React.useState(false);
-  const [loginNeeded, setDefaultLoginDone] = React.useState(false);
+  const [defaultLoggedIn, setDefaultLoginDone] = React.useState(false);
+
+  const sessionContext = React.useContext(SessionContext);
 
   // Load any resources or data that we need prior to rendering the app
   React.useEffect(() => {
+    if(!sessionContext.loaded)
+      return;
+    
     async function loadResourcesAndDataAsync() {
       try {
-        SplashScreen.preventAutoHideAsync();
         let res = await refreshLogin();
-        setDefaultLoginDone(res);
-        if(!res) {
-          cacheResources();
+        if(res){
+          setDefaultLoginDone(true);
         }
-
-        await AsyncStorage.getItem("@scheme").then((scheme: any) => {
-          
-          if (!scheme) {
-            console.log("Scheme is being set");
-            AsyncStorage.setItem("@scheme", colorScheme as string);
-          } else console.log("Scheme: " + scheme);
-        });
+        
+        const scheme = sessionContext.get("@scheme");
+        if(!scheme){
+          sessionContext.set("@scheme", colorScheme as string);
+        }
 
         // Load fonts
         await Font.loadAsync({
@@ -41,15 +41,14 @@ export default function useCachedResources() {
         });
       } catch (e) {
         // We might want to provide this error information to an error reporting service
-        console.warn(e);
+        console.error(e);
       } finally {
         setLoadingComplete(true);
-        SplashScreen.hideAsync();
       }
     }
 
     loadResourcesAndDataAsync();
-  }, []);
+  }, [sessionContext.loaded]);
 
-  return { isLoadingComplete, loginNeeded };
+  return { isLoadingComplete, defaultLoggedIn };
 }

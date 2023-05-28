@@ -2,8 +2,7 @@
 // Types
 
 import { AxiosRequestConfig } from 'axios';
-import { ID, Nullable, URLString, anyObject } from '.';
-import { LimitOffsetPagination } from './misc';
+import { ID, Nullable, URLString, anyObject, LimitOffsetPagination } from './misc';
 import { axiosInstance } from './core';
 
 export type ObjectType = "tag" | "organization" | "comment" | "banner" | "news" |
@@ -11,6 +10,8 @@ export type ObjectType = "tag" | "organization" | "comment" | "banner" | "news" 
 
 export interface Requestor<T> {
     id: null extends T ? Nullable<ID<T>> : ID<T>;
+
+    type: "id" | "nullable-id";
 
     (): Promise<T>;
 
@@ -23,6 +24,9 @@ export interface Requestor<T> {
 };
 
 export class Handler<T extends IDObject<T>>{
+    // Used for saving and loading from AsyncStorage
+    public static readonly ALL_HANDLERS: Handler<any>[] = [];
+
     public readonly type: ObjectType;
     readonly object: { new(handler: Handler<T>, data: anyObject): T };
 
@@ -33,6 +37,8 @@ export class Handler<T extends IDObject<T>>{
     constructor(type: ObjectType, clazz: { new(handler: Handler<T>, data: anyObject): T }){
         this.type = type;
         this.object = clazz;
+
+        Handler.ALL_HANDLERS.push(this);
     }
 
     async get(id: ID<T>, update: boolean = false): Promise<T>{
@@ -96,7 +102,7 @@ export class Handler<T extends IDObject<T>>{
 
 
     errored(){
-        return this.isErrored;
+        return this.isErrore
     }
 }
 
@@ -105,11 +111,29 @@ export abstract class IDObject<T extends IDObject<T>>{
     readonly id: ID<T>;
     public fetched: boolean = false;
 
-    public constructor(handler: Handler<T>, data: anyObject){
+    public constructor(handler: Handler<T>, data: anyObject, fromCache: boolean = false){
         this.handler = handler;
         this.id = data.id;
 
-        Object.assign(this, this.preprocess(data));
+        if(!fromCache){
+            Object.assign(this, this.preprocess(data));
+        }else{
+            for(const key in data){
+                if(!data[key]._requestorType){
+                    if(Array.isArray(data[key]) && data[0]._isRequestor){
+                        (this as any)[key] = this.createIDRequestorArray(data[key], handler);
+                        continue;
+                    }
+                    (this as any)[key] = data[key];
+                    continue;
+                }
+                if(data[key]._requestorType === "id"){
+                    (this as any)[key] = this.createIDRequestor(data[key].id, handler);
+                }else if(data[key]._requestorType === "nullable-id"){
+                    (this as any)[key] = this.createNullableIDRequestor(data[key].id, handler);
+                }
+            }
+        }
     }
 
     protected preprocess(data: anyObject){
@@ -146,6 +170,8 @@ export abstract class IDObject<T extends IDObject<T>>{
         };
         requestor.id = id as ID<U>;
         requestor.getUnchecked = () => handler.getUnchecked(id as ID<U>);
+        requestor.type = "id" as "id";
+
         return requestor;
     }
     protected createNullableIDRequestor<U extends IDObject<U>, B extends undefined | never = never>(id: Nullable<ID<U> | anyObject> | B, handler: Handler<U>): Requestor<Nullable<U>> | B {
@@ -153,6 +179,7 @@ export abstract class IDObject<T extends IDObject<T>>{
             const requestor = async() => null;
             requestor.id = null as any;
             requestor.getUnchecked = () => null;
+            requestor.type = "nullable-id" as "nullable-id";
             return requestor;
         }
         

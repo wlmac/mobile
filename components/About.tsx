@@ -2,7 +2,6 @@ import * as React from 'react';
 import { ScrollView, StyleSheet, Alert, TouchableOpacity, Linking } from 'react-native';
 import { Text, View } from '../components/Themed';
 import * as WebBrowser from 'expo-web-browser';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {ThemeContext} from '../hooks/useColorScheme';
 import config from '../config.json';
 export default function About({ back }: { back: Function }) {

@@ -1,9 +1,10 @@
-import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 import config from '../config.json';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from "@react-native-community/netinfo";
 import { Buffer } from "buffer";
 import { TokenPair, anyObject } from './misc';
+import { SessionContext, SessionInstance } from '../util/session';
+import React from 'react';
 
 export const axiosInstance = axios.create({
     baseURL: config.server,
@@ -27,19 +28,24 @@ export async function apiRequest<T>(endpoint: string, body: string | anyObject |
         // Log in
         let accessToken, tokenData;
         try{ 
-            accessToken = await AsyncStorage.getItem("@accesstoken");
-            tokenData = JSON.parse(String(Buffer.from(String(accessToken).split('.')[1], 'base64')));
+            accessToken = SessionInstance.get<string>("@accesstoken");
+            tokenData = JSON.parse(String(Buffer.from(accessToken.split('.')[1], 'base64')));
         }catch(err){
             console.error(err);
             return 'Storage access error';
         }
+        
 
         // token expired
         if (Math.round(Date.now() / 1000) - 30 >= parseInt(tokenData.exp) ||
                 Number.isNaN(parseInt(tokenData.exp))) { // Just in case the token is corrupted in some way
+            console.log("erroring?");
             if(!await refreshLogin()){
+                console.log("erroring2");
                 return 'An unknown error occurred';
             }
+            console.log("erroring2");
+
         }
 
         result = await _apiRequest<T>(endpoint, body, method, {
@@ -67,7 +73,7 @@ async function _apiRequest<T>(endpoint: string, body: string | anyObject | undef
  */
 export async function refreshLogin(): Promise<boolean> {
     try{
-        const refreshToken = await AsyncStorage.getItem("@refreshtoken");
+        const refreshToken = SessionInstance.get("@refreshtoken");
         if (!refreshToken) {
             return true;
         }
@@ -75,6 +81,7 @@ export async function refreshLogin(): Promise<boolean> {
         if (!state.isConnected) { //assumes logged in if a refresh token exists and there is no connection so the user may view cached resources
             return false;
         }
+        console.log({ refreshToken });
         const response = await axiosInstance.post<TokenPair>('auth/token/refresh', { //refresh token endpoint
             refresh: refreshToken
         });
@@ -83,11 +90,44 @@ export async function refreshLogin(): Promise<boolean> {
         if (!(tokens.refresh && tokens.access)) {
             return false;
         }
-        await AsyncStorage.setItem('@accesstoken', tokens.access);
-        await AsyncStorage.setItem('@refreshtoken', tokens.refresh);
+        SessionInstance.setAll({
+            "@accesstoken": tokens.access,
+            "@refreshtoken": tokens.refresh,
+        });
         return true;
-    }catch(err){
+    }catch(err: any){
+        if(err instanceof AxiosError && err.response && err.response.data.code == "token_not_valid"){
+            console.error("invalid/expired token");
+            return false;
+        }
         console.error(err);
         return false;
+    }
+}
+
+/**
+ * @returns `undefined` if success, otherwise the error message.
+ */
+export async function login(username: string, password: string): Promise<string | undefined>{
+    try{
+        const response = await axiosInstance.post("auth/token", {
+            username,
+            password,
+        });
+        const tokens = response.data;
+        if (tokens.access && tokens.refresh) {
+            SessionInstance.setAll({
+                "@accesstoken": tokens.access,
+                "@refreshtoken": tokens.refresh,
+            });
+            return;
+        }else if(tokens.detail){
+            return "Username or password incorrect";
+        }else{
+            return "Something went wrong. Please try again later."
+        }
+    }catch(err){
+        console.error(err);
+        return "Network error. Please try again later.";
     }
 }

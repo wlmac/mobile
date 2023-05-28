@@ -13,6 +13,7 @@ import Colors from '../constants/Colors';
 import { RootStackParamList } from '../types';
 import cacheResources from '../lib/cacheResources';
 import { login } from '../api';
+import { SessionContext } from '../util/session';
 
 let state = {
   username: "",
@@ -29,7 +30,6 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
 
   let [hasPressedLogin, setHasPressedLogin] = React.useState(false);
 
-  const { loginNeeded } = route.params;
   const loginPress = async() => {
     if(!hasPressedLogin){
       setHasPressedLogin(true);
@@ -62,7 +62,9 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
     }
   }
 
-  if (!loginNeeded) {
+  const sessionContext = React.useContext(SessionContext);
+
+  if (sessionContext.isLoggedIn) {
     React.useEffect(() => {
       navigation.replace('Root');
     }, []);

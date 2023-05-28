@@ -2,13 +2,13 @@ import * as React from 'react';
 import { ScrollView, StyleSheet, Button, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 import { Text, View } from '../components/Themed';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Modal from "react-native-modal";
 import Constants from 'expo-constants';
 import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 import {ThemeContext} from '../hooks/useColorScheme';
 import changelog from '../changelog.json';
+import { SessionContext } from '../util/session';
 
 export default function Changelog({ back }: { back: Function }) {
 
@@ -51,6 +51,7 @@ export default function Changelog({ back }: { back: Function }) {
 
 export function ChangeLogModal() {
     const colorScheme = React.useContext(ThemeContext);
+    const sessionContext = React.useContext(SessionContext);
     const btnBgColor = colorScheme.scheme === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
     const BgColor = colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525';
     const xColor = colorScheme.scheme === 'light' ? 'black' : 'white';
@@ -58,18 +59,17 @@ export function ChangeLogModal() {
     const [isModalVisible, setModalVisible] = React.useState(false);
     const modalOff = () => {
         setModalVisible(false);
-        AsyncStorage.setItem(`@changelogseenver`, Constants.manifest?.version ?? '0.0.0').catch();
+        sessionContext.set('@changelogseenver', Constants.manifest?.version ?? '0.0.0');
     };
     React.useEffect(() => {
-        AsyncStorage.getItem('@changelogseenver').then(val => {
-            console.log(val);
-            console.log(Constants.manifest?.version ?? '0.0.0');
-            console.log(changelog[0].version);
-            // val = '1.0.0'; // testing modal
-            if ((!val || val !== Constants.manifest?.version) && changelog[0].version === Constants.manifest?.version) {
-                setModalVisible(true);
-            } 
-        }).catch();
+        const val = sessionContext.get<string>('@changelogseenver');
+        console.log(val);
+        console.log(Constants.manifest?.version ?? '0.0.0');
+        console.log(changelog[0].version);
+        // val = '1.0.0'; // testing modal
+        if ((!val || val !== Constants.manifest?.version) && changelog[0].version === Constants.manifest?.version) {
+            setModalVisible(true);
+        }
     }, [])
 
     

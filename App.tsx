@@ -4,13 +4,13 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as Device from 'expo-device';
-import useCachedResources from './hooks/useCachedResources';
+import loadResources from './hooks/useResources';
 import useColorScheme from './hooks/useColorScheme';
 import Navigation from './navigation';
+import { SessionProvider } from './util/session';
 
+import { Text, View } from './components/Themed';
 export default function App() {
-  const startupHook = useCachedResources();
-
   React.useEffect(() => {
     Device.getDeviceTypeAsync().then(type => {
       /*According to Expo docs,
@@ -21,14 +21,21 @@ export default function App() {
     }).catch(err => { });
   }, []);
 
-  if (!startupHook.isLoadingComplete) {
-    return null;
-  } else {
-    return (
-      <SafeAreaProvider>
-        <Navigation loginNeeded={startupHook.loginNeeded} />
+  console.log("i'm here");
+
+  return (
+    <SafeAreaProvider>
+      <SessionProvider>
+        <Navigation />
         <StatusBar />
-      </SafeAreaProvider>
-    );
-  }
+      </SessionProvider>
+    </SafeAreaProvider>
+    // <Text style={
+    //   {
+    //     color: "black"
+    //   }
+    // }>
+    //   AAAAAA
+    // </Text>
+  );
 }
