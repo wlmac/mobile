@@ -36,7 +36,7 @@
     "remove-markdown": "^0.5.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.21.8",
+    "@babel/core": "^7.22.1",
     "@react-native-async-storage/async-storage": "~1.17.3",
     "@react-native-community/netinfo": "9.3.0",
     "@react-navigation/bottom-tabs": "^6.5.7",
@@ -45,7 +45,7 @@
     "@types/color-convert": "^2.0.0",
     "@types/lodash.filter": "^4.6.7",
     "@types/react": "~18.0.0",
-    "@types/react-native": "^0.70.13",
+    "@types/react-native": "^0.70.14",
     "@types/react-native-table-component": "^1.2.4",
     "@types/remove-markdown": "^0.3.1",
     "color-convert": "^2.0.1",
@@ -60,7 +60,7 @@
     "lodash.filter": "^4.6.0",
     "punycode": "^2.3.0",
     "react-modal": "^3.16.1",
-    "react-native-calendars": "^1.1297.0",
+    "react-native-calendars": "^1.1298.0",
     "react-native-dropdown-picker": "^5.4.6",
     "react-native-gesture-handler": "~2.5.0",
     "react-native-maps": "^0.31.1",

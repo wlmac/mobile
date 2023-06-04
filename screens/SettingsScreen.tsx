@@ -60,7 +60,15 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
   }
 
   async function deletePushToken() {
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let expoPushToken = (await Notifications.getExpoPushTokenAsync()).data;
+
+    // if the existingStatus is denied, the token was not sent to server; assume no token was deleted
+    if (!expoPushToken || existingStatus !== 'granted') {
+      Alert.alert('Success', 'Logged out successfully (no token deleted)', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
+      return;
+    }
+
     expoPushToken = expoPushToken.slice(18, -1);
     let res = await apiRequest("/api/v3/notif/token", JSON.stringify({"expo_push_token": expoPushToken}), "DELETE", false);
     if (!res.success) {
