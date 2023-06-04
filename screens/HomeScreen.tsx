@@ -162,10 +162,10 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
   }
 
 
-  async function setupNotifToken(): Promise<string | null> {
+  async function setupNotifToken(): Promise<string | undefined> {
     if (!Device.isDevice) {
       console.error("Not a device");
-      return null;
+      return undefined;
     }
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
@@ -176,7 +176,7 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
     if (finalStatus !== 'granted') {
       // remove in production
       alert('Failed to get push token for push notification! Perhaps your system permissions do not allow notifications?');
-      return null;
+      return undefined;
     }
     if (Platform.OS === 'android') {
       Notifications.setNotificationChannelAsync('default', {
@@ -186,12 +186,34 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
         lightColor: '#FF231F7C',
       });
     }
-    let expoPushToken = (await Notifications.getExpoPushTokenAsync()).data;
+    let expoPushToken: string | undefined = undefined;
+    try {
+      expoPushToken = (await Notifications.getExpoPushTokenAsync()).data;
+    } catch (error) {
+      console.log('Error fetching Expo token:', error, "\nFor developers, ensure you are logged in with your Expo account in order for notif testing to work.");
+    }
+
+    if (!expoPushToken) {
+      alert('Failed to get push token for push notification');
+      return undefined;
+    }
+
     expoPushToken = expoPushToken.slice(18, -1);
-    await apiRequest("/api/v3/notif/token", JSON.stringify({"expo_push_token": expoPushToken}), "PUT", false).then((res) => {
+
+    const options = {
+      "allow": {
+        "event.all": {},
+        "event.singleday": {},
+        "blog": {},
+        "ann.personal": {},
+        "ann.public": {},
+      }
+    }
+
+    await apiRequest("/api/v3/notif/token", JSON.stringify({"expo_push_token": expoPushToken, "options": options}), "PUT", false).then((res) => {
       if (!res.success) {
         console.error("An error occurred while trying to set the expo notification token: " + res.error);
-        return null;
+        return undefined;
       } else {
         console.log("Successfully updated notif token " + res.response);
         setExpoNotificationToken(expoPushToken);
@@ -221,7 +243,7 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
   React.useEffect(() => {
     if (!guestMode.guest) {
       setupNotifToken().then(token => {
-        setExpoNotificationToken(token === null ? undefined : token);
+        setExpoNotificationToken(token);
       });
     }
     configureNotificationListeners();

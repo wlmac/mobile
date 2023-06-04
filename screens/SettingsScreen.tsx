@@ -61,11 +61,17 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
 
   async function deletePushToken() {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let expoPushToken = (await Notifications.getExpoPushTokenAsync()).data;
+    
+    let expoPushToken: string | undefined = undefined;
+    try {
+      expoPushToken = (await Notifications.getExpoPushTokenAsync()).data;
+    } catch (error) {
+      console.log("expo push token could not be fetched");
+    }
 
     // if the existingStatus is denied, the token was not sent to server; assume no token was deleted
     if (!expoPushToken || existingStatus !== 'granted') {
-      Alert.alert('Success', 'Logged out successfully (no token deleted)', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
+      Alert.alert('Success', 'Logged out successfully (no server-side notification settings deleted)', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
       return;
     }
 
@@ -95,6 +101,8 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
         }).catch(() => {
           Alert.alert('Error', 'Failed to log out (clearing local data failed)', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
         });
+      }).catch(() => {
+        console.error("error when deleting server-side notification settings");
       });
     }
   }
@@ -107,7 +115,7 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
               let info = JSON.parse(data);
               setUserinfo(info);
             }
-          }).catch(err => {console.log(err)});          
+          }).catch(err => {console.error(err)});          
 
         }
         return;
