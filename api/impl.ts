@@ -111,7 +111,7 @@ class EventDataHandlerImpl extends Handler<EventData> {
             return;
         }
 
-        const request = await apiRequest<any[]>(`events?limit=${limit}&offset=${offset}`, undefined, "GET", true, options as any);
+        const request = await apiRequest<any[]>(`v3/events?limit=${limit}&offset=${offset}`, undefined, "GET", true, options as any);
         if(typeof request == "string")
             throw new Error(request);
         

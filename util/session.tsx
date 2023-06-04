@@ -4,14 +4,39 @@ import React from 'react';
 import loadResources from '../hooks/useResources';
 import * as SplashScreen from 'expo-splash-screen';
 
+interface Session{
+    loaded: boolean;
+    isLoggedIn?: boolean;
+    loginNeeded?: boolean; // TODO document this
+
+    // load(): boolean
+    set(key: string, value: string | { [key: string]: any }): void;
+    setAll(data: {[key: string]: string | { [key: string]: any }}): void;
+    get<T>(key: string): T;
+};
+
 class Session{
     private data?: {[key: string]: any};
     public loaded = false;
-    public isLoggedIn?: boolean;
 
-    public loginNeeded?: boolean; // TODO document this
 
-    public load(){
+
+    _update(data: {
+        loginNeeded?: boolean,
+    }){
+        Object.assign(this, data);
+        return this;
+    }
+}
+
+export const SessionContext = React.createContext<Session>({});
+
+export function SessionProvider(props: { children: any }) {
+    const cachedResourcesHook = loadResources();
+
+    const [ data, setData ] = React.useState<{ [key: string]: string | { [key: string]: any } }>({});
+    
+    function load(){
         const [ loaded, setLoaded ] = React.useState(false);
 
         if(loaded)
@@ -43,7 +68,7 @@ class Session{
         return false;
     }
 
-    public set(key: string, value: any){
+    function set(key: string, value: any){
         if(this.data === undefined)
             throw new Error("Session data not loaded yet");
 
@@ -53,7 +78,7 @@ class Session{
             .catch((e) => console.error("Error writing to async storage:", e));
     }
     
-    public setAll(data: {[key: string]: any}) {
+    function setAll(data: {[key: string]: any}) {
         if(this.data === undefined)
             throw new Error("Session data not loaded yet");
 
@@ -64,28 +89,12 @@ class Session{
             .catch((e) => console.error("Error writing to async storage:", e));
     }
 
-    public get<T>(key: string): T{
+    function get<T>(key: string): T{
         if(this.data === undefined)
             throw new Error("Session data not loaded yet");
         
         return this.data[key];
     }
-
-
-    _update(data: {
-        loginNeeded?: boolean,
-    }){
-        Object.assign(this, data);
-        return this;
-    }
-}
-
-export const SessionInstance = new Session();
-export const SessionContext = React.createContext<Session>(SessionInstance);
-
-export function SessionProvider(props: { children: any }) {
-    const cachedResourcesHook = loadResources();
-    const dataLoaded = SessionInstance.load();
 
     // Only cache certain objects for now
     const CACHED_HANDLERS = [
