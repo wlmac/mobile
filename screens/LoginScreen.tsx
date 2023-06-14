@@ -50,6 +50,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
         let val = await login();
         if (val == "success") {
           updateLoginResText("Success! Preparing app...");
+          guestMode.updateGuest(false);
           await cacheResources();
           await storeUserinfo();
           navigation.replace('Root');
