@@ -122,6 +122,7 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
       }
       fetchData();
       return;
+      
     }, []);
 
 
