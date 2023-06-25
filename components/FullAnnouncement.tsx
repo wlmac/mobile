@@ -21,6 +21,11 @@ export default function FullAnnouncement({ann, backToScroll, isBlog}:{ann: any, 
 
     return (
         <ScrollView style={[styles.announcement, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c', shadowColor: colorScheme.scheme === 'light' ? '#1c1c1c' : '#e6e6e6'}]} onStartShouldSetResponder={(e) => true} onResponderRelease={() => backToScroll(ann.id)}>
+            <View style={[styles.back, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
+                <TouchableOpacity onPress={() => backToScroll("-1")}>
+                    <Text style={[{color: colorScheme.scheme === "light" ? lightC : darkC}, {fontSize: 16}]}>{"←  Return"}</Text>
+                </TouchableOpacity>
+            </View>
             <View style={[styles.tags, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
                 {Object.entries(ann.tags).map(([key, tag]) => (
                     createTag(key, tag)
@@ -37,7 +42,7 @@ export default function FullAnnouncement({ann, backToScroll, isBlog}:{ann: any, 
             {/* View More Details */}
             <View style={[styles.click, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
                 <TouchableOpacity onPress={() => backToScroll("-1")}>
-                    <Text style={[{color: colorScheme.scheme === "light" ? lightC : darkC}, {fontSize: 16}]}>{"<  Return to " + (isBlog ? "Blogs" : "Announcements")}</Text>
+                    <Text style={[{color: colorScheme.scheme === "light" ? lightC : darkC}, {fontSize: 16}]}>{"←  Return to " + (isBlog ? "Blogs" : "Announcements")}</Text>
                 </TouchableOpacity>
             </View>
         </ScrollView>
@@ -158,11 +163,18 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.4,
         borderRadius: 5,
     },
+    back: {
+        flex: 1,
+        flexDirection: "row",
+        flexWrap: "wrap",
+        marginTop: 20,
+        marginBottom: 15,
+        marginHorizontal: 19,
+    },
     tags: {
         flex: 1,
         flexDirection: "row",
         flexWrap: "wrap",
-        marginTop: 15,
         marginHorizontal: 12,
     },
     tag: {
