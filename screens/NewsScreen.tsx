@@ -48,7 +48,7 @@ export default function NewsScreen({
   // stores announcements
   const [announcements, setAnnouncements] = useState<AnnouncementData[]>([]);
   const [blogs, setBlogs] = useState<BlogData[]>([]);
-  const [myAnnouncements, setMyAnnouncements] = useState<AnnouncementData[]>([]);
+  const [sacAnnouncements, setSacAnnouncements] = useState<AnnouncementData[]>([]);
   const [orgs, setOrgs] = useState(emptyOrgs);
   const [tags, setTags] = useState(emptyTags);
   const [users, setUsers] = useState(emptyUsers);
@@ -84,7 +84,7 @@ export default function NewsScreen({
 
   // tracking how many announcements have been loaded
   const [nextAnnSet, setNextAnnSet] = useState(0);
-  const [nextMySet, setNextMySet] = useState(0);
+  const [nextSacSet, setNextSacSet] = useState(0);
   const [nextBlogSet, setNextBlogSet] = useState(0);
 
   // loading
@@ -103,12 +103,12 @@ export default function NewsScreen({
     fullA.current?.scrollTo({ x: 0, y: 0, animated: false });
   }
 
-  //displayed info if nothing in feed
-  const [noMyFeed, setNoMyFeed] = useState(false);
+  // //displayed info if nothing in feed
+  // const [noMyFeed, setNoMyFeed] = useState(false);
 
   // scrollview reset to top on switch toggle
   const allA = React.useRef<ScrollView>(null);
-  const myA = React.useRef<ScrollView>(null);
+  const sacA = React.useRef<ScrollView>(null);
   const allB = React.useRef<ScrollView>(null);
   const fullA = React.useRef<ScrollView>(null);
 
@@ -134,8 +134,8 @@ export default function NewsScreen({
       allA.current?.scrollTo({ x: 0, y: 0, animated: false });
       setFilter(false);
     }
-    if (dropdownSelection === "My Announcements") {
-      myA.current?.scrollTo({ x: 0, y: 0, animated: false });
+    if (dropdownSelection === "SAC Announcements") {
+      sacA.current?.scrollTo({ x: 0, y: 0, animated: false });
       setFilter(true);
     }
     if (dropdownSelection === "Blog") {
@@ -188,12 +188,12 @@ export default function NewsScreen({
     });
 
     await loadAnnouncements();
-    await loadMyAnnouncements();
+    await loadSacAnnouncements();
     await loadBlogs();
 
-    if (myAnnouncements.length === 0) {
-      setNoMyFeed(true);
-    }
+    // if (sacAnnouncements.length === 0) {
+    //   setNoMyFeed(true);
+    // }
     setLoading(false);
   };
 
@@ -209,6 +209,7 @@ export default function NewsScreen({
     if (res.success) {
       try {
         let jsonres: AnnouncementData[] = JSON.parse(res.response).results;
+        console.log(endpoint, JSON.parse(res.response).previous, JSON.parse(res.response).next);
         if (jsonres && Array.isArray(jsonres)) {
           setAnnouncements(announcements.concat(jsonres));
           setNextAnnSet(nextAnnSet + loadNum);
@@ -294,11 +295,11 @@ export default function NewsScreen({
       setAnnouncements,
       setNextAnnSet
     );
-  const loadMyAnnouncements = async () =>
+  const loadSacAnnouncements = async () =>
     loadResults(
-      `/api/v3/obj/announcement/feed?format=json&limit=${loadNum}&offset=${nextMySet}`,
-      setMyAnnouncements,
-      setNextMySet
+      `/api/v3/obj/announcement?format=json&organization=8&limit=${loadNum}&offset=${nextSacSet}`,
+      setSacAnnouncements,
+      setNextSacSet
     );
   const loadBlogs = async () =>
     loadBlogResults(
@@ -399,16 +400,16 @@ export default function NewsScreen({
           </ScrollView>
         }
 
-        {/* My Feed Announcement */}
+        {/* Sac Feed Announcement */}
         { !isBlog && isFilter && fullAnnId === "-1" && <ScrollView
-          ref={myA}
+          ref={sacA}
           style={styles.scrollView}
           onScroll={({ nativeEvent }) => {
-            if (isCloseToBottom(nativeEvent)) loadMyAnnouncements();
+            if (isCloseToBottom(nativeEvent)) loadSacAnnouncements();
           }}
           scrollEventThrottle={0}
         >
-          {Object.entries(myAnnouncements).map(([key, ann]) => (
+          {Object.entries(sacAnnouncements).map(([key, ann]) => (
             <Announcement key={key} ann={ann} fullAnn={setFullAnnId} />
           ))}
           {loadError ? (
@@ -417,12 +418,12 @@ export default function NewsScreen({
               <Button
                 title="Retry"
                 onPress={() => {
-                  loadMyAnnouncements();
+                  loadSacAnnouncements();
                 }}
               ></Button>
             </View>
           ) : undefined}
-          <View
+          {/* <View
             style={[
               noMyFeed
                 ? { display: "flex" }
@@ -450,8 +451,10 @@ export default function NewsScreen({
               </Text>
               to have their announcements show up here!
             </Text>
-          </View>
-          <View
+          </View> */}
+
+          {/* guest mode (no longer needed because not my ann) */}
+          {/* <View
             style={[
               guestMode.guest ? { display: "flex" } : { display: "none" },
               {
@@ -472,7 +475,7 @@ export default function NewsScreen({
               </Text>
               to view your personal feed here!
             </Text>
-          </View>
+          </View> */}
         </ScrollView> }
 
         {/* Full Announcement */}
@@ -482,7 +485,7 @@ export default function NewsScreen({
         >
           <FullAnnouncement
             ann={announcements
-              .concat(myAnnouncements)
+              .concat(sacAnnouncements)
               .find((e: any) => e.id === fullAnnId)}
             backToScroll={setFullAnnId}
             isBlog={false}
@@ -508,7 +511,7 @@ export default function NewsScreen({
         theme={colorScheme.scheme == "dark" ? "DARK" : "LIGHT"}
         items={[
           { label: "All Announcements", value: "All Announcements" },
-          { label: "My Announcements", value: "My Announcements" },
+          { label: "SAC Announcements", value: "SAC Announcements" },
           { label: "Blog", value: "Blog" },
         ]}
         multiple={false}
