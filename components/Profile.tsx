@@ -6,6 +6,13 @@ import {ThemeContext} from '../hooks/useColorScheme';
 
 
 export default function Profile({ back, userinfo }: { back: Function, userinfo: any }) {
+
+    if (!userinfo) {
+        return (<View>
+            <Text>API Error</Text>
+        </View>)
+    }
+
     const colorScheme = React.useContext(ThemeContext);
     const btnBgColor = colorScheme.scheme === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
     console.log(userinfo.organizations);
@@ -13,8 +20,8 @@ export default function Profile({ back, userinfo }: { back: Function, userinfo: 
     let clubsFollowing = "";
     let stuff = userinfo.organizations;
     console.log(stuff);
-    for (let i = 0; i < 3; i++) {
-        clubsFollowing += stuff[i] + ', ';
+    for (let i = 0; i < stuff.length; i++) {
+        clubsFollowing += stuff[i] + (i+1 == stuff.length? "" : ', ');
     }
     //stuff.forEach(function(value: any, index: any) {
     //    clubsFollowing += stuff[index] + ', ';
