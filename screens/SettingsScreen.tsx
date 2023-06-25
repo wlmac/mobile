@@ -23,7 +23,7 @@ Logs.enableExpoCliLogging()
 
 export default function SettingsScreen({ navigation }: { navigation: StackNavigationProp<RootStackParamList, 'Root'> }) {
   const [curView, setView] = React.useState(-1);
-  const [userinfo, setUserinfo] = React.useState<any>({});
+  const [userinfo, setUserinfo] = React.useState<any>(null);
 
   /*
   curView:
@@ -66,7 +66,7 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
     try {
       expoPushToken = (await Notifications.getExpoPushTokenAsync()).data;
     } catch (error) {
-      console.log("expo push token could not be fetched");
+      console.log('Error fetching Expo token:', error, "\nFor developers, ensure you are logged in with your Expo account in order for notif testing to work.");
     }
 
     // if the existingStatus is denied, the token was not sent to server; assume no token was deleted
@@ -153,7 +153,7 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
         }}
         >
           <Text style={{ color: "#b8b8b8", fontSize: 12 }}> {guestMode.guest ? 'Not Logged In' : 'Logged In As'} </Text>
-          <Text style={{ color: "white", fontSize: 26 }}> {guestMode.guest ? 'Guest' : userinfo.username}</Text>
+          {(userinfo || guestMode.guest) && <Text style={{ color: "white", fontSize: 26 }}> {guestMode.guest ? 'Guest' : userinfo.username}</Text>}
       </TouchableOpacity>
      
       <TouchableOpacity
