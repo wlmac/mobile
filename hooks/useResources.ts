@@ -1,7 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Font from 'expo-font';
 import * as React from 'react';
-import cacheResources from '../lib/cacheResources';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useColorScheme } from 'react-native';

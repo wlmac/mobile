@@ -11,7 +11,6 @@ import config from '../config.json';
 import { Text, View } from '../components/Themed';
 import Colors from '../constants/Colors';
 import { RootStackParamList } from '../types';
-import cacheResources from '../lib/cacheResources';
 import { login } from '../api';
 import { SessionContext } from '../util/session';
 
@@ -38,7 +37,6 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
         let val = await login(state.username, state.password);
         if (val === undefined) {
           updateLoginResText("Success! Preparing app...");
-          await cacheResources();
           navigation.replace('Root');
           return;
         }
@@ -57,7 +55,6 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
       updateLoginResText("Please wait...");
       guestMode.updateGuest(true);
       setHasPressedLogin(true);
-      await cacheResources();
       navigation.replace('Root');
     }
   }
