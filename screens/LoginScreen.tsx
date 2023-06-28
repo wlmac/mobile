@@ -64,11 +64,12 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
 
   const sessionContext = React.useContext(SessionContext);
 
-  if (sessionContext.isLoggedIn) {
-    React.useEffect(() => {
-      navigation.replace('Root');
-    }, []);
-  }
+  React.useEffect(() => {
+    if(!sessionContext.isLoggedIn)
+      return;
+    
+    navigation.replace('Root');
+  }, [sessionContext]);
 
   //Keyboard animation code
   const keyboardShown = () => {
