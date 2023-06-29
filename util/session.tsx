@@ -4,7 +4,7 @@ import React from 'react';
 import loadResources from '../hooks/useResources';
 import * as SplashScreen from 'expo-splash-screen';
 
-interface Session{
+export interface Session{
     loaded: boolean;
     isLoggedIn?: boolean;
     loginNeeded?: boolean; // TODO document this
@@ -15,85 +15,77 @@ interface Session{
     get<T>(key: string): T;
 };
 
-class Session{
-    private data?: {[key: string]: any};
-    public loaded = false;
-
-
-
-    _update(data: {
-        loginNeeded?: boolean,
-    }){
-        Object.assign(this, data);
-        return this;
-    }
+function loadedError(): never{
+    throw new Error("Session data not loaded yet");
 }
 
-export const SessionContext = React.createContext<Session>({});
+export const SessionContext = React.createContext<Session>({
+    loaded: false,
+
+    set: loadedError,
+    setAll: loadedError,
+    get: loadedError,
+});
 
 export function SessionProvider(props: { children: any }) {
     const cachedResourcesHook = loadResources();
 
-    const [ data, setData ] = React.useState<{ [key: string]: string | { [key: string]: any } }>({});
+    const [ data, setData ] = React.useState<{ [key: string]: string | { [key: string]: any } } | undefined>(undefined);
     
-    function load(){
-        const [ loaded, setLoaded ] = React.useState(false);
-
-        if(loaded)
+    async function load(){
+        if(data)
             return true;
         
-        (async () => {
-            const keys = await AsyncStorage.getAllKeys();
+        const keys = await AsyncStorage.getAllKeys();
 
-            const loadedData: {[key: string]: any} = {};
+        const loadedData: {[key: string]: any} = {};
 
-            await Promise.allSettled(keys.map(async (key) => {
-                const value = await AsyncStorage.getItem(key);
-                let data;
-                try{
-                    data = JSON.parse(value!);
-                }catch(e){
-                    data = value;
-                } 
-                loadedData[key] = data;
-            }));
+        await Promise.allSettled(keys.map(async (key) => {
+            const value = await AsyncStorage.getItem(key);
+            let data;
+            try{
+                data = JSON.parse(value!);
+            }catch(e){
+                data = value;
+            }
+            loadedData[key] = data;
+        }));
 
-            this.data = loadedData;
-
-            this.loaded = true;
-
-            setLoaded(true);
-        })();
-
-        return false;
+        setData(loadedData);
     }
 
     function set(key: string, value: any){
-        if(this.data === undefined)
-            throw new Error("Session data not loaded yet");
+        if(data === undefined)
+            loadedError();
 
-        this.data[key] = value;
+        setData(data => ({
+            ...data,
+            [key]: value,
+        }));
 
         AsyncStorage.setItem(key, typeof value == "string" ? value : JSON.stringify(value))
             .catch((e) => console.error("Error writing to async storage:", e));
     }
     
-    function setAll(data: {[key: string]: any}) {
-        if(this.data === undefined)
-            throw new Error("Session data not loaded yet");
+    function setAll(newData: {[key: string]: any}) {
+        if(data === undefined)
+            loadedError();
 
-        Object.assign(this.data, data);
+        setData(data => ({
+            ...data,
+            ...newData,
+        }));
 
-        AsyncStorage.multiSet(Object.entries(data)
+        AsyncStorage.multiSet(Object.entries(newData)
             .map(([key, value]) => [key, typeof value == "string" ? value : JSON.stringify(value)]))
             .catch((e) => console.error("Error writing to async storage:", e));
     }
 
     function get<T>(key: string): T{
-        if(this.data === undefined)
-            throw new Error("Session data not loaded yet");
+        if(data === undefined)
+            loadedError();
         
-        return this.data[key];
+        return data[key] as T;
     }
 
     // Only cache certain objects for now
@@ -119,7 +111,7 @@ export function SessionProvider(props: { children: any }) {
                 const objData: {[key: string]: any} = {};
                 for(const key of Object.keys(obj)){
                     if(typeof obj[key] === "function"){
-                        objData[key] =  {
+                        objData[key] = {
                             _requestorType: obj.type,
                             id: obj.id,
                         }
@@ -130,7 +122,7 @@ export function SessionProvider(props: { children: any }) {
                 return objData;
             });
             console.log("Serialized Objects", handler.type, objects);
-            SessionInstance.set(handler.type + "_cachekey", objects);
+            set(handler.type + "_cachekey", objects);
         }
     }
 
@@ -139,30 +131,22 @@ export function SessionProvider(props: { children: any }) {
     }, []);
     
     React.useEffect(() => {
-        if(!dataLoaded || !cachedResourcesHook.isLoadingComplete)
+        if(data != undefined || !cachedResourcesHook.isLoadingComplete)
             return;
 
         SplashScreen.hideAsync();
         
         cacheObjects();
-
         const interval = setInterval(cacheObjects, 1000 * 60 * 5);
 
         return () => clearInterval(interval);
-    }, [dataLoaded, cachedResourcesHook.isLoadingComplete]);
-
-    console.log(cachedResourcesHook.isLoadingComplete, dataLoaded);
-
-    if(!cachedResourcesHook.isLoadingComplete ||
-        !dataLoaded)
-        return null;
-    
-    console.log("not null");
+    }, [data, cachedResourcesHook.isLoadingComplete]);
 
     return (
-        <SessionContext.Provider value={SessionInstance._update({
-            loginNeeded: cachedResourcesHook.defaultLoggedIn,
-        })}>
+        <SessionContext.Provider value={{
+            loaded: data !== undefined,
+            
+        }}>
             {props.children}
         </SessionContext.Provider>
     );
