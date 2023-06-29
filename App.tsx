@@ -21,8 +21,6 @@ export default function App() {
     }).catch(err => { });
   }, []);
 
-  console.log("i'm here");
-
   return (
     <SafeAreaProvider>
       <SessionProvider>

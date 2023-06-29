@@ -4,6 +4,7 @@
 import { AxiosRequestConfig } from 'axios';
 import { ID, Nullable, URLString, anyObject, LimitOffsetPagination } from './misc';
 import { axiosInstance } from './core';
+import { Session } from '../util/session';
 
 export type ObjectType = "tag" | "organization" | "comment" | "banner" | "news" |
                   "announcement" | "blog-post" | "event" | "flatpage" | "user";
@@ -75,7 +76,7 @@ export class Handler<T extends IDObject<T>>{
         return obj;
     }
 
-    async *list(limit=50, offset=0, options: AxiosRequestConfig<LimitOffsetPagination<T>> = {}): AsyncIterableIterator<T> {
+    async *list(limit=50, offset=0, session: Session, options?: AxiosRequestConfig<LimitOffsetPagination<T>>): AsyncIterableIterator<T> {
         if(["comment", "flatpage"].includes(this.type))
             throw new Error(`Cannot list ${this.type} objects`);
         
@@ -102,7 +103,7 @@ export class Handler<T extends IDObject<T>>{
 
 
     errored(){
-        return this.isErrore
+        return this.isErrored
     }
 }
 

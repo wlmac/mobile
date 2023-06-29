@@ -34,8 +34,6 @@ const CustomDarkTheme = {
 };
 
 export default function Navigation() {
-  console.log("AAAIIE");
-
   const scheme = useColorScheme();
   const guest = useGuestMode();
 
@@ -67,7 +65,8 @@ function RootNavigator() {
   const [toLogin, setToLogin] = React.useState(loginNeeded && !guestMode.guest);
   React.useEffect(() => {
     setToLogin(loginNeeded && !guestMode.guest);
-  }, [guestMode.guest])
+  }, [guestMode.guest]);
+  console.log({ toLogin });
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {toLogin ? [

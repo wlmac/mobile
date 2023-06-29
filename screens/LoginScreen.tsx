@@ -29,12 +29,14 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
 
   let [hasPressedLogin, setHasPressedLogin] = React.useState(false);
 
+  const session = React.useContext(SessionContext);
+
   const loginPress = async() => {
     if(!hasPressedLogin){
       setHasPressedLogin(true);
       updateLoginResText("Logging in... Please wait");
       try{
-        let val = await login(state.username, state.password);
+        let val = await login(state.username, state.password, session);
         if (val === undefined) {
           updateLoginResText("Success! Preparing app...");
           navigation.replace('Root');
@@ -62,7 +64,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
   const sessionContext = React.useContext(SessionContext);
 
   React.useEffect(() => {
-    if(!sessionContext.isLoggedIn)
+    if(sessionContext.loginNeeded)
       return;
     
     navigation.replace('Root');

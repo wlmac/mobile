@@ -3,7 +3,7 @@ import config from '../config.json';
 import NetInfo from "@react-native-community/netinfo";
 import { Buffer } from "buffer";
 import { TokenPair, anyObject } from './misc';
-import { SessionContext, SessionInstance } from '../util/session';
+import { Session } from '../util/session';
 import React from 'react';
 
 export const axiosInstance = axios.create({
@@ -20,7 +20,7 @@ export const axiosInstance = axios.create({
 /**
  * @returns the data if success, otherwise the error message.
  */
-export async function apiRequest<T>(endpoint: string, body: string | anyObject | undefined, method: "GET" | "POST" /* | etc... */, noAuth: boolean = false, options?: AxiosRequestConfig<T>): Promise<T | string> {
+export async function apiRequest<T>(endpoint: string, body: string | anyObject | undefined, method: "GET" | "POST" /* | etc... */,  session: Session, noAuth: boolean = false, options?: AxiosRequestConfig<T>): Promise<T | string> {
     let result;
     if(noAuth){
         result = await _apiRequest<T>(endpoint, body, method, options);
@@ -28,19 +28,18 @@ export async function apiRequest<T>(endpoint: string, body: string | anyObject |
         // Log in
         let accessToken, tokenData;
         try{ 
-            accessToken = SessionInstance.get<string>("@accesstoken");
+            accessToken = session.get<string>("@accesstoken");
             tokenData = JSON.parse(String(Buffer.from(accessToken.split('.')[1], 'base64')));
         }catch(err){
             console.error(err);
             return 'Storage access error';
         }
-        
 
         // token expired
         if (Math.round(Date.now() / 1000) - 30 >= parseInt(tokenData.exp) ||
                 Number.isNaN(parseInt(tokenData.exp))) { // Just in case the token is corrupted in some way
             console.log("erroring?");
-            if(!await refreshLogin()){
+            if(!await refreshLogin(session)){
                 console.log("erroring2");
                 return 'An unknown error occurred';
             }
@@ -71,11 +70,11 @@ async function _apiRequest<T>(endpoint: string, body: string | anyObject | undef
  * Refreshes the login of the user.
  * @returns true if success, false otherwise
  */
-export async function refreshLogin(): Promise<boolean> {
+export async function refreshLogin(session: Session): Promise<boolean> {
     try{
-        const refreshToken = SessionInstance.get("@refreshtoken");
+        const refreshToken = session.get("@refreshtoken");
         if (!refreshToken) {
-            return true;
+            return false;
         }
         const state = await NetInfo.fetch();
         if (!state.isConnected) { //assumes logged in if a refresh token exists and there is no connection so the user may view cached resources
@@ -90,7 +89,8 @@ export async function refreshLogin(): Promise<boolean> {
         if (!(tokens.refresh && tokens.access)) {
             return false;
         }
-        SessionInstance.setAll({
+        console.log("Setting tokens")
+        session.setAll({
             "@accesstoken": tokens.access,
             "@refreshtoken": tokens.refresh,
         });
@@ -98,6 +98,8 @@ export async function refreshLogin(): Promise<boolean> {
     }catch(err: any){
         if(err instanceof AxiosError && err.response && err.response.data.code == "token_not_valid"){
             console.error("invalid/expired token");
+            session.remove("@accesstoken");
+            session.remove("@refreshtoken");
             return false;
         }
         console.error(err);
@@ -108,7 +110,7 @@ export async function refreshLogin(): Promise<boolean> {
 /**
  * @returns `undefined` if success, otherwise the error message.
  */
-export async function login(username: string, password: string): Promise<string | undefined>{
+export async function login(username: string, password: string, session: Session): Promise<string | undefined>{
     try{
         const response = await axiosInstance.post("auth/token", {
             username,
@@ -116,7 +118,7 @@ export async function login(username: string, password: string): Promise<string 
         });
         const tokens = response.data;
         if (tokens.access && tokens.refresh) {
-            SessionInstance.setAll({
+            session.setAll({
                 "@accesstoken": tokens.access,
                 "@refreshtoken": tokens.refresh,
             });

@@ -7,7 +7,7 @@ import { TagData, OrganizationData, AnnouncementData, BlogPostData, CommentData,
 import { DateTimeString, LimitOffsetPagination, TimetableCourse, TokenPair, Weather } from './misc';
 import { apiRequest, axiosInstance, refreshLogin, login } from './core';
 import React from 'react';
-import { SessionContext } from '../util/session';
+import { Session, SessionContext } from '../util/session';
 
 export type { TagData, OrganizationData, AnnouncementData, BlogPostData, CommentData, EventData, UserData };
 export type { LimitOffsetPagination, TokenPair, Weather };
@@ -28,13 +28,13 @@ export async function getWeather(): Promise<Weather>{
     };
 }
 
-export async function getEventsOnDay(date: DateTimeString, options?: AxiosRequestConfig<LimitOffsetPagination<EventData>>){
-    return getEventsInRange(date, date, options);
+export async function getEventsOnDay(date: DateTimeString, session: Session, options?: AxiosRequestConfig<LimitOffsetPagination<EventData>>){
+    return getEventsInRange(date, date, session, options);
 }
 
-export async function getEventsInRange(start: DateTimeString, end: DateTimeString, options?: AxiosRequestConfig<LimitOffsetPagination<EventData>>){
+export async function getEventsInRange(start: DateTimeString, end: DateTimeString, session: Session, options?: AxiosRequestConfig<LimitOffsetPagination<EventData>>){
     const events: EventData[] = [];
-    for await (const event of EventDataHandler.list(5000, 0, {
+    for await (const event of EventDataHandler.list(5000, 0, session, {
         params: {
             start,
             end,
@@ -48,7 +48,7 @@ export async function getEventsInRange(start: DateTimeString, end: DateTimeStrin
 /**
  * @returns the data if success, otherwise the error message.
  */
-export async function getSchedule(noAuth: boolean, date?: DateTimeString): Promise<TimetableCourse[] | string>{
+export async function getSchedule(noAuth: boolean, session: Session, date?: DateTimeString): Promise<TimetableCourse[] | string>{
     function parseTime(time: string){
         return ((Date.parse(time) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000;
     }
@@ -69,6 +69,7 @@ export async function getSchedule(noAuth: boolean, date?: DateTimeString): Promi
         noAuth ? "term/current/schedule" : "me/schedule",
         undefined,
         "GET",
+        session,
         noAuth,
         {
             ...date && { params: { date } },

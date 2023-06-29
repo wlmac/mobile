@@ -11,10 +11,12 @@ import getSeason from "../lib/getSeason";
 import { BottomTabParamList } from "../types";
 import { ChangeLogModal } from '../components/Changelog';
 import { getSchedule } from '../api';
+import { SessionContext } from '../util/session';
 
 export default function HomeScreen({ navigation }: { navigation: BottomTabNavigationProp<BottomTabParamList, "Home"> }) {
   const colorScheme = React.useContext(ThemeContext);
   const guestMode = React.useContext(GuestModeContext);
+  const session = React.useContext(SessionContext);
 
   let criticalTimes: {start: number, end: number, course: string}[] = [];
   let season = getSeason();
@@ -37,7 +39,7 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
 
   async function setSchedule(endpoint: string, userSchedule: boolean){
     try{
-      let schedule = await getSchedule(!userSchedule);
+      let schedule = await getSchedule(!userSchedule, session);
       if (typeof schedule == "string"){
         if (!dataUploadedRef.current && !userSchedule) {
           updatePreTimeText(undefined);
@@ -240,7 +242,7 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
 
 
           {/* ---  Main Page Container ---*/}
-          {ChangeLogModal()}
+          <ChangeLogModal/>
         </View>
       </ImageBackground>
     </ImageBackground>

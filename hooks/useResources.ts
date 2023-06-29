@@ -5,31 +5,30 @@ import * as React from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useColorScheme } from 'react-native';
 import { refreshLogin } from '../api';
-import { SessionContext } from '../util/session';
+import { Session, SessionContext } from '../util/session';
 
-export default function loadResources() {
+export default function loadResources(session: Session) {
   const colorScheme = useColorScheme();
 
   const [isLoadingComplete, setLoadingComplete] = React.useState(false);
-  const [defaultLoggedIn, setDefaultLoginDone] = React.useState(false);
-
-  const sessionContext = React.useContext(SessionContext);
+  const [loginNeeded, setDefaultLoginDone] = React.useState(true);
 
   // Load any resources or data that we need prior to rendering the app
   React.useEffect(() => {
-    if(!sessionContext.loaded)
+    if(session._data == undefined || isLoadingComplete)
       return;
     
     async function loadResourcesAndDataAsync() {
       try {
-        let res = await refreshLogin();
+        let res = await refreshLogin(session);
+        console.log({ res });
         if(res){
-          setDefaultLoginDone(true);
+          setDefaultLoginDone(false);
         }
         
-        const scheme = sessionContext.get("@scheme");
+        const scheme = session.get("@scheme");
         if(!scheme){
-          sessionContext.set("@scheme", colorScheme as string);
+          session.set("@scheme", colorScheme as string);
         }
 
         // Load fonts
@@ -47,7 +46,7 @@ export default function loadResources() {
     }
 
     loadResourcesAndDataAsync();
-  }, [sessionContext.loaded]);
+  }, [session._data]);
 
-  return { isLoadingComplete, defaultLoggedIn };
+  return { isLoadingComplete, loginNeeded };
 }

@@ -5,14 +5,15 @@ import loadResources from '../hooks/useResources';
 import * as SplashScreen from 'expo-splash-screen';
 
 export interface Session{
-    loaded: boolean;
     isLoggedIn?: boolean;
     loginNeeded?: boolean; // TODO document this
 
-    // load(): boolean
+    _data: {[key: string]: string | { [key: string]: any }} | undefined;
+
     set(key: string, value: string | { [key: string]: any }): void;
     setAll(data: {[key: string]: string | { [key: string]: any }}): void;
     get<T>(key: string): T;
+    remove(key: string): void;
 };
 
 function loadedError(): never{
@@ -20,15 +21,15 @@ function loadedError(): never{
 }
 
 export const SessionContext = React.createContext<Session>({
-    loaded: false,
+    _data: undefined,
 
     set: loadedError,
     setAll: loadedError,
     get: loadedError,
+    remove: loadedError,
 });
 
 export function SessionProvider(props: { children: any }) {
-    const cachedResourcesHook = loadResources();
 
     const [ data, setData ] = React.useState<{ [key: string]: string | { [key: string]: any } } | undefined>(undefined);
     
@@ -55,9 +56,6 @@ export function SessionProvider(props: { children: any }) {
     }
 
     function set(key: string, value: any){
-        if(data === undefined)
-            loadedError();
-
         setData(data => ({
             ...data,
             [key]: value,
@@ -68,9 +66,6 @@ export function SessionProvider(props: { children: any }) {
     }
     
     function setAll(newData: {[key: string]: any}) {
-        if(data === undefined)
-            loadedError();
-
         setData(data => ({
             ...data,
             ...newData,
@@ -82,10 +77,13 @@ export function SessionProvider(props: { children: any }) {
     }
 
     function get<T>(key: string): T{
-        if(data === undefined)
-            loadedError();
-        
-        return data[key] as T;
+        return data![key] as T;
+    }
+
+    function remove(key: string){
+        setData(data => Object.fromEntries(Object.entries(data!).filter(([k, v]) => k != key)));
+
+        AsyncStorage.removeItem(key);
     }
 
     // Only cache certain objects for now
@@ -126,8 +124,24 @@ export function SessionProvider(props: { children: any }) {
         }
     }
 
+    let session: Session = {
+        _data: data,
+
+        set,
+        setAll,
+        get,
+        remove,
+    };
+
+    const cachedResourcesHook = loadResources(session);
+
+    session.loginNeeded = cachedResourcesHook.loginNeeded;
+    console.log("Login needed", session.loginNeeded);
+    
     React.useEffect(() => {
         SplashScreen.preventAutoHideAsync();
+
+        load();
     }, []);
     
     React.useEffect(() => {
@@ -142,11 +156,15 @@ export function SessionProvider(props: { children: any }) {
         return () => clearInterval(interval);
     }, [data, cachedResourcesHook.isLoadingComplete]);
 
+    if(data == undefined || !cachedResourcesHook.isLoadingComplete){
+        console.log({ data, cachedResourcesHook });
+        return null;
+    }
+
+    console.log("A");
+
     return (
-        <SessionContext.Provider value={{
-            loaded: data !== undefined,
-            
-        }}>
+        <SessionContext.Provider value={session}>
             {props.children}
         </SessionContext.Provider>
     );

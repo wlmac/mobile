@@ -2,6 +2,7 @@ import { AxiosRequestConfig } from 'axios';
 import { Base64String, DateTimeString, ID, LimitOffsetPagination, Nullable, TermType, TimezoneString, URLString, anyObject } from './misc';
 import { Handler, IDObject, Requestor } from './obj';
 import { apiRequest } from './core';
+import { Session } from '../util/session';
 
 export class TagData extends IDObject<TagData>{
     name!: string;
@@ -103,15 +104,15 @@ export class EventData extends IDObject<EventData>{
 }
 class EventDataHandlerImpl extends Handler<EventData> {
     // workaround because the backend does not support filtering by start/end date
-    async *list(limit=50, offset=0, options?: AxiosRequestConfig<LimitOffsetPagination<EventData>>): AsyncIterableIterator<EventData> {
+    async *list(limit=50, offset=0, session: Session, options?: AxiosRequestConfig<LimitOffsetPagination<EventData>>): AsyncIterableIterator<EventData> {
         if(!options){
-            for await(const data of super.list(limit, offset)){
+            for await(const data of super.list(limit, offset, session)){
                 yield data;
             }
             return;
         }
 
-        const request = await apiRequest<any[]>(`v3/events?limit=${limit}&offset=${offset}`, undefined, "GET", true, options as any);
+        const request = await apiRequest<any[]>(`v3/events?limit=${limit}&offset=${offset}`, undefined, "GET", session, true, options as any);
         if(typeof request == "string")
             throw new Error(request);
         
