@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { Text, View } from "../components/Themed";
 import Announcement from "../components/Announcement";
-import Blog, { BlogData } from "../components/Blog";
+import Blog from "../components/Blog";
 import FullAnnouncement from "../components/FullAnnouncement";
 import * as WebBrowser from "expo-web-browser";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
@@ -24,8 +24,9 @@ import { GuestModeContext } from "../hooks/useGuestMode";
 import config from "../config.json";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BottomTabParamList } from "../types";
-import { AnnouncementData, UserData, apiRequest } from '../api';
-import { UserDataHandler } from '../api/impl';
+import { AnnouncementData, ID, UserData, apiRequest, BlogPostData } from '../api';
+import { BlogPostDataHandler, UserDataHandler } from '../api/impl';
+import { SessionContext } from "../util/session";
 
 export default function NewsScreen({
   navigation,
@@ -35,6 +36,7 @@ export default function NewsScreen({
   // get color scheme
   let colorScheme = React.useContext(ThemeContext);
   const guestMode = React.useContext(GuestModeContext);
+  const sessionContext = React.useContext(SessionContext);
   const loadNum = 5; // # announcements to load at a time
 
   const emptyOrgs: { name: string; icon: string }[] = [];
@@ -48,7 +50,7 @@ export default function NewsScreen({
 
   // stores announcements
   const [announcements, setAnnouncements] = useState<AnnouncementData[]>([]);
-  const [blogs, setBlogs] = useState<BlogData[]>([]);
+  const [blogs, setBlogs] = useState<BlogPostData[]>([]);
   const [myAnnouncements, setMyAnnouncements] = useState<AnnouncementData[]>([]);
   const [orgs, setOrgs] = useState(emptyOrgs);
   const [tags, setTags] = useState(emptyTags);
@@ -117,8 +119,6 @@ export default function NewsScreen({
   const [lastdropdown, setLastDropdown] = useState("All Announcements");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isBlog, setBlog] = useState(false);
-
-  const [pfps, setPfps] = useState<string[]>([]);
 
   // lazy loading check if user at bottom
   function isCloseToBottom({
@@ -192,7 +192,9 @@ export default function NewsScreen({
     });
 
     await loadAnnouncements();
-    await loadMyAnnouncements();
+    if(!guestMode.guest){
+      await loadMyAnnouncements();
+    }
     await loadBlogs();
 
     if (myAnnouncements.length === 0) {
@@ -208,8 +210,9 @@ export default function NewsScreen({
   ) => {
     if (loadingMore) return;
     setLoadingMore(true);
-    const res = await apiRequest(endpoint, undefined, "GET", !guestMode);
-    console.log(res);
+    console.log("Guest mode: " + guestMode.guest)
+    const res = await apiRequest(endpoint, undefined, "GET", sessionContext, guestMode.guest);
+    console.log("res", res);
     let errored = false;
     if (typeof res === "object") {
       try {
@@ -233,27 +236,6 @@ export default function NewsScreen({
     setLoadingMore(false);
   };
 
-  async function loadPfp(author: number): Promise<string> {
-    return new Promise((resolve, reject) => {
-      if(pfps[author]) {
-        resolve(pfps[author]);
-        return;
-      }
-      UserDataHandler.get(author).then((res: UserData) => {
-        if (res) {
-          let tmp: string = res.email_hash;
-          try {
-            const decode = (str: string): string =>
-              Buffer.from(str, "base64").toString("hex");
-            resolve("https://www.gravatar.com/avatar/" + decode(tmp));
-          } catch (e) {
-            reject(e);
-          }
-        }
-      }).catch((err) => console.log("API request error: " + err));
-    });
-  }
-
   const loadBlogResults = async (
     endpoint: string,
     setBlogs: (a: typeof blogs) => any,
@@ -261,40 +243,18 @@ export default function NewsScreen({
   ) => {
     if (loadingMore) return;
     setLoadingMore(true);
-    let authors: number[] = [];
-    const res = await apiRequest(endpoint, undefined, "GET", true) as any; // TODO don't use any
+    const res = await apiRequest(endpoint, undefined, "GET", sessionContext, true) as any; // TODO don't use apiRequest
+    console.log(res);
     let errored = false;
-    if (res.success) {
+    if (typeof res != "string") {
       try {
-        let jsonres: BlogData[] = JSON.parse(res.response).results;
-        if (jsonres && Array.isArray(jsonres)) {
-          jsonres.forEach((item) => authors.push(item.author));
-          await Promise.all(authors.map(loadPfp)).then((res) => {
-            let tmp = pfps;
-            res.forEach((item, index) => {
-              tmp[authors[index]] = item;
-            });
-            setPfps(tmp);
-            jsonres.forEach((item) => {
-              let tmp: { id: number; name: string; color: string }[] = [];
-              let tagIds = item.tags; // gets the tags
-              tagIds.forEach((tag) => {
-                tmp.push({
-                  id: tag,
-                  name: tags[tag].name,
-                  color: tags[tag].color,
-                });
-              });
-              item.tags_slugs = tmp;
-              item.author_slug = users[item.author].username;
-              item.author_first_name = users[item.author].first_name;
-              item.icon = pfps[item.author];
-            });
-            setBlogs(blogs.concat(jsonres));
-            setNextBlogSet(nextBlogSet + loadNum);
-          });
+        let blogposts: BlogPostData[] = res.results.map((item: any) => BlogPostDataHandler.fromRawData(item));
+        if (blogposts && Array.isArray(blogposts)) {
+          setBlogs(blogposts);
+          setNextBlogSet(nextBlogSet + loadNum);
         }
       } catch (_e) {
+        console.error(_e);
         errored = true;
       }
     } else {
@@ -327,9 +287,7 @@ export default function NewsScreen({
   useEffect(() => {
     onStartup();
   }, []);
-  return isBlog ? (
-    genBlog()
-  ) : (
+  return (
     <>
       {/* Loading Icon */}
       {isLoading && 
@@ -352,109 +310,80 @@ export default function NewsScreen({
               ]
         }
       >
-        {fullAnnId === "-1" && dropdown()}
-        {/* School Announcements */}
-        {
-          !isFilter && fullAnnId === "-1" && <ScrollView
-            ref={allA}
-            style={styles.scrollView}
-            onScroll={({ nativeEvent }) => {
-              if (isCloseToBottom(nativeEvent)) loadAnnouncements();
-            }}
-            scrollEventThrottle={0}
-          >
-            {Object.entries(announcements).map(([key, ann]) => (
-              <Announcement key={key} ann={ann} fullAnn={setFullAnnId} />
-            ))}
-            {loadError ? (
-              <View style={styles.error}>
-                <Text style={styles.errorMessage}>An error occured.</Text>
-                <Button
-                  title="Retry"
-                  onPress={() => {
-                    loadAnnouncements();
-                  }}
-                ></Button>
-              </View>
-            ) : undefined}
-          </ScrollView>
-        }
+        { isBlog ? <>
+          {/* Blog */}
+          { fullAnnId === "-1" && <AnnouncementsViewer
+            announcements={blogs}
+            sref={allB}
+            loadAnnouncements={loadBlogs}
+          /> }
+        </> : <>
+          {fullAnnId === "-1" && dropdown()}
+          {/* School Announcements */}
+          { !isFilter && fullAnnId === "-1" && <AnnouncementsViewer
+            announcements={announcements}
+            sref={allA}
+            loadAnnouncements={loadAnnouncements}
+          /> }
 
-        {/* My Feed Announcement */}
-        { isFilter && fullAnnId === "-1" && <ScrollView
-          ref={myA}
-          style={styles.scrollView}
-          onScroll={({ nativeEvent }) => {
-            if (isCloseToBottom(nativeEvent)) loadMyAnnouncements();
-          }}
-          scrollEventThrottle={0}
-        >
-          {Object.entries(myAnnouncements).map(([key, ann]) => (
-            <Announcement key={key} ann={ann} fullAnn={setFullAnnId} />
-          ))}
-          {loadError ? (
-            <View style={styles.error}>
-              <Text style={styles.errorMessage}>An error occured.</Text>
-              <Button
-                title="Retry"
-                onPress={() => {
-                  loadMyAnnouncements();
-                }}
-              ></Button>
+          {/* My Feed Announcement */}
+          { isFilter && fullAnnId === "-1" && <AnnouncementsViewer
+            announcements={myAnnouncements}
+            sref={myA}
+            loadAnnouncements={loadMyAnnouncements}
+          >
+            <View
+              style={[
+                noMyFeed
+                  ? { display: "flex" }
+                  : {
+                      display: "flex",
+                      borderColor: "red",
+                      backgroundColor: "red",
+                    },
+                {
+                  backgroundColor:
+                    colorScheme.scheme === "dark" ? "#252525" : "#eaeaea",
+                },
+              ]}
+            >
+              <Text style={{ paddingTop: 10, textAlign: "center" }}>
+                There is nothing in your feed. Join some&nbsp;
+                <Text
+                  style={{ color: "rgb(51,102,187)" }}
+                  onPress={() => {
+                    WebBrowser.openBrowserAsync(`${config.server}/clubs`);
+                  }}
+                >
+                  clubs
+                </Text>
+                &nbsp;to have their announcements show up here!
+              </Text>
             </View>
-          ) : undefined}
-          <View
-            style={[
-              noMyFeed
-                ? { display: "flex" }
-                : {
-                    display: "flex",
-                    borderColor: "red",
-                    backgroundColor: "red",
-                  },
-              {
-                backgroundColor:
-                  colorScheme.scheme === "dark" ? "#252525" : "#eaeaea",
-              },
-            ]}
-          >
-            <Text style={{ paddingTop: 10, textAlign: "center" }}>
-              There is nothing in your feed. Join some
-              <Text
-                style={{ color: "rgb(51,102,187)" }}
-                onPress={() => {
-                  WebBrowser.openBrowserAsync(`${config.server}/clubs`);
-                }}
-              >
-                {" "}
-                clubs{" "}
+            <View
+              style={[
+                guestMode.guest ? { display: "flex" } : { display: "none" },
+                {
+                  backgroundColor:
+                    colorScheme.scheme === "dark" ? "#252525" : "#eaeaea",
+                },
+              ]}
+            >
+              <Text style={{ textAlign: "center" }}>
+                <Text
+                  style={{ color: "rgb(51,102,187)" }}
+                  onPress={() => {
+                    navigation.jumpTo("Settings");
+                  }}
+                >
+                  {" "}
+                  Log in{" "}
+                </Text>
+                to view your personal feed here!
               </Text>
-              to have their announcements show up here!
-            </Text>
-          </View>
-          <View
-            style={[
-              guestMode.guest ? { display: "flex" } : { display: "none" },
-              {
-                backgroundColor:
-                  colorScheme.scheme === "dark" ? "#252525" : "#eaeaea",
-              },
-            ]}
-          >
-            <Text style={{ textAlign: "center" }}>
-              <Text
-                style={{ color: "rgb(51,102,187)" }}
-                onPress={() => {
-                  navigation.jumpTo("Settings");
-                }}
-              >
-                {" "}
-                Log in{" "}
-              </Text>
-              to view your personal feed here!
-            </Text>
-          </View>
-        </ScrollView> }
+            </View>
+          </AnnouncementsViewer> }
+        </> }
 
         {/* Full Announcement */}
         {fullAnnId !== "-1" && <ScrollView
@@ -545,78 +474,32 @@ export default function NewsScreen({
     );
   }
 
-  function genBlog() {
-    return (
-      <>
-        {/* Loading Icon */}
-        <View style={isLoading ? styles.container : { display: "none" }}>
-          <Image style={styles.loading} source={loadingIcon} />
-        </View>
-
-        {/* After Everything is Loaded */}
-        <View
-          style={
-            isLoading
-              ? { display: "none" }
-              : [
-                  styles.container,
-                  {
-                    backgroundColor:
-                      colorScheme.scheme === "dark" ? "#252525" : "#eaeaea",
-                  },
-                ]
-          }
-        >
-          {fullAnnId === "-1" && dropdown()}
-          {/* Blog */}
-          { fullAnnId === "-1" && <ScrollView
-            ref={allB}
-            style={styles.scrollView}
-            onScroll={({ nativeEvent }) => {
-              if (isCloseToBottom(nativeEvent)) loadBlogs();
+  function AnnouncementsViewer({ announcements, sref, loadAnnouncements, children }: { announcements: any, sref: React.RefObject<ScrollView>, loadAnnouncements: () => any, children?: React.ReactNode }) {
+    return (<ScrollView
+      ref={sref}
+      style={styles.scrollView}
+      onScroll={({ nativeEvent }) => {
+        if (isCloseToBottom(nativeEvent)) loadAnnouncements();
+      }}
+      scrollEventThrottle={0}
+    >
+      {Object.entries(announcements).map(([key, ann]) => (
+        <Announcement key={key} ann={ann} fullAnn={setFullAnnId} />
+      ))}
+      {loadError ? (
+        <View style={styles.error}>
+          <Text style={styles.errorMessage}>An error occured.</Text>
+          <Button
+            title="Retry"
+            onPress={() => {
+              loadAnnouncements();
             }}
-            scrollEventThrottle={0}
-          >
-            {Object.entries(blogs).map(([key, ann]) => (
-              <Blog key={key} ann={ann} fullAnn={setFullAnnId} />
-            ))}
-            {loadError ? (
-              <View style={styles.error}>
-                <Text style={styles.errorMessage}>An error occured.</Text>
-                <Button
-                  title="Retry"
-                  onPress={() => {
-                    loadBlogs();
-                  }}
-                ></Button>
-              </View>
-            ) : undefined}
-          </ScrollView> }
-
-          {/* Full Announcement */}
-          {fullAnnId !== "-1" && <ScrollView
-            ref={fullA}
-            style={styles.scrollView}
-          >
-            <FullAnnouncement
-              ann={blogs.find((e: any) => e.id === fullAnnId)}
-              backToScroll={setFullAnnId}
-              isBlog={true}
-            />
-          </ScrollView>}
-
-          {/* Divider */}
-          <View
-            style={{
-              height: 3.5,
-              width: "100%",
-              backgroundColor:
-                colorScheme.scheme === "dark" ? "#1c1c1c" : "#d4d4d4",
-            }}
-          />
+          ></Button>
         </View>
-      </>
-    );
+      ) : undefined}
+
+      {children}
+    </ScrollView>);
   }
 }
 
