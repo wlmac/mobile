@@ -26,16 +26,18 @@ export async function apiRequest<T>(endpoint: string, body: string | anyObject |
         result = await _apiRequest<T>(endpoint, body, method, options);
     }else{
         // Log in
-        let accessToken, tokenData;
-        try{ 
-            accessToken = session.get<string>("@accesstoken");
+        let accessToken = session.get<string>("@accesstoken"), tokenData;
+        if(accessToken === undefined){
+            return await _apiRequest<T>(endpoint, body, method, options);
+        }
+        try{
             tokenData = JSON.parse(String(Buffer.from(accessToken.split('.')[1], 'base64')));
         }catch(err){
             console.error(err);
             return 'Storage access error';
         }
 
-        // token expired
+        // token expired or doesn't exist
         if (Math.round(Date.now() / 1000) - 30 >= parseInt(tokenData.exp) ||
                 Number.isNaN(parseInt(tokenData.exp))) { // Just in case the token is corrupted in some way
             console.log("erroring?");
@@ -44,7 +46,8 @@ export async function apiRequest<T>(endpoint: string, body: string | anyObject |
                 return 'An unknown error occurred';
             }
             console.log("erroring2");
-
+            
+            accessToken = session.get<string>("@accesstoken");
         }
 
         result = await _apiRequest<T>(endpoint, body, method, {
@@ -74,6 +77,7 @@ export async function refreshLogin(session: Session): Promise<boolean> {
     try{
         const refreshToken = session.get("@refreshtoken");
         if (!refreshToken) {
+            console.warn("No refresh token")
             return false;
         }
         const state = await NetInfo.fetch();

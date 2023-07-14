@@ -24,20 +24,22 @@ export interface Requestor<T> {
     getUnchecked(): T | undefined;
 };
 
-export class Handler<T extends IDObject<T>>{
+export class Handler<T extends IDObject<T>, U extends IDDescriptor<U, T> = any>{
     // Used for saving and loading from AsyncStorage
-    public static readonly ALL_HANDLERS: Handler<any>[] = [];
+    public static readonly ALL_HANDLERS: Handler<any, any>[] = [];
 
     public readonly type: ObjectType;
-    readonly object: { new(handler: Handler<T>, data: anyObject): T };
+    readonly object: { new(handler: Handler<T, U>, data: anyObject): T };
+    readonly descriptor?: { new(handler: Handler<T, U>, data: anyObject): U };
 
     readonly _cache = new Map<ID<T>, T>();
 
     private isErrored = false;
 
-    constructor(type: ObjectType, clazz: { new(handler: Handler<T>, data: anyObject): T }){
+    constructor(type: ObjectType, object: { new(handler: Handler<T, U>, data: anyObject): T }, descriptor?: { new(handler: Handler<T, U>, data: anyObject): U }){
         this.type = type;
-        this.object = clazz;
+        this.object = object;
+        this.descriptor = descriptor;
 
         Handler.ALL_HANDLERS.push(this);
     }
@@ -63,6 +65,13 @@ export class Handler<T extends IDObject<T>>{
         return this._cache.get(id);
     }
 
+    processDescriptor(data: anyObject): U | undefined {
+        if(!this.descriptor)
+            return undefined;
+        const obj = new this.descriptor(this, data);
+        return obj;
+    }
+
     addToCache(obj: T){
         if(obj.cacheHasMoreData()){
             return;
@@ -70,7 +79,7 @@ export class Handler<T extends IDObject<T>>{
         this._cache.set(obj.id, obj);
     }
 
-    protected create(data: anyObject){
+    fromRawData(data: anyObject){
         const obj = new this.object(this, data);
         this.addToCache(obj);
         return obj;
@@ -85,7 +94,7 @@ export class Handler<T extends IDObject<T>>{
             do{
                 let response: LimitOffsetPagination<T> = (await axiosInstance.get<LimitOffsetPagination<T>>(url, options)).data;
                 for(const data of response.results)
-                    yield this.create(data);
+                    yield this.fromRawData(data);
                 url = response.next;
             }while(url !== null);
 
@@ -108,11 +117,11 @@ export class Handler<T extends IDObject<T>>{
 }
 
 export abstract class IDObject<T extends IDObject<T>>{
-    readonly handler: Handler<T>;
+    readonly handler: Handler<T, any>;
     readonly id: ID<T>;
     public fetched: boolean = false;
 
-    public constructor(handler: Handler<T>, data: anyObject, fromCache: boolean = false){
+    public constructor(handler: Handler<T, any>, data: anyObject, fromCache: boolean = false){
         this.handler = handler;
         this.id = data.id;
 
@@ -141,7 +150,7 @@ export abstract class IDObject<T extends IDObject<T>>{
         return data;
     }
 
-    public static getHandler(): Handler<any>{
+    public static getHandler(): Handler<any, any | never>{
         throw new Error("getHandler() method must be overridden"); // Typescript doesn't allow abstract static methods
     }
 
@@ -158,24 +167,25 @@ export abstract class IDObject<T extends IDObject<T>>{
     }
 
     // Helper functions
-    protected createIDRequestor<U extends IDObject<U>, B extends undefined | never = never>(id: ID<U> | anyObject | B, handler: Handler<U>): Requestor<U> | B {
+    protected createIDRequestor<T extends IDObject<T>, B extends undefined | never = never>(id: ID<T> | anyObject | B, handler: Handler<T, any | never>): Requestor<T> | B {
         if(id === undefined)
             return undefined!;
         if(typeof id === "object"){
-            // const obj = new handler.object(handler, id);
-            // handler.addToCache(obj);
+            debugger;
+            const obj = new handler.object(handler, id);
+            handler.addToCache(obj);
             id = id.id;
         }
         const requestor = async() => {
-            return await handler.get(id as ID<U>);
+            return await handler.get(id as ID<T>);
         };
-        requestor.id = id as ID<U>;
-        requestor.getUnchecked = () => handler.getUnchecked(id as ID<U>);
+        requestor.id = id as ID<T>;
+        requestor.getUnchecked = () => handler.getUnchecked(id as ID<T>);
         requestor.type = "id" as "id";
 
         return requestor;
     }
-    protected createNullableIDRequestor<U extends IDObject<U>, B extends undefined | never = never>(id: Nullable<ID<U> | anyObject> | B, handler: Handler<U>): Requestor<Nullable<U>> | B {
+    protected createNullableIDRequestor<T extends IDObject<T>, B extends undefined | never = never>(id: Nullable<ID<T> | anyObject> | B, handler: Handler<T, any | never>): Requestor<Nullable<T>> | B {
         if(id === null){
             const requestor = async() => null;
             requestor.id = null as any;
@@ -184,12 +194,25 @@ export abstract class IDObject<T extends IDObject<T>>{
             return requestor;
         }
         
-        return this.createIDRequestor<U, B>(id, handler) as Requestor<Nullable<U>>;
+        return this.createIDRequestor<T, B>(id, handler) as Requestor<Nullable<T>>;
     }
-    protected createIDRequestorArray<U extends IDObject<U>, B extends undefined | never = never>(ids: (ID<U> | anyObject)[] | B, handler: Handler<U>): Requestor<U>[] | B{
+
+    protected createIDRequestorArray<T extends IDObject<T>, B extends undefined | never = never>(ids: (ID<T> | anyObject)[] | B, handler: Handler<T, any>): Requestor<T>[] | B{
         if(ids === undefined)
             return undefined!;
-        return ids.map(id => this.createIDRequestor<U, never>(id, handler));
+        return ids.map(id => this.createIDRequestor<T, never>(id, handler));
+    }
+
+    protected createDescriptor<U extends IDDescriptor<U, any>, B extends undefined | never = never>(id: anyObject | B, handler: Handler<any, U>): U | B {
+        if(id === undefined)
+            return undefined!;
+
+        return handler.processDescriptor(id)!;
+    }
+    protected createDescriptorArray<U extends IDDescriptor<U, any>, B extends undefined | never = never>(ids: anyObject[] | B, handler: Handler<any, U>): U[] | B {
+        if(ids === undefined)
+            return undefined!;
+        return ids.map(id => this.createDescriptor<U, any>(id, handler));
     }
 
     
@@ -212,6 +235,16 @@ export abstract class IDObject<T extends IDObject<T>>{
             return true;
         
         return false;
+    }
+}
+
+export abstract class IDDescriptor<T extends IDDescriptor<T, U>, U extends IDObject<U>> extends IDObject<U>{
+    getObject!: Requestor<T>;
+
+    protected preprocess(data: anyObject): anyObject {
+        const { id, ...rest } = super.preprocess(data);
+        this.getObject = this.createIDRequestor(id, this.handler);
+        return rest;
     }
 }
 
