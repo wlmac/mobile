@@ -66,8 +66,9 @@ export class Handler<T extends IDObject<T>, U extends IDDescriptor<U, T> = any>{
     }
 
     processDescriptor(data: anyObject): U | undefined {
-        if(!this.descriptor)
-            return undefined;
+        if(!this.descriptor){
+            throw Error(`Handler ${this.type} does not have a descriptor`);
+        }
         const obj = new this.descriptor(this, data);
         return obj;
     }
@@ -85,7 +86,7 @@ export class Handler<T extends IDObject<T>, U extends IDDescriptor<U, T> = any>{
         return obj;
     }
 
-    async *list(limit=50, offset=0, session: Session, options?: AxiosRequestConfig<LimitOffsetPagination<T>>): AsyncIterableIterator<T> {
+    async *list(session: Session, limit=50, offset=0, options?: AxiosRequestConfig<LimitOffsetPagination<T>>): AsyncIterableIterator<T> {
         if(["comment", "flatpage"].includes(this.type))
             throw new Error(`Cannot list ${this.type} objects`);
         
@@ -167,7 +168,7 @@ export abstract class IDObject<T extends IDObject<T>>{
     }
 
     // Helper functions
-    protected createIDRequestor<T extends IDObject<T>, B extends undefined | never = never>(id: ID<T> | anyObject | B, handler: Handler<T, any | never>): Requestor<T> | B {
+    protected createIDRequestor<T extends IDObject<T>, B extends undefined | never = never>(id: ID<T> | anyObject | B, handler: Handler<T, any>): Requestor<T> | B {
         if(id === undefined)
             return undefined!;
         if(typeof id === "object"){
@@ -185,7 +186,7 @@ export abstract class IDObject<T extends IDObject<T>>{
 
         return requestor;
     }
-    protected createNullableIDRequestor<T extends IDObject<T>, B extends undefined | never = never>(id: Nullable<ID<T> | anyObject> | B, handler: Handler<T, any | never>): Requestor<Nullable<T>> | B {
+    protected createNullableIDRequestor<T extends IDObject<T>, B extends undefined | never = never>(id: Nullable<ID<T> | anyObject> | B, handler: Handler<T, any>): Requestor<Nullable<T>> | B {
         if(id === null){
             const requestor = async() => null;
             requestor.id = null as any;
@@ -203,18 +204,18 @@ export abstract class IDObject<T extends IDObject<T>>{
         return ids.map(id => this.createIDRequestor<T, never>(id, handler));
     }
 
-    protected createDescriptor<U extends IDDescriptor<U, any>, B extends undefined | never = never>(id: anyObject | B, handler: Handler<any, U>): U | B {
-        if(id === undefined)
+    protected createDescriptor<U extends IDDescriptor<U, any>, B extends undefined | never = never>(obj: anyObject | B, handler: Handler<any, U>): U | B {
+        if(obj === undefined)
             return undefined!;
 
-        return handler.processDescriptor(id)!;
+        return handler.processDescriptor(obj)!;
     }
-    protected createDescriptorArray<U extends IDDescriptor<U, any>, B extends undefined | never = never>(ids: anyObject[] | B, handler: Handler<any, U>): U[] | B {
-        if(ids === undefined)
+    protected createDescriptorArray<U extends IDDescriptor<U, any>, B extends undefined | never = never>(objs: anyObject[] | B, handler: Handler<any, U>): U[] | B {
+        if(objs === undefined)
             return undefined!;
-        return ids.map(id => this.createDescriptor<U, any>(id, handler));
+        
+        return objs.map(obj => this.createDescriptor<U, any>(obj, handler));
     }
-
     
     cacheHasMoreData(): boolean {
 

@@ -13,6 +13,7 @@ export type { TagData, OrganizationData, AnnouncementData, BlogPostData, Comment
 export type { LimitOffsetPagination, TokenPair, Weather };
 export type { DateTimeString, URLString, Base64String, TimezoneString, TermType, ID, Nullable, anyObject } from './misc';
 export { TagDataHandler, OrganizationDataHandler, AnnouncementDataHandler, BlogPostDataHandler, CommentDataHandler, EventDataHandler, UserDataHandler } from './impl';
+export { TagDescriptor, OrganizationDescriptor, CommentDescriptor, UserDescriptor } from './impl';
 export { Handler, IDObject } from './obj';
 export { apiRequest, refreshLogin, login };
 

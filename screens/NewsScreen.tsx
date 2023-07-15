@@ -9,23 +9,20 @@ import {
   Platform,
   Button,
   Alert,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from "react-native";
 import { Text, View } from "../components/Themed";
 import Announcement from "../components/Announcement";
-import Blog from "../components/Blog";
 import FullAnnouncement from "../components/FullAnnouncement";
-import * as WebBrowser from "expo-web-browser";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import DropDownPicker from "react-native-dropdown-picker";
-import { Buffer } from "buffer";
-
+import * as WebBrowser from "expo-web-browser";
 import { ThemeContext } from "../hooks/useColorScheme";
 import { GuestModeContext } from "../hooks/useGuestMode";
-import config from "../config.json";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BottomTabParamList } from "../types";
-import { AnnouncementData, ID, UserData, apiRequest, BlogPostData } from '../api';
-import { BlogPostDataHandler, UserDataHandler } from '../api/impl';
+import { AnnouncementData, ID, UserData, apiRequest, BlogPostData, URLString, TagDescriptor } from '../api';
+import { AnnouncementDataHandler, BlogPostDataHandler, OrganizationDataHandler, TagDataHandler, UserDataHandler } from '../api/impl';
 import { SessionContext } from "../util/session";
 
 export default function NewsScreen({
@@ -45,13 +42,13 @@ export default function NewsScreen({
     username: string;
     first_name: string;
     last_name: string;
-    graduating_year: string;
+    graduating_year: number;
   }[] = [];
 
   // stores announcements
-  const [announcements, setAnnouncements] = useState<AnnouncementData[]>([]);
-  const [blogs, setBlogs] = useState<BlogPostData[]>([]);
-  const [myAnnouncements, setMyAnnouncements] = useState<AnnouncementData[]>([]);
+  const [announcementsData, setAnnouncementsData] = useState<AnnouncementProps[]>([]);
+  const [blogData, setBlogData] = useState<AnnouncementProps[]>([]);
+  const [myAnnouncementsData, setMyAnnouncementsData] = useState<AnnouncementProps[]>([]);
   const [orgs, setOrgs] = useState(emptyOrgs);
   const [tags, setTags] = useState(emptyTags);
   const [users, setUsers] = useState(emptyUsers);
@@ -73,7 +70,7 @@ export default function NewsScreen({
     username: string,
     first_name: string,
     last_name: string,
-    graduating_year: string
+    graduating_year: number
   ) => {
     let tmp = users;
     tmp[id] = {
@@ -85,24 +82,64 @@ export default function NewsScreen({
     setUsers(tmp);
   };
 
-  // tracking how many announcements have been loaded
-  const [nextAnnSet, setNextAnnSet] = useState(0);
-  const [nextMySet, setNextMySet] = useState(0);
-  const [nextBlogSet, setNextBlogSet] = useState(0);
+  // api iterators
+
+  const [announcementsIterator, setAnnouncementsIterator] = useState<AsyncIterableIterator<AnnouncementData>>();
+  const [blogsIterator, setBlogsIterator] = useState<AsyncIterableIterator<BlogPostData>>();
+  const [myAnnouncementsIterator, setMyAnnouncementsIterator] = useState<AsyncIterableIterator<AnnouncementData>>();
 
   // loading
   const [isLoading, setLoading] = useState(true); // initial loading
-  const [loadingMore, setLoadingMore] = useState(false); // loading more for lazy
+  const loadingMore = React.useRef({
+    ann: false,
+    my: false,
+    blog: false,
+  }); // loading more for lazy
   const [loadError, setLoadError] = useState(false);
   const loadingIcon = require("../assets/images/loading.gif");
 
   // toggle between my feed and school feed
-  const [isFilter, setFilter] = useState(false);
+  const [isMyFeed, setMyFeed] = useState(false);
 
   // toggle between scroll feed and full announcement feed
-  const [fullAnnId, setAnnId] = useState("-1");
-  function setFullAnnId(id: string) {
-    setAnnId(id);
+  const [fullAnn, setAnn] = useState<{
+    id: number,
+    tags: TagDescriptor[],
+    title: string,
+    organization: string,
+    icon: URLString
+    author: string,
+    date: Date,
+    featured_image: URLString | undefined,
+    body: string,
+  } | undefined>(undefined);
+  function setFullAnnId(id: number) {
+    if (id == -1) {
+      setAnn(undefined);
+      return;
+    }
+
+    const ann = announcementsData
+      .concat(myAnnouncementsData)
+      .find((e) => e.id === id);
+
+    if (ann === undefined) {
+      console.warn("Announcement not found", announcementsData);
+      return;
+    }
+
+    setAnn({
+      id,
+      tags: ann.tags,
+      title: ann.title,
+      organization: ann.organization,
+      icon: ann.iconUrl,
+      author: ann.author,
+      date: ann.date,
+      featured_image: undefined,
+      body: ann.body,
+    });
+
     fullA.current?.scrollTo({ x: 0, y: 0, animated: false });
   }
 
@@ -130,19 +167,16 @@ export default function NewsScreen({
   }
 
   function changeDropdown(): void {
-    if(lastdropdown == dropdownSelection) return;
+    if (lastdropdown == dropdownSelection) return;
     if (dropdownSelection === "All Announcements") {
-      console.log("All Announcements scroll to top");
       allA.current?.scrollTo({ x: 0, y: 0, animated: false });
-      setFilter(false);
+      setMyFeed(false);
     }
     if (dropdownSelection === "My Announcements") {
-      console.log("My Announcements scroll to top");
       myA.current?.scrollTo({ x: 0, y: 0, animated: false });
-      setFilter(true);
+      setMyFeed(true);
     }
     if (dropdownSelection === "Blog") {
-      console.log("Blog scroll to top");
       allB.current?.scrollTo({ x: 0, y: 0, animated: false });
       setBlog(true);
     } else {
@@ -151,146 +185,132 @@ export default function NewsScreen({
   }
 
   const onStartup = async () => {
-    // club name + club icon API requests
-    await AsyncStorage.getItem("@orgs").then((res: any) => {
-      let jsonres = JSON.parse(res);
-      if (jsonres && Array.isArray(jsonres)) {
-        for (let i = 0; i < jsonres.length; i += 1) {
-          if (jsonres[i] != null) {
-            addOrgs(i, jsonres[i].name, jsonres[i].icon);
-          }
-        }
-      }
-    });
-
-    await AsyncStorage.getItem("@tags").then((res: any) => {
-      let jsonres = JSON.parse(res);
-      if (jsonres && Array.isArray(jsonres)) {
-        for (let i = 0; i < jsonres.length; i += 1) {
-          if (jsonres[i] != null) {
-            addTags(i, jsonres[i].name, jsonres[i].color);
-          }
-        }
-      }
-    });
-
-    await AsyncStorage.getItem("@users").then((res: any) => {
-      let jsonres = JSON.parse(res);
-      if (jsonres && Array.isArray(jsonres)) {
-        for (let i = 0; i < jsonres.length; i += 1) {
-          if (jsonres[i] != null) {
-            addUsers(
-              i,
-              jsonres[i].username,
-              jsonres[i].first_name,
-              jsonres[i].last_name,
-              jsonres[i].graduating_year
-            );
-          }
-        }
-      }
-    });
-
-    await loadAnnouncements();
-    if(!guestMode.guest){
-      await loadMyAnnouncements();
+    for (const [i, org] of OrganizationDataHandler._cache.entries()) {
+      addOrgs(i, org.name, org.icon);
     }
-    await loadBlogs();
+    for (const [i, tag] of TagDataHandler._cache.entries()) {
+      addTags(i, tag.name, tag.color);
+    }
+    for (const [i, user] of UserDataHandler._cache.entries()) {
+      addUsers(
+        i,
+        user.username,
+        user.first_name,
+        user.last_name,
+        user.graduating_year
+      );
+    }
 
-    if (myAnnouncements.length === 0) {
+    setAnnouncementsIterator(AnnouncementDataHandler.list(sessionContext));
+    // setMyAnnouncementsIterator(AnnouncementDataHandler.list(sessionContext, true)); TODO: find api endpoint
+    setBlogsIterator(BlogPostDataHandler.list(sessionContext));
+
+    if (myAnnouncementsData.length === 0) {
       setNoMyFeed(true);
     }
     setLoading(false);
   };
 
-  const loadResults = async (
-    endpoint: string,
-    setAnnouncements: (a: typeof announcements) => any,
-    setNextAnnSet: (a: typeof nextAnnSet) => any
-  ) => {
-    if (loadingMore) return;
-    setLoadingMore(true);
-    console.log("Guest mode: " + guestMode.guest)
-    const res = await apiRequest(endpoint, undefined, "GET", sessionContext, guestMode.guest);
-    console.log("res", res);
-    let errored = false;
-    if (typeof res === "object") {
-      try {
-        let jsonres: AnnouncementData[] = (res as any).results;
-        if (jsonres && Array.isArray(jsonres)) {
-          jsonres.forEach((item) => {
-            // let orgId = item.organization.id; // gets the organization id
-            // item.icon = orgs[orgId].icon;
-            // item.name = orgs[orgId].name;
-          });
-          setAnnouncements(announcements.concat(jsonres));
-          setNextAnnSet(nextAnnSet + loadNum);
-        }
-      } catch (_e) {
-        errored = true;
-      }
-    } else {
-      errored = true;
-    }
-    setLoadError(errored);
-    setLoadingMore(false);
-  };
+  React.useEffect(() => {
+    if (announcementsIterator === undefined) return;
 
-  const loadBlogResults = async (
-    endpoint: string,
-    setBlogs: (a: typeof blogs) => any,
-    setNextBlogSet: (a: typeof nextBlogSet) => any
-  ) => {
-    if (loadingMore) return;
-    setLoadingMore(true);
-    const res = await apiRequest(endpoint, undefined, "GET", sessionContext, true) as any; // TODO don't use apiRequest
-    console.log(res);
-    let errored = false;
-    if (typeof res != "string") {
-      try {
-        let blogposts: BlogPostData[] = res.results.map((item: any) => BlogPostDataHandler.fromRawData(item));
-        if (blogposts && Array.isArray(blogposts)) {
-          setBlogs(blogposts);
-          setNextBlogSet(nextBlogSet + loadNum);
-        }
-      } catch (_e) {
-        console.error(_e);
-        errored = true;
-      }
-    } else {
-      errored = true;
-    }
-    setLoadError(errored);
-    setLoadingMore(false);
-  };
+    (async () => {
+      await Promise.allSettled([
+        loadAnnouncements(false),
+        !guestMode.guest && loadAnnouncements(true),
+        loadBlogs()
+      ]);
+    })();
+  }, [announcementsIterator]);
 
-  const loadAnnouncements = async () =>
-    loadResults(
-      `announcements?limit=${loadNum}&offset=${nextAnnSet}`,
-      setAnnouncements,
-      setNextAnnSet
-    );
-  const loadMyAnnouncements = async () =>
-    loadResults(
-      `announcements/feed?limit=${loadNum}&offset=${nextMySet}`,
-      setMyAnnouncements,
-      setNextMySet
-    );
-  const loadBlogs = async () =>
-    loadBlogResults(
-      `v3/obj/blog-post?limit=${loadNum}&offset=${nextBlogSet}`,
-      setBlogs,
-      setNextBlogSet
-    );
+  async function loadBlogs() {
+    if (loadingMore.current.blog) return;
+
+    loadingMore.current.blog = true;
+
+    try {
+
+      let data: AnnouncementProps[] = [];
+
+      for (let i = 0; i < loadNum; i++) {
+        const next = await blogsIterator!.next();
+        const ann: BlogPostData = next.value;
+        data.push({
+          id: ann.id,
+          title: ann.title,
+          iconUrl: ann.author?.gravatar_url,
+          author: ann.author?.username,
+          organization: undefined as any,
+          date: ann.created_date,
+          tags: ann.tags,
+          body: ann.body,
+        })
+      }
+
+      data = blogData.concat(data);
+
+      setBlogData(data);
+
+      setLoadError(false);
+
+    } catch (e) {
+      console.error(e);
+      setLoadError(true);
+    }
+
+    loadingMore.current.blog = false;
+  }
+
+  async function loadAnnouncements(my: boolean) {
+    if (loadingMore.current[my ? "my" : "ann"]) return;
+
+    loadingMore.current[my ? "my" : "ann"] = true;
+
+    try {
+
+      const iter = my ? myAnnouncementsIterator : announcementsIterator;
+
+      let data: AnnouncementProps[] = [];
+
+      for (let i = 0; i < loadNum; i++) {
+        const next = await iter!.next();
+        const ann: AnnouncementData = next.value;
+        data.push({
+          id: ann.id,
+          title: ann.title,
+          iconUrl: ann.author?.gravatar_url,
+          author: ann.author?.username,
+          organization: ann.organization?.name,
+          date: ann.created_date,
+          tags: ann.tags,
+          body: ann.body,
+        })
+      }
+
+      data = (my ? myAnnouncementsData : announcementsData).concat(data);
+
+      if (my) {
+        setMyAnnouncementsData(data);
+      } else {
+        setAnnouncementsData(data);
+      }
+
+      setLoadError(false);
+
+    } catch (e) {
+      console.error(e);
+      setLoadError(true);
+    }
+
+    loadingMore.current[my ? "my" : "ann"] = false;
+  }
 
   // fetch data from API
-  useEffect(() => {
-    onStartup();
-  }, []);
+  useEffect(() => { onStartup() }, []);
   return (
     <>
       {/* Loading Icon */}
-      {isLoading && 
+      {isLoading &&
         <View style={styles.container}>
           <Image style={styles.loading} source={loadingIcon} />
         </View>
@@ -302,102 +322,112 @@ export default function NewsScreen({
           isLoading
             ? { display: "none" }
             : [
-                styles.container,
-                {
-                  backgroundColor:
-                    colorScheme.scheme === "dark" ? "#252525" : "#eaeaea"
-                },
-              ]
+              styles.container,
+              {
+                backgroundColor:
+                  colorScheme.scheme === "dark" ? "#252525" : "#eaeaea"
+              },
+            ]
         }
       >
-        { isBlog ? <>
-          {/* Blog */}
-          { fullAnnId === "-1" && <AnnouncementsViewer
-            announcements={blogs}
-            sref={allB}
-            loadAnnouncements={loadBlogs}
-          /> }
-        </> : <>
-          {fullAnnId === "-1" && dropdown()}
-          {/* School Announcements */}
-          { !isFilter && fullAnnId === "-1" && <AnnouncementsViewer
-            announcements={announcements}
-            sref={allA}
-            loadAnnouncements={loadAnnouncements}
-          /> }
+        <View style={{
+          backgroundColor:
+            colorScheme.scheme === "dark" ? "#252525" : "#eaeaea",
+          display: fullAnn ? "none" : undefined,
+        }}>
+          {dropdown()}
+          {isBlog ? <>
+            {/* Blog */}
+            {!fullAnn && <AnnouncementsViewer
+              announcements={blogData}
+              sref={allB}
+              isAtBottom={isCloseToBottom}
+              loadAnnouncements={loadBlogs}
+              setFullAnnId={setFullAnnId}
+              isBlog={true}
+            />}
+          </> : <>
+            {/* School Announcements */}
+            {!isMyFeed && !fullAnn && <AnnouncementsViewer
+              announcements={announcementsData}
+              sref={allA}
+              isAtBottom={isCloseToBottom}
+              loadAnnouncements={() => loadAnnouncements(false)}
+              setFullAnnId={setFullAnnId}
+              isBlog={false}
+            />}
 
-          {/* My Feed Announcement */}
-          { isFilter && fullAnnId === "-1" && <AnnouncementsViewer
-            announcements={myAnnouncements}
-            sref={myA}
-            loadAnnouncements={loadMyAnnouncements}
-          >
-            <View
-              style={[
-                noMyFeed
-                  ? { display: "flex" }
-                  : {
-                      display: "flex",
-                      borderColor: "red",
-                      backgroundColor: "red",
-                    },
-                {
-                  backgroundColor:
-                    colorScheme.scheme === "dark" ? "#252525" : "#eaeaea",
-                },
-              ]}
-            >
-              <Text style={{ paddingTop: 10, textAlign: "center" }}>
-                There is nothing in your feed. Join some&nbsp;
-                <Text
-                  style={{ color: "rgb(51,102,187)" }}
-                  onPress={() => {
-                    WebBrowser.openBrowserAsync(`${config.server}/clubs`);
-                  }}
-                >
-                  clubs
+            {/* My Feed Announcement */}
+            {isMyFeed && !fullAnn && <ScrollView><Text>TODO</Text></ScrollView> /*AnnouncementsViewer({
+              announcements: myAnnouncementsData,
+              sref: myA,
+              loadAnnouncements: () => loadAnnouncements(true),
+              children:
+              (<><View
+                style={[
+                  noMyFeed
+                    ? { display: "flex" }
+                    : {
+                        display: "flex",
+                        borderColor: "red",
+                        backgroundColor: "red",
+                      },
+                  {
+                    backgroundColor:
+                      colorScheme.scheme === "dark" ? "#252525" : "#eaeaea",
+                  },
+                ]}
+              >
+                <Text style={{ paddingTop: 10, textAlign: "center" }}>
+                  There is nothing in your feed. Join some&nbsp;
+                  <Text
+                    style={{ color: "rgb(51,102,187)" }}
+                    onPress={() => {
+                      WebBrowser.openBrowserAsync(`${config.server}/clubs`);
+                    }}
+                  >
+                    clubs
+                  </Text>
+                  &nbsp;to have their announcements show up here!
                 </Text>
-                &nbsp;to have their announcements show up here!
-              </Text>
-            </View>
-            <View
-              style={[
-                guestMode.guest ? { display: "flex" } : { display: "none" },
-                {
-                  backgroundColor:
-                    colorScheme.scheme === "dark" ? "#252525" : "#eaeaea",
-                },
-              ]}
-            >
-              <Text style={{ textAlign: "center" }}>
-                <Text
-                  style={{ color: "rgb(51,102,187)" }}
-                  onPress={() => {
-                    navigation.jumpTo("Settings");
-                  }}
-                >
-                  {" "}
-                  Log in{" "}
+              </View>
+              <View
+                style={[
+                  guestMode.guest ? { display: "flex" } : { display: "none" },
+                  {
+                    backgroundColor:
+                      colorScheme.scheme === "dark" ? "#252525" : "#eaeaea",
+                  },
+                ]}
+              >
+                <Text style={{ textAlign: "center" }}>
+                  &nbsp;
+                  <Text
+                    style={{ color: "rgb(51,102,187)" }}
+                    onPress={() => {
+                      navigation.jumpTo("Settings");
+                    }}
+                  >
+                    Log in
+                  </Text>
+                  &nbsp;to view your personal feed here!
                 </Text>
-                to view your personal feed here!
-              </Text>
-            </View>
-          </AnnouncementsViewer> }
-        </> }
+              </View></>)
+            })*/ }
+          </>}
+        </View>
 
         {/* Full Announcement */}
-        {fullAnnId !== "-1" && <ScrollView
+        {fullAnn && <ScrollView
           ref={fullA}
           style={styles.scrollView}
         >
           <FullAnnouncement
-            ann={announcements
-              .concat(myAnnouncements)
-              .find((e: any) => e.id === fullAnnId)}
+            {...fullAnn}
             backToScroll={setFullAnnId}
             isBlog={false}
           />
-        </ScrollView> }
+        </ScrollView>}
 
         {/* Divider */}
         <View
@@ -425,7 +455,7 @@ export default function NewsScreen({
         setValue={setDropdown}
         value={dropdownSelection}
         onChangeValue={(v) => {
-          if(v != null && v != lastdropdown) {
+          if (v != null && v != lastdropdown) {
             console.log(lastdropdown + " -> " + v);
             changeDropdown();
             setLastDropdown(v);
@@ -474,33 +504,60 @@ export default function NewsScreen({
     );
   }
 
-  function AnnouncementsViewer({ announcements, sref, loadAnnouncements, children }: { announcements: any, sref: React.RefObject<ScrollView>, loadAnnouncements: () => any, children?: React.ReactNode }) {
-    return (<ScrollView
-      ref={sref}
-      style={styles.scrollView}
-      onScroll={({ nativeEvent }) => {
-        if (isCloseToBottom(nativeEvent)) loadAnnouncements();
-      }}
-      scrollEventThrottle={0}
-    >
-      {Object.entries(announcements).map(([key, ann]) => (
-        <Announcement key={key} ann={ann} fullAnn={setFullAnnId} />
-      ))}
-      {loadError ? (
-        <View style={styles.error}>
-          <Text style={styles.errorMessage}>An error occured.</Text>
-          <Button
-            title="Retry"
-            onPress={() => {
-              loadAnnouncements();
-            }}
-          ></Button>
-        </View>
-      ) : undefined}
+}
 
-      {children}
-    </ScrollView>);
-  }
+interface AnnouncementProps {
+  id: number,
+  title: string,
+  iconUrl: URLString,
+  author: string,
+  organization: string,
+  date: Date,
+  tags: TagDescriptor[],
+  body: string,
+  children?: React.ReactNode
+}
+
+function AnnouncementsViewer({
+  announcements,
+  sref,
+  isAtBottom,
+  loadAnnouncements,
+  setFullAnnId,
+  errored,
+  children,
+  isBlog,
+}: {
+  announcements: AnnouncementProps[],
+  sref: React.RefObject<ScrollView>,
+  isAtBottom: (event: NativeScrollEvent) => boolean,
+  loadAnnouncements: () => void,
+  setFullAnnId: (id: number) => any,
+  errored?: boolean,
+  children?: React.ReactNode,
+  isBlog: boolean,
+}) {
+  return (<ScrollView
+    ref={sref}
+    style={styles.scrollView}
+    onScroll={({ nativeEvent }) => { if (isAtBottom(nativeEvent)) loadAnnouncements() }}
+    scrollEventThrottle={100}
+  >
+    {announcements.map((ann, index) => (
+      <Announcement key={index} {...ann} showFull={() => (setFullAnnId(ann.id))}>{isBlog ? "See Blog" : "See Announcement"}</Announcement>
+    ))}
+    {errored ? (
+      <View style={styles.error}>
+        <Text style={styles.errorMessage}>An error occured.</Text>
+        <Button
+          title="Retry"
+          onPress={loadAnnouncements}
+        ></Button>
+      </View>
+    ) : undefined}
+
+    {children}
+  </ScrollView>);
 }
 
 // ----- STYLES -----

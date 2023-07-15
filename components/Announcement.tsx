@@ -5,26 +5,45 @@ import { Text, View } from '../components/Themed';
 import { ThemeContext } from '../hooks/useColorScheme';
 import removeMd from 'remove-markdown';
 import { hexToHsl, hslToHex } from '../lib/colors';
+import { TagDescriptor, URLString } from '../api';
 
 var lightC = "#3a6a96";
 var darkC = "#42a4ff";
 
-function darkenColor(color: string){
+function darkenColor(color: string) {
     let hsv = hexToHsl(color);
     hsv[1] = 100;
     hsv[2] = hsv[2] * 0.5;
     return hslToHex(hsv);
 }
 
-export default function Announcement({ ann, fullAnn }: { ann: AnnouncementData, fullAnn: Function }) {
-    
+export default function Announcement({
+    title,
+    iconUrl,
+    author,
+    date,
+    tags,
+    body,
+    showFull,
+    children
+}: {
+    title: string,
+    iconUrl: URLString,
+    author: string,
+    date: Date,
+    tags: TagDescriptor[],
+    body: string,
+    showFull: () => any,
+    children?: React.ReactNode
+}) {
+
     const scheme = React.useContext(ThemeContext).scheme;
     return (
-        <View style={[styles.announcement, { backgroundColor: scheme === 'light' ? '#f7f7f7' : '#1c1c1c', shadowColor: scheme === 'light' ? '#1c1c1c' : '#e6e6e6'}]}>
+        <View style={[styles.announcement, { backgroundColor: scheme === 'light' ? '#f7f7f7' : '#1c1c1c', shadowColor: scheme === 'light' ? '#1c1c1c' : '#e6e6e6' }]}>
             {/* tags */}
             <View style={[styles.tags, { backgroundColor: scheme === 'light' ? '#f7f7f7' : '#1c1c1c' }]}>
-                {Object.entries(ann.tags).map(([key, tag]) => (
-                    <Text key={key} style={[styles.tag, {
+                {tags.map((tag, index) => (
+                    <Text key={index} style={[styles.tag, {
                         backgroundColor: scheme == "light" ? tag.color : darkenColor(tag.color),
                         shadowColor: scheme === "light" ? "black" : "white"
                     }]}>{tag.name}</Text>
@@ -32,32 +51,32 @@ export default function Announcement({ ann, fullAnn }: { ann: AnnouncementData, 
             </View>
 
             {/* title */}
-            <Text style={styles.header}>{ann.title}</Text>
-            
+            <Text style={styles.header}>{title}</Text>
+
             {/* info */}
             <View style={styles.details}>
                 <View style={[styles.detailsHeading, { backgroundColor: scheme === 'light' ? '#f7f7f7' : '#1c1c1c' }]}>
                     {/* icon */}
-                    <View style={[styles.iconShadow,  { shadowColor: scheme === "light" ? "black" : "white" }]}>
-                        <Image style={styles.orgIcon} source={{uri: ann.icon}}/>
+                    <View style={[styles.iconShadow, { shadowColor: scheme === "light" ? "black" : "white" }]}>
+                        <Image style={styles.orgIcon} source={{ uri: iconUrl }} />
                     </View>
                     {/* name */}
-                    <Text style={[styles.clubName, { color: scheme === "light" ? lightC : darkC }]}>{ann.name}</Text>
+                    <Text style={[styles.name, { color: scheme === "light" ? lightC : darkC }]}>{author}</Text>
                 </View>
                 {/* time */}
                 <View style={[styles.detailsSubheading, { backgroundColor: scheme === 'light' ? '#f7f7f7' : '#1c1c1c' }]}>
-                    <Text style={styles.timeStamp}>{new Date(ann.created_date).toLocaleString("en-US", { timeZone: "EST" })}</Text>
-                    <Text style={[styles.author, { color: scheme === "light" ? lightC : darkC }]}>{ann.author.slug}</Text>
+                    <Text style={styles.timeStamp}>{date.toLocaleString("en-US", { timeZone: "EST" })}</Text>
+                    <Text style={[styles.author, { color: scheme === "light" ? lightC : darkC }]}>{author}</Text>
                 </View>
             </View>
 
             {/* body */}
-            <Text style={styles.text} numberOfLines={5}>{removeMd(ann.body)}</Text>
+            <Text style={styles.text} numberOfLines={5}>{removeMd(body)}</Text>
 
             {/* view more */}
             <View style={[styles.click, { backgroundColor: scheme === 'light' ? '#f7f7f7' : '#1c1c1c' }]}>
-                <TouchableOpacity onPress={() => {fullAnn(ann.id)}}>
-                    <Text style={[{ color: scheme === "light" ? lightC : darkC }]}>{"See announcement"}</Text>
+                <TouchableOpacity onPress={showFull}>
+                    <Text style={[{ color: scheme === "light" ? lightC : darkC }]}>{children}</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -71,8 +90,8 @@ const styles = StyleSheet.create({
         marginVertical: 15,
         marginHorizontal: 10,
         paddingTop: 5,
-        paddingHorizontal:12,
-        shadowOffset: {width: 0, height: 1},
+        paddingHorizontal: 12,
+        shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.4,
         borderRadius: 5,
     },
@@ -99,29 +118,29 @@ const styles = StyleSheet.create({
     },
 
     details: {
-        flex:1,
+        flex: 1,
     },
-    detailsHeading:{
-        width:"100%",
-        flexDirection:"row",
-        alignItems:"center",
-        paddingBottom:5,
+    detailsHeading: {
+        width: "100%",
+        flexDirection: "row",
+        alignItems: "center",
+        paddingBottom: 5,
     },
-    detailsSubheading:{
-        flex:1,
+    detailsSubheading: {
+        flex: 1,
     },
     iconShadow: {
         width: 32,
         height: 32,
-        shadowOffset: {width: 0, height: 1},
+        shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.4,
         shadowRadius: 2,
-        borderRadius: 32/2,
+        borderRadius: 32 / 2,
     },
     orgIcon: {
-        width:"100%",
-        height:"100%",
-        borderRadius: 32/2,
+        width: "100%",
+        height: "100%",
+        borderRadius: 32 / 2,
     },
     text: {
         marginTop: 5,
@@ -129,18 +148,18 @@ const styles = StyleSheet.create({
         overflow: "hidden",
         height: 100,
     },
-    clubName: {
-        marginLeft:7,
-        flex:1,
+    name: {
+        marginLeft: 7,
+        flex: 1,
         fontWeight: "bold",
         fontSize: 17,
     },
     author: {
-        marginVertical:3,
+        marginVertical: 3,
         fontWeight: "bold",
     },
     timeStamp: {
-        marginVertical:3,
+        marginVertical: 3,
         color: '#939393',
     },
     click: {

@@ -4,15 +4,28 @@ import { Handler, IDDescriptor, IDObject, Requestor } from './obj';
 import { apiRequest } from './core';
 import { Session } from '../util/session';
 
+export class TagDescriptor extends IDDescriptor<TagDescriptor, TagData>{
+    name!: string;
+    color!: string;
+}
 export class TagData extends IDObject<TagData>{
     name!: string;
     color!: string;
+    organization!: Requestor<Nullable<OrganizationData>>;
+
+    protected preprocess(data: anyObject): anyObject {
+        const { organization, ...rest } = super.preprocess(data);
+
+        this.organization = this.createNullableIDRequestor<OrganizationData>(organization, OrganizationDataHandler);
+
+        return rest;
+    }
 
     public static getHandler(): Handler<TagData>{
         return TagDataHandler;
     }
 }
-export const TagDataHandler = new Handler<TagData>("tag", TagData);
+export const TagDataHandler = new Handler<TagData, TagDescriptor>("tag", TagData, TagDescriptor);
 
 export class NewsData extends IDObject<NewsData>{
     author!: Requestor<UserData>;
@@ -50,15 +63,17 @@ export class AnnouncementData extends IDObject<AnnouncementData>{
     author!: UserDescriptor;
     organization!: OrganizationDescriptor;
     supervisor!: Requestor<Nullable<UserData>>;
-    tags!: TagData[];
+    tags!: TagDescriptor[];
     comments!: CommentDescriptor[];
 
     protected preprocess(data: anyObject): anyObject {
-        const { author, organization, supervisor, comments, tags, ...rest } = super.preprocess(data);;
-
-        this.supervisor = this.createNullableIDRequestor<UserData>(supervisor, UserDataHandler);
-
+        const { author, organization, supervisor, comments, tags, ...rest } = super.preprocess(data);
+        
         this.author = this.createDescriptor<UserDescriptor>(author, UserDataHandler);
+        this.organization = this.createDescriptor<OrganizationDescriptor>(organization, OrganizationDataHandler);
+        this.supervisor = this.createNullableIDRequestor<UserData>(supervisor, UserDataHandler);
+        this.comments = this.createDescriptorArray<CommentDescriptor>(comments, CommentDataHandler);
+        this.tags = this.createDescriptorArray<TagDescriptor>(tags, TagDataHandler);
 
         return rest;
     }
@@ -73,25 +88,23 @@ export class BlogPostData extends IDObject<BlogPostData>{
     slug!: string;
     title!: string;
     body!: string;
-    author!: Requestor<UserData>;
+    author!: UserDescriptor;
     views!: number;
     created_date!: Date;
     last_modified_date!: Date;
     featured_image!: URLString;
     featured_image_description!: string;
     is_published!: boolean;
-    tags!: TagData[];
+    tags!: TagDescriptor[];
     likes!: number;
     comments!: CommentDescriptor[];
 
-    //TODO
-
     protected preprocess(data: anyObject): anyObject {
-        const { author, created_date, last_modified_date, tags, ...rest } = super.preprocess(data);;
+        const { author, comments, tags, ...rest } = super.preprocess(data);
 
-        this.author = this.createIDRequestor<UserData>(author, UserDataHandler);
-        this.created_date = new Date(created_date);
-        this.last_modified_date = new Date(last_modified_date);
+        this.author = this.createDescriptor<UserDescriptor>(author, UserDataHandler);
+        this.comments = this.createDescriptorArray<CommentDescriptor>(comments, CommentDataHandler);
+        this.tags = this.createDescriptorArray<TagDescriptor>(tags, TagDataHandler);
 
         return rest;
     }
@@ -103,24 +116,24 @@ export class BlogPostData extends IDObject<BlogPostData>{
 export const BlogPostDataHandler = new Handler<BlogPostData>("blog-post", BlogPostData);
 
 export class EventData extends IDObject<EventData>{
+    tags!: TagDescriptor[];
+    organization!: OrganizationDescriptor
     name!: string;
     description!: string;
-    term!: TermType;
-    organization!: Requestor<OrganizationData>;
     start_date!: Date;
     end_date!: Date;
-    is_public!: boolean;
-    tags!: Requestor<TagData>[];
-    schedule_format!: number;
-    is_instructional!: number;
+    should_announce!: boolean;
+    
+    schedule_format?: string; // TODO: enum
+    is_instructional?: number;
+    is_public?: boolean;
+    term?: TermType;
 
     protected preprocess(data: anyObject): anyObject {
-        const { organization, tags, start_date, end_date, ...rest } = super.preprocess(data);;
+        const { tags, organization, ...rest } = super.preprocess(data);
 
-        this.organization = this.createIDRequestor<OrganizationData>(organization, OrganizationDataHandler);
-        this.tags = this.createIDRequestorArray<TagData>(tags, TagDataHandler);
-        this.start_date = new Date(start_date);
-        this.end_date = new Date(end_date);
+        this.tags = this.createDescriptorArray<TagDescriptor>(tags, TagDataHandler);
+        this.organization = this.createDescriptor<OrganizationDescriptor>(organization, OrganizationDataHandler);
 
         return rest;
     }
@@ -131,9 +144,9 @@ export class EventData extends IDObject<EventData>{
 }
 class EventDataHandlerImpl extends Handler<EventData> {
     // workaround because the backend does not support filtering by start/end date
-    async *list(limit=50, offset=0, session: Session, options?: AxiosRequestConfig<LimitOffsetPagination<EventData>>): AsyncIterableIterator<EventData> {
+    async *list(session: Session, limit=50, offset=0, options?: AxiosRequestConfig<LimitOffsetPagination<EventData>>): AsyncIterableIterator<EventData> {
         if(!options){
-            for await(const data of super.list(limit, offset, session)){
+            for await(const data of super.list(session, limit, offset, options)){
                 yield data;
             }
             return;
@@ -228,7 +241,7 @@ export class OrganizationData extends IDObject<OrganizationData>{
         return OrganizationDataHandler;
     }
 }
-export const OrganizationDataHandler = new Handler<OrganizationData>("organization", OrganizationData);
+export const OrganizationDataHandler = new Handler<OrganizationData>("organization", OrganizationData, OrganizationDescriptor);
 
 export class CommentDescriptor extends IDDescriptor<CommentDescriptor, CommentData>{
     has_children!: boolean;

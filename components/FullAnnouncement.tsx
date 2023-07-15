@@ -5,6 +5,7 @@ import Markdown, { MarkdownIt } from 'react-native-markdown-display';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import {ThemeContext} from '../hooks/useColorScheme';
 import * as WebBrowser from 'expo-web-browser';
+import { TagData, TagDescriptor, URLString } from '../api';
 
 
 var lightC = "#3a6a96";
@@ -12,86 +13,93 @@ var darkC = "#42a4ff";
 const markdownItInstance = MarkdownIt({linkify: true, typographer: true});
 const {width} = Dimensions.get('window');
 const loadingImage = require('../assets/images/blank.png');
-export default function FullAnnouncement({ann, backToScroll, isBlog}:{ann: any, backToScroll: Function, isBlog: boolean}) {
-    if (ann === undefined) { // prevent errors
-        return(<></>);
-    }
+export default function FullAnnouncement({
+    id,
+    tags,
+    title,
+    organization,
+    icon,
+    author,
+    date,
+    featured_image,
+    body,
 
+    backToScroll,
+    isBlog,
+}:{
+    id: number,
+    tags: TagDescriptor[],
+    title: string,
+    organization: string,
+    icon: URLString
+    author: string,
+    date: Date,
+    featured_image: URLString | undefined,
+    body: string,
+    
+    backToScroll: Function,
+    isBlog: boolean
+}) {
     const colorScheme = React.useContext(ThemeContext);
 
     return (
-        <ScrollView style={[styles.announcement, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c', shadowColor: colorScheme.scheme === 'light' ? '#1c1c1c' : '#e6e6e6'}]} onStartShouldSetResponder={(e) => true} onResponderRelease={() => backToScroll(ann.id)}>
+        <ScrollView style={[
+                styles.announcement,
+                {
+                    backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c',
+                    shadowColor: colorScheme.scheme === 'light' ? '#1c1c1c' : '#e6e6e6'
+                }
+            ]}
+            onStartShouldSetResponder={() => true}
+            onResponderRelease={() => backToScroll(id)}>
             <View style={[styles.tags, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
-                {Object.entries(ann.tags).map(([key, tag]) => (
-                    createTag(key, tag)
+                {tags.map((tag, index) => (
+                    <Text key={index} style={[styles.tag, {backgroundColor: tag.color}]}>{tag.name}</Text>
                 ))}
             </View>
 
-            {createHeader(ann.title)}
+            {/* Header */}
+            <Text style={styles.header}>{title}</Text>
             
-            {annDetails(isBlog? ann.author_slug : ann.name, ann.icon, ann.author.slug, ann.created_date, colorScheme.scheme)}
-            {isBlog ? <ImageResizeAfter uri={ann.featured_image} desiredWidth={width}/> : <></>}
-            {previewText(ann.body)}
+            {/* Details */}
+            <View style={[styles.details, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
+                <View style={[styles.detailsHeading, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
+                    <View style={[styles.iconShadow, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
+                        <Image style={styles.orgIcon} source={{uri: icon}}/>
+                    </View>
+                    <Text style={[styles.clubName, {color: colorScheme.scheme === "light" ? lightC : darkC}]}>{organization}</Text>
+                </View>
+                <View style={[styles.detailsSubheading, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
+                    <Text style={styles.timeStamp}>{date.toLocaleString("en-US", {timeZone: "EST"})}</Text>
+                    <Text style={[styles.author, {color: colorScheme.scheme === "light" ? lightC : darkC}]}>{author}</Text>
+                </View>
+            </View>
 
+            {featured_image && <ImageResizeAfter uri={featured_image} desiredWidth={width}/>}
+            
+            {/* Preview Text */}
+            <View style={[styles.text, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
+                {/* @ts-ignore */}
+                <Markdown debugPrintTree={false} style={colorScheme.scheme === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={url => {
+                    if(url) {
+                        WebBrowser.openBrowserAsync(url);
+                        return false;
+                    }
+                    else {
+                        return true;
+                    }
+                }} markdownit={markdownItInstance} rules={rules} defaultImageHandler="https://www.maclyonsden.com">{body}</Markdown>
+            </View>
 
             {/* View More Details */}
             <View style={[styles.click, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
-                <TouchableOpacity onPress={() => backToScroll("-1")}>
+                <TouchableOpacity onPress={() => backToScroll(-1)}>
                     <Text style={[{color: colorScheme.scheme === "light" ? lightC : darkC}, {fontSize: 16}]}>{"<  Return to " + (isBlog ? "Blogs" : "Announcements")}</Text>
                 </TouchableOpacity>
             </View>
         </ScrollView>
     );
 }
-
-function createTag(key: any, tag: any) {
-    return (
-        <Text key={key} style={[styles.tag, {backgroundColor: tag.color}]}>{tag.name}</Text>
-    );
-}
-
-function createHeader(title: string) {
-    return (
-        <Text style={styles.header}>{title}</Text>
-    );
-}
-
-function annDetails(org: string, orgIcon: string, author: string, timeStamp: string, colorScheme: string) {
-    return (
-        <View style={[styles.details, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
-            <View style={[styles.detailsHeading, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
-                <View style={[styles.iconShadow, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
-                    <Image style={styles.orgIcon} source={{uri: orgIcon}}/>
-                </View>
-                <Text style={[styles.clubName, {color: colorScheme === "light" ? lightC : darkC}]}>{org}</Text>
-            </View>
-            <View style={[styles.detailsSubheading, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
-                <Text style={styles.timeStamp}>{new Date(timeStamp).toLocaleString("en-US", {timeZone: "EST"})}</Text>
-                <Text style={[styles.author, {color: colorScheme === "light" ? lightC : darkC}]}>{author}</Text>
-            </View>
-        </View>
-    );
-}
-
-// markdown to plaintext
-function previewText(text: any) {
-    const colorScheme = React.useContext(ThemeContext);
-
-    return (
-        <View style={[styles.text, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
-            <Markdown debugPrintTree={false} style={colorScheme.scheme === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={url => {
-                if(url) {
-                    WebBrowser.openBrowserAsync(url);
-                    return false;
-                }
-                else {
-                    return true;
-                }
-            }} markdownit={markdownItInstance} rules={rules} defaultImageHandler="https://www.maclyonsden.com">{text}</Markdown>
-        </View>
-    )
-}
-
 
 // https://stackoverflow.com/questions/42170127/auto-scale-image-height-with-react-native/42170351#42170351
 const ImageResizeAfter = ({uri, desiredWidth}: {uri: string, desiredWidth: number}) => {
