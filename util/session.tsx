@@ -119,7 +119,6 @@ export function SessionProvider(props: { children: any }) {
                 }
                 return objData;
             });
-            console.log("Serialized Objects", handler.type, objects);
             set(handler.type + "_cachekey", objects);
         }
     }
@@ -136,7 +135,6 @@ export function SessionProvider(props: { children: any }) {
     const cachedResourcesHook = loadResources(session);
 
     session.loginNeeded = cachedResourcesHook.loginNeeded;
-    console.log("Login needed", session.loginNeeded);
     
     React.useEffect(() => {
         SplashScreen.preventAutoHideAsync();
@@ -157,11 +155,8 @@ export function SessionProvider(props: { children: any }) {
     }, [data, cachedResourcesHook.isLoadingComplete]);
 
     if(data == undefined || !cachedResourcesHook.isLoadingComplete){
-        console.log({ data, cachedResourcesHook });
         return null;
     }
-
-    console.log("A");
 
     return (
         <SessionContext.Provider value={session}>

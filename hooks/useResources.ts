@@ -21,7 +21,7 @@ export default function loadResources(session: Session) {
     async function loadResourcesAndDataAsync() {
       try {
         let res = await refreshLogin(session);
-        console.log({ res });
+        
         if(res){
           setDefaultLoginDone(false);
         }

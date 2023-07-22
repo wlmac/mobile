@@ -40,12 +40,9 @@ export async function apiRequest<T>(endpoint: string, body: string | anyObject |
         // token expired or doesn't exist
         if (Math.round(Date.now() / 1000) - 30 >= parseInt(tokenData.exp) ||
                 Number.isNaN(parseInt(tokenData.exp))) { // Just in case the token is corrupted in some way
-            console.log("erroring?");
             if(!await refreshLogin(session)){
-                console.log("erroring2");
                 return 'An unknown error occurred';
             }
-            console.log("erroring2");
             
             accessToken = session.get<string>("@accesstoken");
         }
@@ -84,7 +81,6 @@ export async function refreshLogin(session: Session): Promise<boolean> {
         if (!state.isConnected) { //assumes logged in if a refresh token exists and there is no connection so the user may view cached resources
             return false;
         }
-        console.log({ refreshToken });
         const response = await axiosInstance.post<TokenPair>('auth/token/refresh', { //refresh token endpoint
             refresh: refreshToken
         });
@@ -93,7 +89,6 @@ export async function refreshLogin(session: Session): Promise<boolean> {
         if (!(tokens.refresh && tokens.access)) {
             return false;
         }
-        console.log("Setting tokens")
         session.setAll({
             "@accesstoken": tokens.access,
             "@refreshtoken": tokens.refresh,

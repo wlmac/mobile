@@ -41,7 +41,6 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
     try{
       let schedule = await getSchedule(!userSchedule, session);
       if (typeof schedule == "string"){
-        console.log({ schedule });
         if (schedule === "No current term") {
           updatePreTimeText(undefined);
           updateCourse("NO CLASS TODAY");

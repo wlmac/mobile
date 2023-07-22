@@ -66,7 +66,7 @@ function RootNavigator() {
   React.useEffect(() => {
     setToLogin(loginNeeded && !guestMode.guest);
   }, [guestMode.guest]);
-  console.log({ toLogin });
+  
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {toLogin ? [
