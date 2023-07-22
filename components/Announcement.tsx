@@ -4,17 +4,17 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Text, View } from '../components/Themed';
 import { ThemeContext } from '../hooks/useColorScheme';
 import removeMd from 'remove-markdown';
-import { hexToHsl, hslToHex } from '../lib/colors';
 import { TagDescriptor, URLString } from '../api';
+import { hexToHsv, hsvToHex } from '../lib/colors';
 
 var lightC = "#3a6a96";
 var darkC = "#42a4ff";
 
 function darkenColor(color: string) {
-    let hsv = hexToHsl(color);
-    hsv[1] = 100;
-    hsv[2] = hsv[2] * 0.5;
-    return hslToHex(hsv);
+    let hsv = hexToHsv(color);
+    hsv[1] = 1;
+    hsv[2] *= 0.5;
+    return hsvToHex(hsv);
 }
 
 export default function Announcement({
