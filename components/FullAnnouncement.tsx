@@ -6,6 +6,7 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import {ThemeContext} from '../hooks/useColorScheme';
 import * as WebBrowser from 'expo-web-browser';
 import { TagData, TagDescriptor, URLString } from '../api';
+import { darkenColor } from './Announcement';
 
 
 var lightC = "#3a6a96";
@@ -54,7 +55,10 @@ export default function FullAnnouncement({
             onResponderRelease={() => backToScroll(id)}>
             <View style={[styles.tags, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
                 {tags.map((tag, index) => (
-                    <Text key={index} style={[styles.tag, {backgroundColor: tag.color}]}>{tag.name}</Text>
+                    <Text key={index} style={[styles.tag, {
+                        backgroundColor: colorScheme.scheme == "light" ? tag.color : darkenColor(tag.color),
+                        shadowColor: colorScheme.scheme === "light" ? "black" : "white"
+                    }]}>{tag.name}</Text>
                 ))}
             </View>
 
@@ -174,14 +178,13 @@ const styles = StyleSheet.create({
         marginHorizontal: 12,
     },
     tag: {
-        color: "black",
         overflow: "hidden",
         paddingVertical: 2,
         paddingHorizontal: 7,
-        marginHorizontal: 3,
-        marginBottom: 10,
+        marginBottom: 5,
+        marginRight: 5,
         borderRadius: 5,
-        fontSize: 14,
+        fontSize: 13,
     },
     header: {
         fontSize: 30,

@@ -4,7 +4,6 @@ export function hexToRgb(hex: string): [number, number, number] {
     const r = (num >> 16) & 255;
     const g = (num >> 8) & 255;
     const b = num & 255;
-    console.log(hex, r, g, b);
     return [r, g, b];
 }
 

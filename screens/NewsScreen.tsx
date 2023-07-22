@@ -46,9 +46,9 @@ export default function NewsScreen({
   }[] = [];
 
   // stores announcements
-  const [announcementsData, setAnnouncementsData] = useState<AnnouncementProps[]>([]);
-  const [blogData, setBlogData] = useState<AnnouncementProps[]>([]);
+  const [allAnnouncementsData, setAllAnnouncementsData] = useState<AnnouncementProps[]>([]);
   const [myAnnouncementsData, setMyAnnouncementsData] = useState<AnnouncementProps[]>([]);
+  const [blogData, setBlogData] = useState<AnnouncementProps[]>([]);
   const [orgs, setOrgs] = useState(emptyOrgs);
   const [tags, setTags] = useState(emptyTags);
   const [users, setUsers] = useState(emptyUsers);
@@ -98,8 +98,7 @@ export default function NewsScreen({
   const [loadError, setLoadError] = useState(false);
   const loadingIcon = require("../assets/images/loading.gif");
 
-  // toggle between my feed and school feed
-  const [isMyFeed, setMyFeed] = useState(false);
+  const [feedType, setFeedType] = useState<"all" | "my" | "blog">("all");
 
   // toggle between scroll feed and full announcement feed
   const [fullAnn, setAnn] = useState<{
@@ -119,12 +118,14 @@ export default function NewsScreen({
       return;
     }
 
-    const ann = announcementsData
-      .concat(myAnnouncementsData)
-      .find((e) => e.id === id);
+    const ann = (
+      feedType === "all" ? allAnnouncementsData :
+      feedType === "my" ? myAnnouncementsData :
+      blogData
+    ).find((e) => e.id === id);
 
     if (ann === undefined) {
-      console.warn("Announcement not found", announcementsData);
+      console.warn("Announcement not found", allAnnouncementsData);
       return;
     }
 
@@ -155,7 +156,6 @@ export default function NewsScreen({
   const [dropdownSelection, setDropdown] = useState("All Announcements");
   const [lastdropdown, setLastDropdown] = useState("All Announcements");
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [isBlog, setBlog] = useState(false);
 
   // lazy loading check if user at bottom
   function isCloseToBottom({
@@ -166,21 +166,13 @@ export default function NewsScreen({
     return layoutMeasurement.height + contentOffset.y >= contentSize.height - 5;
   }
 
-  function changeDropdown(): void {
+  function changeDropdown() {
     if (lastdropdown == dropdownSelection) return;
-    if (dropdownSelection === "All Announcements") {
-      allA.current?.scrollTo({ x: 0, y: 0, animated: false });
-      setMyFeed(false);
-    }
-    if (dropdownSelection === "My Announcements") {
-      myA.current?.scrollTo({ x: 0, y: 0, animated: false });
-      setMyFeed(true);
-    }
-    if (dropdownSelection === "Blog") {
-      allB.current?.scrollTo({ x: 0, y: 0, animated: false });
-      setBlog(true);
-    } else {
-      setBlog(false);
+
+    if(["all", "my", "blog"].includes(dropdownSelection)){
+      setFeedType(dropdownSelection as any);
+    }else{
+      console.warn("Invalid dropdown selection", dropdownSelection);
     }
   }
 
@@ -287,12 +279,12 @@ export default function NewsScreen({
         })
       }
 
-      data = (my ? myAnnouncementsData : announcementsData).concat(data);
+      data = (my ? myAnnouncementsData : allAnnouncementsData).concat(data);
 
       if (my) {
         setMyAnnouncementsData(data);
       } else {
-        setAnnouncementsData(data);
+        setAllAnnouncementsData(data);
       }
 
       setLoadError(false);
@@ -336,29 +328,28 @@ export default function NewsScreen({
           display: fullAnn ? "none" : undefined,
         }}>
           {dropdown()}
-          {isBlog ? <>
-            {/* Blog */}
-            {!fullAnn && <AnnouncementsViewer
+          {feedType === "blog" ?
+            /* Blog */
+            <AnnouncementsViewer
               announcements={blogData}
               sref={allB}
               isAtBottom={isCloseToBottom}
               loadAnnouncements={loadBlogs}
               setFullAnnId={setFullAnnId}
               isBlog={true}
-            />}
-          </> : <>
-            {/* School Announcements */}
-            {!isMyFeed && !fullAnn && <AnnouncementsViewer
-              announcements={announcementsData}
-              sref={allA}
-              isAtBottom={isCloseToBottom}
-              loadAnnouncements={() => loadAnnouncements(false)}
-              setFullAnnId={setFullAnnId}
-              isBlog={false}
-            />}
-
-            {/* My Feed Announcement */}
-            {isMyFeed && !fullAnn && <ScrollView><Text>TODO</Text></ScrollView> /*AnnouncementsViewer({
+            />
+          : feedType === "all" ?
+            /* School Announcements */
+            <AnnouncementsViewer
+            announcements={allAnnouncementsData}
+            sref={allA}
+            isAtBottom={isCloseToBottom}
+            loadAnnouncements={() => loadAnnouncements(false)}
+            setFullAnnId={setFullAnnId}
+            isBlog={false}
+          /> :
+            /* My Feed Announcement */
+            <ScrollView><Text>TODO</Text></ScrollView> /*AnnouncementsViewer({
               announcements: myAnnouncementsData,
               sref: myA,
               loadAnnouncements: () => loadAnnouncements(true),
@@ -414,7 +405,6 @@ export default function NewsScreen({
                 </Text>
               </View></>)
             })*/ }
-          </>}
         </View>
 
         {/* Full Announcement */}
@@ -447,9 +437,9 @@ export default function NewsScreen({
       <DropDownPicker
         theme={colorScheme.scheme == "dark" ? "DARK" : "LIGHT"}
         items={[
-          { label: "All Announcements", value: "All Announcements" },
-          { label: "My Announcements", value: "My Announcements" },
-          { label: "Blog", value: "Blog" },
+          { label: "All Announcements", value: "all" },
+          { label: "My Announcements", value: "my" },
+          { label: "Blog", value: "blog" },
         ]}
         multiple={false}
         setValue={setDropdown}

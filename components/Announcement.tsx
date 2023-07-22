@@ -10,7 +10,7 @@ import { hexToHsv, hsvToHex } from '../lib/colors';
 var lightC = "#3a6a96";
 var darkC = "#42a4ff";
 
-function darkenColor(color: string) {
+export function darkenColor(color: string) {
     let hsv = hexToHsv(color);
     hsv[1] = 1;
     hsv[2] *= 0.5;
