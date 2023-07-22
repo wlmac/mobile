@@ -12,7 +12,7 @@ var darkC = "#42a4ff";
 
 export function darkenColor(color: string) {
     let hsv = hexToHsv(color);
-    hsv[1] = 1;
+    hsv[1] = 0.7;
     hsv[2] *= 0.5;
     return hsvToHex(hsv);
 }
@@ -36,7 +36,6 @@ export default function Announcement({
     showFull: () => any,
     children?: React.ReactNode
 }) {
-
     const scheme = React.useContext(ThemeContext).scheme;
     return (
         <View style={[styles.announcement, { backgroundColor: scheme === 'light' ? '#f7f7f7' : '#1c1c1c', shadowColor: scheme === 'light' ? '#1c1c1c' : '#e6e6e6' }]}>

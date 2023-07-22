@@ -28,7 +28,7 @@ export function rgbToHsv([r, g, b]: [number, number, number]): [number, number, 
     if (delta !== 0) {
         switch (max) {
             case r:
-                h = ((g - b) / delta) % 6;
+                h = ((g - b) / delta);
                 break;
             case g:
                 h = ((b - r) / delta) + 2;
@@ -39,7 +39,7 @@ export function rgbToHsv([r, g, b]: [number, number, number]): [number, number, 
         }
     }
 
-    return [h * 60, max === 0 ? 0 : delta / max, max / 255];
+    return [(h * 60 + 360) % 360, max === 0 ? 0 : delta / max, max / 255];
 }
 
 export function hsvToRgb([h, s, v]: [number, number, number]): [number, number, number] {
