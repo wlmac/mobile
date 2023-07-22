@@ -41,21 +41,21 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
     try{
       let schedule = await getSchedule(!userSchedule, session);
       if (typeof schedule == "string"){
-        if (!dataUploadedRef.current && !userSchedule) {
+        console.log({ schedule });
+        if (schedule === "No current term") {
+          updatePreTimeText(undefined);
+          updateCourse("NO CLASS TODAY");
+          updateTimeText(undefined);
+          updateTimetableHeader(undefined);
+          updateTimetable(undefined);
+          return;
+        }else if (!dataUploadedRef.current && !userSchedule) {
           updatePreTimeText(undefined);
           updateCourse("Currently Offline");
           updateTimeText("No internet");
           updateTimetableHeader("Error");
           updateTimetable("Could not connect to server!");
         }
-        return;
-      }
-      if (!(schedule && schedule[0])) {
-        updatePreTimeText(undefined);
-        updateCourse("NO CLASS TODAY");
-        updateTimeText(undefined);
-        updateTimetableHeader(undefined);
-        updateTimetable(undefined);
         return;
       }
       let displayedInfo: any[][] = [];

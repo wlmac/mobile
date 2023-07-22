@@ -35,7 +35,7 @@ export async function getEventsOnDay(date: DateTimeString, session: Session, opt
 
 export async function getEventsInRange(start: DateTimeString, end: DateTimeString, session: Session, options?: AxiosRequestConfig<LimitOffsetPagination<EventData>>){
     const events: EventData[] = [];
-    for await (const event of EventDataHandler.list(5000, 0, session, {
+    for await (const event of EventDataHandler.list(session, 5000, 0, {
         params: {
             start,
             end,
@@ -77,6 +77,12 @@ export async function getSchedule(noAuth: boolean, session: Session, date?: Date
         });
     
     if (typeof res === "string") {
+        if(res === "API error"){
+            // The backend returns 404 when there's no current term (i.e. it's summer break) and apiRequest catches it as a generic error
+            // so we assume that's what happened here
+
+            return "No current term";
+        }
         return res;
     }
 
