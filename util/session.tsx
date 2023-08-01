@@ -91,6 +91,7 @@ export function SessionProvider(props: { children: any }) {
         Api.TagDataHandler,
         Api.UserDataHandler,
         Api.OrganizationDataHandler,
+        Api.EventDataHandler,
     ];
     let cachedObjectsHash = -1; // Quick equality check so we don't write to storage more than we need to
     function cacheObjects(){

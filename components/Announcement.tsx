@@ -5,17 +5,10 @@ import { Text, View } from '../components/Themed';
 import { ThemeContext } from '../hooks/useColorScheme';
 import removeMd from 'remove-markdown';
 import { TagDescriptor, URLString } from '../api';
-import { hexToHsv, hsvToHex } from '../lib/colors';
+import Tag from './Tag';
 
 var lightC = "#3a6a96";
 var darkC = "#42a4ff";
-
-export function darkenColor(color: string) {
-    let hsv = hexToHsv(color);
-    hsv[1] = 0.7;
-    hsv[2] *= 0.5;
-    return hsvToHex(hsv);
-}
 
 export default function Announcement({
     title,
@@ -41,12 +34,7 @@ export default function Announcement({
         <View style={[styles.announcement, { backgroundColor: scheme === 'light' ? '#f7f7f7' : '#1c1c1c', shadowColor: scheme === 'light' ? '#1c1c1c' : '#e6e6e6' }]}>
             {/* tags */}
             <View style={[styles.tags, { backgroundColor: scheme === 'light' ? '#f7f7f7' : '#1c1c1c' }]}>
-                {tags.map((tag, index) => (
-                    <Text key={index} style={[styles.tag, {
-                        backgroundColor: scheme == "light" ? tag.color : darkenColor(tag.color),
-                        shadowColor: scheme === "light" ? "black" : "white"
-                    }]}>{tag.name}</Text>
-                ))}
+                {tags.map((tag, index) => <Tag key={index} tag={tag} />)}
             </View>
 
             {/* title */}
@@ -99,15 +87,6 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         flexWrap: "wrap",
         marginTop: 10,
-    },
-    tag: {
-        overflow: "hidden",
-        paddingVertical: 2,
-        paddingHorizontal: 7,
-        marginBottom: 5,
-        marginRight: 5,
-        borderRadius: 5,
-        fontSize: 13,
     },
     header: {
         fontSize: 24,

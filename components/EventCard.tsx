@@ -7,7 +7,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 
 import {ThemeContext} from '../hooks/useColorScheme';
 import { YMDDate } from '../screens/CalendarScreen';
-import { EventData, TagData } from '../api';
+import { EventData, TagData, TagDescriptor } from '../api';
+import Tag, { darkenColor } from './Tag';
 
 let theme;
 
@@ -15,11 +16,12 @@ let theme;
 export function EventCard({ event } : { event: EventData }) {
   theme = React.useContext(ThemeContext);
 
-  const color = event.tags.length == 0 ? '#74e1ed' : event.tags[0].getUnchecked()!.color;
+  const color = event.tags.length == 0 ? '#74e1ed' : event.tags[0].color;
 
   // selected state
   const [selected, setSelected] = React.useState(false);
 
+  const hasDescription = event.description.length != 0;
 
   return (
     <View style={[styles.eventCardContainer, {backgroundColor: theme.scheme === 'dark' ? '#252525' : '#e0e0e0'}]}>
@@ -28,7 +30,7 @@ export function EventCard({ event } : { event: EventData }) {
       >
 
         <View style={[styles.quickInfo, {backgroundColor: 'transparent'}]}>
-          {timeRange(event.start_date, event.end_date, color)}
+          {TimeRange(event.start_date, event.end_date, color)}
           <View style={[styles.info, {backgroundColor: theme.scheme === 'light' ? '#f3f3f3' : '#1c1c1c'}]}>
             <Text style={[styles.titleText, {color: theme.scheme === 'light' ? '#404040' : '#fff'}]}>{event.name}</Text>
             <Text style={styles.organizationText}>{event.organization.name}</Text>
@@ -37,7 +39,7 @@ export function EventCard({ event } : { event: EventData }) {
               <View style={styles.description}>
                 <View style={styles.separator} />
                 <View style={styles.description}>
-                  <Text style={{color: theme.scheme === 'light' ? '#4f4f4f' : '#fff'}}>{event.description.length == 0 ? 'No description' : event.description}</Text>
+                  <Text style={{color: theme.scheme === 'light' ? '#4f4f4f' : '#fff'}}>{event.description}</Text>
                 </View>
               </View>
             )}
@@ -45,19 +47,17 @@ export function EventCard({ event } : { event: EventData }) {
             <View style={styles.separator} />
             {event.tags.length > 0 && (
               <View style={styles.tags}>
-                {Object.entries(event.tags).map(([key, tag]) => (
-                  <Tag key={key} tag={tag.getUnchecked()!}/>
-                ))}
+                {Object.entries(event.tags).map(([key, tag]) => <Tag key={key} tag={tag} />)}
               </View>
             )}
             <View style={styles.separator} />
             {/* caret to signify expanding of the description of an event*/}
-            {selected && (
+            {hasDescription && selected && (
               <View style={styles.caret}>
                 <Ionicons name="chevron-up" size={20} color={theme.scheme === 'light' ? '#000' : '#fff'} />
               </View>
             )}
-            {!selected && (
+            {hasDescription && !selected && (
               <View style={styles.caret}>
                 <Ionicons name="chevron-down" size={20} color={theme.scheme === 'light' ? '#000' : '#fff'} />
               </View>
@@ -70,16 +70,7 @@ export function EventCard({ event } : { event: EventData }) {
   );
 }
 
-export function Tag({tag} : {tag: TagData}) {
-  return (
-    <View style={[styles.tag, {backgroundColor: tag.color}]}>
-    <Text style={styles.tagText}>{tag.name}</Text>
-    </View>
-  );
-}
-
-function timeRange(startDate: Date, endDate: Date, color: string) {
-  
+function TimeRange(startDate: Date, endDate: Date, color: string) {
   // TODO refactor
   const startDateSplit: string[] = startDate.toISOString().split('T');
   const endDateSplit: string[] = endDate.toISOString().split('T');
@@ -102,17 +93,17 @@ function timeRange(startDate: Date, endDate: Date, color: string) {
   if (endHour === 0) endHour = 12;
 
   return (
-    <View style={[styles.timeRange, {backgroundColor: color}]}>
+    <View style={[styles.timeRange, {backgroundColor: darkenColor(color)}]}>
       <Text style={styles.timeRangeText}>{startDateYMD[0]}/{startDateYMD[1]}/{startDateYMD[2]}</Text>
       {
         !(startHour == 12 && startDateTime[1] == "00" && startIsMorning && endHour == 11 && endDateTime[1] == "59" && !endIsMorning) && 
-        <Text style={styles.timeRangeText}>{startHour}:{startDateTime[1]}{startIsMorning?" AM":" PM"}</Text>
+        <Text style={styles.timeRangeText}>{startHour}:{startDateTime[1]} {startIsMorning?"AM":"PM"}</Text>
       }
-      <Text style={[styles.timeRangeText, {fontSize: 11}, {color: '#383838'}]}>to</Text>
+      <Text style={[styles.timeRangeText, {fontSize: 11}]}>to</Text>
       <Text style={styles.timeRangeText}>{endDateYMD[0]}/{endDateYMD[1]}/{endDateYMD[2]}</Text>
       {
         !(startHour == 12 && startDateTime[1] == "00" && startIsMorning && endHour == 11 && endDateTime[1] == "59" && !endIsMorning) &&
-        <Text style={styles.timeRangeText}>{endHour}:{endDateTime[1]}{endIsMorning?" AM":" PM"}</Text>
+        <Text style={styles.timeRangeText}>{endHour}:{endDateTime[1]} {endIsMorning?"AM":"PM"}</Text>
       }
     </View>
   );
@@ -149,7 +140,6 @@ const styles = StyleSheet.create({
   },
   timeRangeText: {
     fontSize: 14,
-    color: '#404040',
   },
   info: {
     justifyContent: 'flex-start',

@@ -10,6 +10,7 @@ import {ThemeContext} from '../hooks/useColorScheme';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { EventDataHandler } from '../api';
+import { SessionContext } from '../util/session';
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -31,6 +32,9 @@ const daysInMonth = [-1, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 // calendar screen
 export default function CalendarScreen({ navigation }: { navigation: BottomTabNavigationProp<BottomTabParamList, 'Calendar'> }) {
 
+  // session
+  const session = React.useContext(SessionContext);
+
   // get theme
   const colorScheme = React.useContext(ThemeContext);
 
@@ -44,13 +48,13 @@ export default function CalendarScreen({ navigation }: { navigation: BottomTabNa
   const [eventDays, setEventDays] = useState([] as any[]);
 
   // use effect on component load
-  useEffect (() => {
+  useEffect (() => { (async () => {
     setSelectedDay(today);
     setDisplayedDate(today);
     // add every single event day to the set
     let tempEventDays = new Set<string>();
     
-    for (const event of EventDataHandler.listCached()) {
+    for await (const event of EventDataHandler.list(session, 5000)) {
       let startDate: YMDDate = new YMDDate(event.start_date);
       let endDate: YMDDate = new YMDDate(event.end_date);
 
@@ -63,8 +67,7 @@ export default function CalendarScreen({ navigation }: { navigation: BottomTabNa
       
       // iterate through all days between start and end dates
       for (let j = 1; j <= daysBetween; j++) {
-        // add to set (formatting is funny because they need the 0 for single digits)
-        tempEventDays.add(`${currentYear}-${currentMonth < 10 ? '0'+currentMonth : currentMonth}-${currentDay < 10 ? '0'+currentDay : currentDay}`);
+        tempEventDays.add(`${currentYear}-${currentMonth.toString().padStart(2, '0')}-${currentDay.toString().padStart(2, '0')}`);
         currentDay++;
         if (currentDay > daysInMonth[currentMonth]) {
           currentDay = 1;
@@ -78,7 +81,7 @@ export default function CalendarScreen({ navigation }: { navigation: BottomTabNa
     }
     // convert set to array, and set as eventDays
     setEventDays(Array.from(tempEventDays));
-  }, []);
+  })() }, []);
 
 
   // use effect on color scheme change
@@ -87,7 +90,7 @@ export default function CalendarScreen({ navigation }: { navigation: BottomTabNa
   }, [colorScheme.scheme]);
 
   function getEventsOnDay(day: YMDDate) {
-    let tempEventsToday: any = [];
+    let tempEventsToday = [];
     for (const event of EventDataHandler.listCached()) {
       let startDate: YMDDate = new YMDDate(event.start_date);
       let endDate: YMDDate = new YMDDate(event.end_date);
@@ -100,8 +103,6 @@ export default function CalendarScreen({ navigation }: { navigation: BottomTabNa
   }
 
   const eventsToday = getEventsOnDay(selectedDay);
-
-  console.log("eventsToday: ", eventsToday);
 
   return (
     <View style={[styles.container, {backgroundColor: colorScheme.scheme === 'dark' ? '#252525' : '#e0e0e0'}]}>

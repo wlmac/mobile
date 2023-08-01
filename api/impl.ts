@@ -130,10 +130,13 @@ export class EventData extends IDObject<EventData>{
     term?: TermType;
 
     protected preprocess(data: anyObject): anyObject {
-        const { tags, organization, ...rest } = super.preprocess(data);
+        const { tags, organization, start_date, end_date, ...rest } = super.preprocess(data);
 
         this.tags = this.createDescriptorArray<TagDescriptor>(tags, TagDataHandler);
         this.organization = this.createDescriptor<OrganizationDescriptor>(organization, OrganizationDataHandler);
+
+        this.start_date = new Date(start_date);
+        this.end_date = new Date(end_date);
 
         return rest;
     }
