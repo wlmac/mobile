@@ -6,8 +6,7 @@ import { View, Text } from './Themed';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 import {ThemeContext} from '../hooks/useColorScheme';
-import { YMDDate } from '../screens/CalendarScreen';
-import { EventData, TagData, TagDescriptor } from '../api';
+import { EventData } from '../api';
 import Tag, { darkenColor } from './Tag';
 
 let theme;
@@ -26,7 +25,10 @@ export function EventCard({ event } : { event: EventData }) {
   return (
     <View style={[styles.eventCardContainer, {backgroundColor: theme.scheme === 'dark' ? '#252525' : '#e0e0e0'}]}>
       <TouchableOpacity
-        onPress={() => {setSelected(!selected)}}
+        onPress={() => {
+          if(hasDescription)
+            setSelected(!selected);
+        }}
       >
 
         <View style={[styles.quickInfo, {backgroundColor: 'transparent'}]}>

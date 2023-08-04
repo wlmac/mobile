@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { Button, Dimensions, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { Dimensions, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { BottomTabParamList } from '../types';
 import { Calendar } from 'react-native-calendars';
@@ -8,9 +8,9 @@ import { Text, View } from '../components/Themed';
 import { EventCard } from '../components/EventCard';
 import {ThemeContext} from '../hooks/useColorScheme';
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { EventDataHandler } from '../api';
 import { SessionContext } from '../util/session';
+import { MarkedDates } from 'react-native-calendars/src/types';
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -25,9 +25,6 @@ const monthNames = ["January", "February", "March", "April", "May", "June", "Jul
 
 // day names
 const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
-// required to calculate date difference
-const daysInMonth = [-1, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 // calendar screen
 export default function CalendarScreen({ navigation }: { navigation: BottomTabNavigationProp<BottomTabParamList, 'Calendar'> }) {
@@ -45,38 +42,23 @@ export default function CalendarScreen({ navigation }: { navigation: BottomTabNa
   const [selectedDay, setSelectedDay] = useState(today);
   const [displayedDate, setDisplayedDate] = useState(today);
   const [currentKey, setCurrentKey] = useState(new Date());
-  const [eventDays, setEventDays] = useState([] as any[]);
+  const [eventDays, setEventDays] = useState<YMDDate[]>([]);
 
   // use effect on component load
   useEffect (() => { (async () => {
     setSelectedDay(today);
     setDisplayedDate(today);
     // add every single event day to the set
-    let tempEventDays = new Set<string>();
+    let tempEventDays = new Set<YMDDate>();
     
     for await (const event of EventDataHandler.list(session, 5000)) {
-      let startDate: YMDDate = new YMDDate(event.start_date);
-      let endDate: YMDDate = new YMDDate(event.end_date);
+      let startDate: Date = event.start_date;
+      let endDate: Date = event.end_date;
 
-      let currentYear: number = startDate.year;
-      let currentMonth: number = startDate.month;
-      let currentDay: number = startDate.day;
-      
-      // number of days between start and end dates
-      let daysBetween: number = endDate.dayDifference(startDate);
-      
       // iterate through all days between start and end dates
-      for (let j = 1; j <= daysBetween; j++) {
-        tempEventDays.add(`${currentYear}-${currentMonth.toString().padStart(2, '0')}-${currentDay.toString().padStart(2, '0')}`);
-        currentDay++;
-        if (currentDay > daysInMonth[currentMonth]) {
-          currentDay = 1;
-          currentMonth++;
-          if (currentMonth > 12) {
-            currentMonth = 1;
-            currentYear++;
-          }
-        }
+      while(startDate <= endDate) {
+        tempEventDays.add(YMDDate.fromDate(startDate));
+        startDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000);
       }
     }
     // convert set to array, and set as eventDays
@@ -90,12 +72,14 @@ export default function CalendarScreen({ navigation }: { navigation: BottomTabNa
   }, [colorScheme.scheme]);
 
   function getEventsOnDay(day: YMDDate) {
+    const date = day.toDate();
+
     let tempEventsToday = [];
     for (const event of EventDataHandler.listCached()) {
-      let startDate: YMDDate = new YMDDate(event.start_date);
-      let endDate: YMDDate = new YMDDate(event.end_date);
+      const startDate: Date = event.start_date;
+      const endDate: Date = event.end_date;
       // startDate is before or on selected day and endDate is after or on selected day add to tempEventsToday (use the compare method)
-      if (startDate.compareDays(selectedDay) <= 0 && endDate.compareDays(selectedDay) >= 0) {
+      if (startDate <= date && endDate >= date) {
         tempEventsToday.push(event);
       }
     }
@@ -144,57 +128,41 @@ export default function CalendarScreen({ navigation }: { navigation: BottomTabNa
             
             // set selected day to whatever is selected
             onDayPress={(day) => {
-              setSelectedDay(new YMDDate(day.dateString as string));
+              setSelectedDay(new YMDDate(day.year, day.month, day.day));
             }}
             
             // mark event days, selected day, and today's date
             markedDates={{
 
-              [selectedDay.strform]: {
+              [selectedDay.toString()]: {
                 selected: true,
                 disableTouchEvent: true,
                 selectedColor: '#105fb0',
-                selectedTextColor: today.strform == selectedDay.strform ? '#f7c40c' : '#fff',
+                selectedTextColor: selectedDay.equals(today) ? '#f7c40c' : '#fff',
               },  
 
-              ...eventDays.reduce((obj, eventDay) => {
-                obj[eventDay] = {
+              ...eventDays.reduce<MarkedDates>((obj, eventDay) => {
+                obj[eventDay.toString()] = {
                   marked: true,
                   dotColor: '#6e9bc4',
-                  selected: selectedDay.strform === eventDay,
-                  disableTouchEvent: selectedDay.strform === eventDay,
+                  selected: selectedDay.equals(eventDay),
+                  disableTouchEvent: selectedDay.equals(eventDay),
                   selectedColor: '#105fb0',
-                  selectedTextColor: today.strform == selectedDay.strform ? '#f7c40c' : '#fff',
+                  selectedTextColor: selectedDay.equals(today) ? '#f7c40c' : '#fff',
                 };
                 return obj;
               }, {}),
             }}
 
             // arrow change left
-            onPressArrowLeft={(substractMonth) => {
-              // change displayed date
-              let newYear: number = displayedDate.year;
-              let newMonth: number = displayedDate.month - 1;
-              let newDay = displayedDate.day; // this is not used
-              if (newMonth < 1) {
-                newMonth = 12;
-                newYear--;
-              }
-              setDisplayedDate(new YMDDate(`${newYear}-${newMonth < 10 ? '0' + newMonth : newMonth}-${newDay < 10 ? '0' + newDay : newDay}`));
-              substractMonth();
+            onPressArrowLeft={(subtractMonth) => {
+              setDisplayedDate(displayedDate.addMonths(-1));
+              subtractMonth();
             }}
 
             // arrow change right
             onPressArrowRight={(addMonth) => {
-              // change displayed date
-              let newYear: number = displayedDate.year;
-              let newMonth: number = displayedDate.month + 1;
-              let newDay = displayedDate.day; // this is not used
-              if (newMonth > 12) {
-                newMonth = 1;
-                newYear++;
-              }
-              setDisplayedDate(new YMDDate(`${newYear}-${newMonth < 10 ? '0' + newMonth : newMonth}-${newDay < 10 ? '0' + newDay : newDay}`));
+              setDisplayedDate(displayedDate.addMonths(1));
               addMonth();
             }}
           />
@@ -205,7 +173,7 @@ export default function CalendarScreen({ navigation }: { navigation: BottomTabNa
         {/* --- Return to today button, disabled when selected day or displayed month isn't on the month ---*/}
         <View style={[styles.returnToToday, {backgroundColor: colorScheme.scheme === 'dark' ? '#252525' : '#e0e0e0'}]}>
           <TouchableOpacity
-            disabled={displayedDate.strform == today.strform}
+            disabled={displayedDate.equals(today)}
             onPress={() => {
               setSelectedDay(today); 
               setCurrentKey(new Date());
@@ -215,9 +183,9 @@ export default function CalendarScreen({ navigation }: { navigation: BottomTabNa
             <Text style={[styles.returnToTodayText, 
               {color: colorScheme.scheme === 'light'
               ? 
-              displayedDate.strform == today.strform ? '#b3b3b3' : '#000'
+              displayedDate.equals(today) ? '#b3b3b3' : '#000'
               : 
-              displayedDate.strform == today.strform ? '#4a4a4a' : '#fff'
+              displayedDate.equals(today) ? '#4a4a4a' : '#fff'
               }]}>
                 Return to Today
               </Text>
@@ -240,7 +208,12 @@ export default function CalendarScreen({ navigation }: { navigation: BottomTabNa
           // events today
           <View style={{backgroundColor: colorScheme.scheme === 'dark' ? '#252525' : '#e0e0e0'}}>
             <Text style={[styles.dateText, {color: colorScheme.scheme === 'light' ? '#000' : '#fff'}]}>
-              {YMDToLong(selectedDay)}
+              {selectedDay.toDate().toLocaleDateString('en-US', {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+              })}
             </Text>
             {
               eventsToday.length === 0
@@ -272,17 +245,7 @@ export default function CalendarScreen({ navigation }: { navigation: BottomTabNa
 
 // function that turns an ISO date to YYYY-MM-DD form
 function dateToYMD(): YMDDate {
-  let date = new Date();
-  let year = date.getFullYear();
-  let month = date.getMonth() + 1;
-  let day = date.getDate();
-  return new YMDDate(`${year}-${month < 10 ? '0' + month : month}-${day < 10 ? '0' + day : day}`);
-}
-
-// function that turns a YMD to long form: [day name], [month] [day], [year]
-function YMDToLong(ymd: YMDDate): string {
-  let date = new Date(ymd.year, ymd.month-1, ymd.day);
-  return `${dayNames[date.getDay()]}, ${monthNames[ymd.month-1]} ${ymd.day}, ${ymd.year}`;
+  return YMDDate.fromDate(new Date());
 }
 
 // date class, but only year month and day
@@ -291,61 +254,39 @@ export class YMDDate {
   month: number;
   day: number;
 
-  strform: string;
-
-  // constructor that takes in string in YYYY-MM-DD format or date object
-  constructor(date: string | Date) {
-    if(typeof date === "string"){
-      // split by -
-      this.strform = date;
-
-      let dateArray = date.split('-');
-      this.year = parseInt(dateArray[0]);
-      this.month = parseInt(dateArray[1]);
-      this.day = parseInt(dateArray[2]);
-    }else{
-      this.year = date.getFullYear();
-      this.month = date.getMonth() + 1;
-      this.day = date.getDate();
-
-      this.strform = `${this.year}-${this.month.toString().padStart(2, '0')}-${this.day.toString().padStart(2, '0')}`;
-    }
-  }
-  
-
-  // compare two dates, date specific
-  // returns -1 if this is before date, 0 if equal, 1 if after
-  compareDays(date: YMDDate): number {
-    if (this.year < date.year) return -1;
-    else if (this.year > date.year) return 1;
-    else {
-      if (this.month < date.month) return -1;
-      else if (this.month > date.month) return 1;
-      else {
-        if (this.day < date.day) return -1;
-        else if (this.day > date.day) return 1;
-        else return 0;
-      }
-    }
-  }
-  
-  // compare two dates, month specific
-  compareMonths(date: YMDDate): number {
-    if (this.year < date.year) return -1;
-    else if (this.year > date.year) return 1;
-    else {
-      if (this.month < date.month) return -1;
-      else if (this.month > date.month) return 1;
-      else return 0;
-    }
+  constructor(year: number, month: number, day: number) {
+    this.year = year;
+    this.month = month;
+    this.day = day;
   }
 
-  // get the number of days between two dates, inclusive
-  dayDifference(date: YMDDate): number {
-    let millisecondsPerDay = 1000 * 60 * 60 * 24;
-    let thisDate = new Date(this.year, this.month-1, this.day);
-    let dateDate = new Date(date.year, date.month-1, date.day);
-    return Math.round((thisDate.getTime() - dateDate.getTime()) / millisecondsPerDay) + 1;
+  static fromDate(date: Date): YMDDate {
+    return new YMDDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
+  }
+
+  toString(): string {
+    return `${this.year}-${this.month.toString().padStart(2, '0')}-${this.day.toString().padStart(2, '0')}`;
+  }
+
+  equals(that: YMDDate): boolean {
+    return this.year === that.year && this.month === that.month && this.day === that.day;
+  }
+
+  toDate(): Date {
+    return new Date(this.year, this.month-1, this.day);
+  }
+
+
+  addMonths(months: number): YMDDate {
+    this.month += months;
+    if(this.month > 12) {
+      this.month -= 12;
+      this.year++;
+    }else if(this.month < 1) {
+      this.month += 12;
+      this.year--;
+    }
+    return this;
   }
 }
 
