@@ -49,7 +49,7 @@ export async function getEventsInRange(start: DateTimeString, end: DateTimeStrin
 /**
  * @returns the data if success, otherwise the error message.
  */
-export async function getSchedule(noAuth: boolean, session: Session, date?: DateTimeString): Promise<TimetableCourse[] | string>{
+export async function getSchedule(noAuth: boolean, session: Session, date?: DateTimeString, term: string | number = "current"): Promise<TimetableCourse[] | string>{
     function parseTime(time: string){
         return ((Date.parse(time) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000;
     }
@@ -67,7 +67,7 @@ export async function getSchedule(noAuth: boolean, session: Session, date?: Date
             end: DateTimeString,
         },
     }[]>(
-        noAuth ? "term/current/schedule" : "me/schedule",
+        noAuth ? `term/${term}/schedule` : "me/schedule",
         undefined,
         "GET",
         session,

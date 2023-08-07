@@ -153,8 +153,8 @@ export default function NewsScreen({
   const allB = React.useRef<ScrollView>(null);
   const fullA = React.useRef<ScrollView>(null);
 
-  const [dropdownSelection, setDropdown] = useState("All Announcements");
-  const [lastdropdown, setLastDropdown] = useState("All Announcements");
+  const [dropdownSelection, setDropdown] = useState("all");
+  const [lastdropdown, setLastDropdown] = useState("all");
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // lazy loading check if user at bottom
@@ -256,16 +256,17 @@ export default function NewsScreen({
   async function loadAnnouncements(my: boolean) {
     if (loadingMore.current[my ? "my" : "ann"]) return;
 
+    const iter = my ? myAnnouncementsIterator : announcementsIterator;
+    if(iter === undefined) return;
+
     loadingMore.current[my ? "my" : "ann"] = true;
 
     try {
 
-      const iter = my ? myAnnouncementsIterator : announcementsIterator;
-
       let data: AnnouncementProps[] = [];
 
       for (let i = 0; i < loadNum; i++) {
-        const next = await iter!.next();
+        const next = await iter.next();
         const ann: AnnouncementData = next.value;
         data.push({
           id: ann.id,
