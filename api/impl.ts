@@ -67,13 +67,17 @@ export class AnnouncementData extends IDObject<AnnouncementData>{
     comments!: CommentDescriptor[];
 
     protected preprocess(data: anyObject): anyObject {
-        const { author, organization, supervisor, comments, tags, ...rest } = super.preprocess(data);
+        const { author, organization, supervisor, comments, tags, created_date, last_modified_date, show_after, ...rest } = super.preprocess(data);
         
         this.author = this.createDescriptor<UserDescriptor>(author, UserDataHandler);
         this.organization = this.createDescriptor<OrganizationDescriptor>(organization, OrganizationDataHandler);
         this.supervisor = this.createNullableIDRequestor<UserData>(supervisor, UserDataHandler);
         this.comments = this.createDescriptorArray<CommentDescriptor>(comments, CommentDataHandler);
         this.tags = this.createDescriptorArray<TagDescriptor>(tags, TagDataHandler);
+
+        this.created_date = new Date(created_date);
+        this.last_modified_date = new Date(last_modified_date);
+        this.show_after = new Date(show_after);
 
         return rest;
     }
@@ -100,11 +104,14 @@ export class BlogPostData extends IDObject<BlogPostData>{
     comments!: CommentDescriptor[];
 
     protected preprocess(data: anyObject): anyObject {
-        const { author, comments, tags, ...rest } = super.preprocess(data);
+        const { author, comments, tags, created_date, last_modified_date, ...rest } = super.preprocess(data);
 
         this.author = this.createDescriptor<UserDescriptor>(author, UserDataHandler);
         this.comments = this.createDescriptorArray<CommentDescriptor>(comments, CommentDataHandler);
         this.tags = this.createDescriptorArray<TagDescriptor>(tags, TagDataHandler);
+
+        this.created_date = new Date(created_date);
+        this.last_modified_date = new Date(last_modified_date);
 
         return rest;
     }
