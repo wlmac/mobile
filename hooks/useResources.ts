@@ -1,38 +1,35 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Font from 'expo-font';
-import * as SplashScreen from 'expo-splash-screen';
 import * as React from 'react';
-import defaultLogin from '../lib/defaultLogin';
-import cacheResources from '../lib/cacheResources';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useColorScheme } from 'react-native';
+import { refreshLogin } from '../api';
+import { Session, SessionContext } from '../util/session';
 
-export default function useCachedResources() {
+export default function loadResources(session: Session) {
   const colorScheme = useColorScheme();
 
   const [isLoadingComplete, setLoadingComplete] = React.useState(false);
-  const [loginNeeded, setDefaultLoginDone] = React.useState(false);
+  const [loginNeeded, setDefaultLoginDone] = React.useState(true);
 
   // Load any resources or data that we need prior to rendering the app
   React.useEffect(() => {
+    if(session._data == undefined || isLoadingComplete)
+      return;
+    
     async function loadResourcesAndDataAsync() {
       try {
-        SplashScreen.preventAutoHideAsync();
-        await defaultLogin().then(res => {
-          setDefaultLoginDone(res);
-          if(!res) {
-            cacheResources();
-          }
-        })
-
-        await AsyncStorage.getItem("@scheme").then((scheme: any) => {
-          
-          if (!scheme) {
-            console.log("Scheme is being set");
-            AsyncStorage.setItem("@scheme", colorScheme as string);
-          } else console.log("Scheme: " + scheme);
-        });
+        let res = await refreshLogin(session);
+        
+        if(res){
+          setDefaultLoginDone(false);
+        }
+        
+        const scheme = session.get("@scheme");
+        if(!scheme){
+          session.set("@scheme", colorScheme as string);
+        }
 
         // Load fonts
         await Font.loadAsync({
@@ -42,15 +39,14 @@ export default function useCachedResources() {
         });
       } catch (e) {
         // We might want to provide this error information to an error reporting service
-        console.warn(e);
+        console.error(e);
       } finally {
         setLoadingComplete(true);
-        SplashScreen.hideAsync();
       }
     }
 
     loadResourcesAndDataAsync();
-  }, []);
+  }, [session._data]);
 
   return { isLoadingComplete, loginNeeded };
 }

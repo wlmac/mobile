@@ -11,8 +11,8 @@ import config from '../config.json';
 import { Text, View } from '../components/Themed';
 import Colors from '../constants/Colors';
 import { RootStackParamList } from '../types';
-import cacheResources from '../lib/cacheResources';
-import apiRequest from '../lib/apiRequest';
+import { login } from '../api';
+import { SessionContext } from '../util/session';
 
 let state = {
   username: "",
@@ -29,30 +29,16 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
 
   let [hasPressedLogin, setHasPressedLogin] = React.useState(false);
 
-  const { loginNeeded } = route.params;
-
-  async function storeUserinfo(): Promise<void> {
-    console.log("storing user info");
-    await apiRequest("/api/me", '', "GET", false).then(res => {
-      if (res.success) {
-        AsyncStorage.setItem("@userinfo", res.response);
-      }
-    }).catch(err => {
-      console.error(err);
-    });
-  }
+  const session = React.useContext(SessionContext);
 
   const loginPress = async() => {
     if(!hasPressedLogin){
       setHasPressedLogin(true);
       updateLoginResText("Logging in... Please wait");
       try{
-        let val = await login();
-        if (val == "success") {
+        let val = await login(state.username, state.password, session);
+        if (val === undefined) {
           updateLoginResText("Success! Preparing app...");
-          guestMode.updateGuest(false);
-          await cacheResources();
-          await storeUserinfo();
           navigation.replace('Root');
           return;
         }
@@ -71,17 +57,18 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
       updateLoginResText("Please wait...");
       guestMode.updateGuest(true);
       setHasPressedLogin(true);
-      await cacheResources();
       navigation.replace('Root');
     }
   }
 
-  if (!loginNeeded) {
-    React.useEffect(() => {
-      storeUserinfo();
-      navigation.replace('Root');
-    }, []);
-  }
+  const sessionContext = React.useContext(SessionContext);
+
+  React.useEffect(() => {
+    if(sessionContext.loginNeeded)
+      return;
+    
+    navigation.replace('Root');
+  }, [sessionContext]);
 
   //Keyboard animation code
   const keyboardShown = () => {
@@ -325,34 +312,4 @@ function handleRegisterPress() {
 
 function handleForgotPasswordPress() {
   WebBrowser.openBrowserAsync(`${config.server}/accounts/password/reset/`).catch(err => console.error("Couldn't load page", err));
-}
-
-async function login() {
-  try{
-    let response = await fetch(`${config.server}/api/auth/token`, { //refresh token endpoint
-      method: "POST",
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        username: state.username,
-        password: state.password
-      })
-    });
-    let json = await response.json();
-    if (json.access && json.refresh) {
-      await AsyncStorage.setItem('@accesstoken', json.access);
-      await AsyncStorage.setItem('@refreshtoken', json.refresh);
-      return "success";
-    }
-    else if (json.detail) {
-      return "Username or password incorrect";
-    }
-    else {
-      return "Something went wrong. Please try again later.";
-    }
-  }catch(err){
-    console.error(err);
-    return "Network error. Please try again later.";
-  }
 }

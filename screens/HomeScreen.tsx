@@ -5,7 +5,6 @@ import { GuestModeContext } from "../hooks/useGuestMode";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { Table, Rows } from 'react-native-table-component';
 
-import apiRequest from "../lib/apiRequest";
 import { Text, View, useThemeColor } from "../components/Themed";
 import config from "../config.json";
 import getSeason from "../lib/getSeason";
@@ -13,10 +12,13 @@ import { BottomTabParamList } from "../types";
 import { ChangeLogModal } from '../components/Changelog';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import { getSchedule } from '../api';
+import { SessionContext } from '../util/session';
 
 export default function HomeScreen({ navigation }: { navigation: BottomTabNavigationProp<BottomTabParamList, "Home"> }) {
   const colorScheme = React.useContext(ThemeContext);
   const guestMode = React.useContext(GuestModeContext);
+  const session = React.useContext(SessionContext);
 
   const notificationListener = React.useRef<any>();
   const responseListener = React.useRef<any>();
@@ -30,10 +32,7 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
   const [temperature, updateTemperature] = React.useState("Loading...");
   const [nextCourse, updateNextCourse] = React.useState<string | undefined>(undefined);
   const [timetableHeader, updateTimetableHeader] = React.useState<string | undefined>("Loading...");
-  const [dataUploaded, updateDataUploaded] = React.useState<string | undefined>(undefined);
-  //https://stackoverflow.com/questions/66762778/how-to-access-state-in-a-react-functional-component-from-a-settimeout-or-setinte
   const dataUploadedRef = React.useRef<string | undefined>();
-  dataUploadedRef.current = dataUploaded;
   const [preTimeText, updatePreTimeText] = React.useState<string | undefined>(undefined);
   const [course, updateCourse] = React.useState("Loading...");
   const [timeText, updateTimeText] = React.useState<string | undefined>("Loading...");
@@ -61,11 +60,21 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
     }),
   });  
 
+  console.log(timetable);
+
   async function setSchedule(endpoint: string, userSchedule: boolean){
     try{
-      const res = await apiRequest(endpoint, "", "GET", !userSchedule);
-      if (!res.success) {
-        if (!dataUploadedRef.current && !userSchedule) {
+      let schedule = await getSchedule(!userSchedule, session);
+      // debugger;
+      if (typeof schedule == "string"){
+        if (schedule === "No current term" || schedule === "No schedule on this day") {
+          updatePreTimeText(undefined);
+          updateCourse("NO CLASS TODAY");
+          updateTimeText(undefined);
+          updateTimetableHeader(undefined);
+          updateTimetable(undefined);
+          return;
+        }else if (!dataUploadedRef.current && !userSchedule) {
           updatePreTimeText(undefined);
           updateCourse("Currently Offline");
           updateTimeText("No internet");
@@ -74,24 +83,14 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
         }
         return;
       }
-      let schedule = JSON.parse(res.response);
-      if (!(schedule && schedule[0])) {
-        updatePreTimeText(undefined);
-        updateCourse("NO CLASS TODAY");
-        updateTimeText(undefined);
-        updateTimetableHeader(undefined);
-        updateTimetable(undefined);
-        return;
-      }
       let displayedInfo: any[][] = [];
       for (let i = 0; i < schedule.length; i++) {
         const course = schedule[i].course ?? `Period ${i + 1}`;
 
         displayedInfo.push([schedule[i].description.time, course]);
-
-        let start = ((Date.parse(schedule[i].time.start) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
-          end = ((Date.parse(schedule[i].time.end) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000;
         
+        let { start, end } = schedule[i];
+
         if(userSchedule){
           for (let j = 0; j < criticalTimes.length; j++) {
             if (criticalTimes[j].start == start && criticalTimes[j].end == end) {
@@ -106,13 +105,13 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
       if(userSchedule){
         if (dataUploadedRef.current == "public") {
           updateTimetable(displayedInfo);
-          updateDataUploaded("personal");
+          dataUploadedRef.current = "personal";
         }
       }else{
         updateTimetableHeader(schedule[0].cycle);
         if (!dataUploadedRef.current) {
           updateTimetable(displayedInfo);
-          updateDataUploaded("public");
+          dataUploadedRef.current = "public";
         }
       }
     }catch(err){
@@ -258,10 +257,16 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
     });
 
     let interval: number;
-    setSchedule((guestMode.guest ? "/api/term/current/schedule" : "/api/me/schedule")/* + "?date=2023-02-22"*/, !guestMode.guest).then(() => {
+    // TODO refactor this
+    const fun = () => setSchedule((guestMode.guest ? "term/current/schedule" : "me/schedule")/* + "?date=2023-02-22"*/, !guestMode.guest).then(() => {
       interval = window.setInterval(() => updateInfo(), 1000);
       updateInfo();
     });
+    if(guestMode.guest){
+      fun();
+    }else{
+      setSchedule("term/current/schedule", false).then(fun);
+    }
     return () => window.clearInterval(interval);
   }, []);
 
@@ -337,7 +342,7 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
 
 
           {/* ---  Main Page Container ---*/}
-          {ChangeLogModal()}
+          <ChangeLogModal/>
         </View>
       </ImageBackground>
     </ImageBackground>
