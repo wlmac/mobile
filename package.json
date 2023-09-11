@@ -50,6 +50,7 @@
     "@types/react-native": "^0.70.8",
     "@types/react-native-table-component": "^1.2.4",
     "@types/remove-markdown": "^0.3.1",
+    "eslint-plugin-only-warn": "^1.1.0",
     "lodash.filter": "^4.6.0",
     "react-native-calendars": "^1.1290.0",
     "react-native-markdown-display": "^7.0.0-alpha.2",

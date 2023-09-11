@@ -18,7 +18,7 @@ export default function useColorScheme() {
         setScheme(loaded as NonNullable<ColorSchemeName>);
         setSchemeLoaded(true);
       }
-    }).catch((() => {}));
+    }).catch(((err) => { console.error(err); }));
   }, []);
   return {scheme, schemeLoaded, updateScheme};
 }

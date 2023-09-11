@@ -14,7 +14,7 @@ export interface Session{
     setAll(data: {[key: string]: string | { [key: string]: any }}): void;
     get<T>(key: string): T;
     remove(key: string): void;
-};
+}
 
 function loadedError(): never{
     throw new Error("Session data not loaded yet");
@@ -86,6 +86,7 @@ export function SessionProvider(props: { children: any }) {
         AsyncStorage.removeItem(key);
     }
 
+    /*
     // Only cache certain objects for now
     const CACHED_HANDLERS = [
         Api.TagDataHandler,
@@ -123,8 +124,9 @@ export function SessionProvider(props: { children: any }) {
             set(handler.type + "_cachekey", objects);
         }
     }
+    */
 
-    let session: Session = {
+    const session: Session = {
         _data: data,
 
         set,

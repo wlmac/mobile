@@ -6,14 +6,14 @@ export default function useGuestMode() {
   const [guest, setGuest] = useState(false);
   const [guestLoaded, setGuestLoaded] = useState(false);
   const updateGuest = (guest: boolean) => {
-    setGuestMode(guest).catch(() => { });
+    setGuestMode(guest).catch((err) => { console.error(err); });
     setGuest(guest);
   }
   useEffect(() => {
     loadGuest().then(loaded => {
       setGuest(loaded);
       setGuestLoaded(true);
-    }).catch(() => { });
+    }).catch((err) => { console.error(err); });
   }, []);
   return { guest, guestLoaded, updateGuest };
 }

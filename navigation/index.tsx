@@ -37,7 +37,6 @@ export default function Navigation() {
   const scheme = useColorScheme();
   const guest = useGuestMode();
 
-  console.log(scheme.schemeLoaded);
   if (!scheme.schemeLoaded) {
     return null;
   }

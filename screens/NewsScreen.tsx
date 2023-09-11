@@ -2,14 +2,9 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import {
   StyleSheet,
-  StatusBar,
   ScrollView,
   Image,
-  Switch,
-  Platform,
   Button,
-  Alert,
-  NativeSyntheticEvent,
   NativeScrollEvent,
 } from "react-native";
 import { Text, View } from "../components/Themed";
@@ -17,13 +12,14 @@ import Announcement from "../components/Announcement";
 import FullAnnouncement from "../components/FullAnnouncement";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import DropDownPicker from "react-native-dropdown-picker";
-import * as WebBrowser from "expo-web-browser";
 import { ThemeContext } from "../hooks/useColorScheme";
 import { GuestModeContext } from "../hooks/useGuestMode";
 import { BottomTabParamList } from "../types";
-import { AnnouncementData, ID, UserData, apiRequest, BlogPostData, URLString, TagDescriptor } from '../api';
+import { AnnouncementData, BlogPostData, URLString, TagDescriptor } from '../api';
 import { AnnouncementDataHandler, BlogPostDataHandler, OrganizationDataHandler, TagDataHandler, UserDataHandler } from '../api/impl';
 import { SessionContext } from "../util/session";
+// @ts-ignore
+import loadingIcon from "../assets/images/loading.gif";
 
 export default function NewsScreen({
   navigation,
@@ -31,7 +27,7 @@ export default function NewsScreen({
   navigation: BottomTabNavigationProp<BottomTabParamList, "News">;
 }) {
   // get color scheme
-  let colorScheme = React.useContext(ThemeContext);
+  const colorScheme = React.useContext(ThemeContext);
   const guestMode = React.useContext(GuestModeContext);
   const sessionContext = React.useContext(SessionContext);
   const loadNum = 5; // # announcements to load at a time
@@ -47,7 +43,6 @@ export default function NewsScreen({
 
   // stores announcements
   const [allAnnouncementsData, setAllAnnouncementsData] = useState<AnnouncementProps[]>([]);
-  const [myAnnouncementsData, setMyAnnouncementsData] = useState<AnnouncementProps[]>([]);
   const [blogData, setBlogData] = useState<AnnouncementProps[]>([]);
   const [orgs, setOrgs] = useState(emptyOrgs);
   const [tags, setTags] = useState(emptyTags);
@@ -86,19 +81,16 @@ export default function NewsScreen({
 
   const [announcementsIterator, setAnnouncementsIterator] = useState<AsyncIterableIterator<AnnouncementData>>();
   const [blogsIterator, setBlogsIterator] = useState<AsyncIterableIterator<BlogPostData>>();
-  const [myAnnouncementsIterator, setMyAnnouncementsIterator] = useState<AsyncIterableIterator<AnnouncementData>>();
 
   // loading
   const [isLoading, setLoading] = useState(true); // initial loading
   const loadingMore = React.useRef({
     ann: false,
-    my: false,
     blog: false,
   }); // loading more for lazy
-  const [loadError, setLoadError] = useState(false);
-  const loadingIcon = require("../assets/images/loading.gif");
+  const [loadError, setLoadError] = useState(false); // TODO this is never used?
 
-  const [feedType, setFeedType] = useState<"all" | "my" | "blog">("all");
+  const [feedType, setFeedType] = useState<"all" | "blog">("all");
 
   // toggle between scroll feed and full announcement feed
   const [fullAnn, setAnn] = useState<{
@@ -119,9 +111,7 @@ export default function NewsScreen({
     }
 
     const ann = (
-      feedType === "all" ? allAnnouncementsData :
-      feedType === "my" ? myAnnouncementsData :
-      blogData
+      feedType === "all" ? allAnnouncementsData : blogData
     ).find((e) => e.id === id);
 
     if (ann === undefined) {
@@ -144,12 +134,8 @@ export default function NewsScreen({
     fullA.current?.scrollTo({ x: 0, y: 0, animated: false });
   }
 
-  //displayed info if nothing in feed
-  const [noMyFeed, setNoMyFeed] = useState(false);
-
   // scrollview reset to top on switch toggle
   const allA = React.useRef<ScrollView>(null);
-  const myA = React.useRef<ScrollView>(null);
   const allB = React.useRef<ScrollView>(null);
   const fullA = React.useRef<ScrollView>(null);
 
@@ -169,7 +155,7 @@ export default function NewsScreen({
   function changeDropdown() {
     if (lastdropdown == dropdownSelection) return;
 
-    if(["all", "my", "blog"].includes(dropdownSelection)){
+    if(["all", "blog"].includes(dropdownSelection)){
       setFeedType(dropdownSelection as any);
     }else{
       console.warn("Invalid dropdown selection", dropdownSelection);
@@ -194,12 +180,8 @@ export default function NewsScreen({
     }
 
     setAnnouncementsIterator(AnnouncementDataHandler.list(sessionContext));
-    // setMyAnnouncementsIterator(AnnouncementDataHandler.list(sessionContext, true)); TODO: find api endpoint
     setBlogsIterator(BlogPostDataHandler.list(sessionContext));
 
-    if (myAnnouncementsData.length === 0) {
-      setNoMyFeed(true);
-    }
     setLoading(false);
   };
 
@@ -208,8 +190,7 @@ export default function NewsScreen({
 
     (async () => {
       await Promise.allSettled([
-        loadAnnouncements(false),
-        !guestMode.guest && loadAnnouncements(true),
+        loadAnnouncements(),
         loadBlogs()
       ]);
     })();
@@ -253,20 +234,17 @@ export default function NewsScreen({
     loadingMore.current.blog = false;
   }
 
-  async function loadAnnouncements(my: boolean) {
-    if (loadingMore.current[my ? "my" : "ann"]) return;
+  async function loadAnnouncements() {
+    if (loadingMore.current.ann) return;
 
-    const iter = my ? myAnnouncementsIterator : announcementsIterator;
-    if(iter === undefined) return;
-
-    loadingMore.current[my ? "my" : "ann"] = true;
+    loadingMore.current.ann = true;
 
     try {
 
       let data: AnnouncementProps[] = [];
 
       for (let i = 0; i < loadNum; i++) {
-        const next = await iter.next();
+        const next = await announcementsIterator!.next();
         const ann: AnnouncementData = next.value;
         data.push({
           id: ann.id,
@@ -280,13 +258,7 @@ export default function NewsScreen({
         })
       }
 
-      data = (my ? myAnnouncementsData : allAnnouncementsData).concat(data);
-
-      if (my) {
-        setMyAnnouncementsData(data);
-      } else {
-        setAllAnnouncementsData(data);
-      }
+      setAllAnnouncementsData(allAnnouncementsData.concat(data));
 
       setLoadError(false);
 
@@ -295,7 +267,7 @@ export default function NewsScreen({
       setLoadError(true);
     }
 
-    loadingMore.current[my ? "my" : "ann"] = false;
+    loadingMore.current.ann = false;
   }
 
   // fetch data from API
@@ -339,73 +311,17 @@ export default function NewsScreen({
               setFullAnnId={setFullAnnId}
               isBlog={true}
             />
-          : feedType === "all" ?
+          : 
             /* School Announcements */
             <AnnouncementsViewer
-            announcements={allAnnouncementsData}
-            sref={allA}
-            isAtBottom={isCloseToBottom}
-            loadAnnouncements={() => loadAnnouncements(false)}
-            setFullAnnId={setFullAnnId}
-            isBlog={false}
-          /> :
-            /* My Feed Announcement */
-            <ScrollView><Text>TODO</Text></ScrollView> /*AnnouncementsViewer({
-              announcements: myAnnouncementsData,
-              sref: myA,
-              loadAnnouncements: () => loadAnnouncements(true),
-              children:
-              (<><View
-                style={[
-                  noMyFeed
-                    ? { display: "flex" }
-                    : {
-                        display: "flex",
-                        borderColor: "red",
-                        backgroundColor: "red",
-                      },
-                  {
-                    backgroundColor:
-                      colorScheme.scheme === "dark" ? "#252525" : "#eaeaea",
-                  },
-                ]}
-              >
-                <Text style={{ paddingTop: 10, textAlign: "center" }}>
-                  There is nothing in your feed. Join some&nbsp;
-                  <Text
-                    style={{ color: "rgb(51,102,187)" }}
-                    onPress={() => {
-                      WebBrowser.openBrowserAsync(`${config.server}/clubs`);
-                    }}
-                  >
-                    clubs
-                  </Text>
-                  &nbsp;to have their announcements show up here!
-                </Text>
-              </View>
-              <View
-                style={[
-                  guestMode.guest ? { display: "flex" } : { display: "none" },
-                  {
-                    backgroundColor:
-                      colorScheme.scheme === "dark" ? "#252525" : "#eaeaea",
-                  },
-                ]}
-              >
-                <Text style={{ textAlign: "center" }}>
-                  &nbsp;
-                  <Text
-                    style={{ color: "rgb(51,102,187)" }}
-                    onPress={() => {
-                      navigation.jumpTo("Settings");
-                    }}
-                  >
-                    Log in
-                  </Text>
-                  &nbsp;to view your personal feed here!
-                </Text>
-              </View></>)
-            })*/ }
+              announcements={allAnnouncementsData}
+              sref={allA}
+              isAtBottom={isCloseToBottom}
+              loadAnnouncements={() => loadAnnouncements()}
+              setFullAnnId={setFullAnnId}
+              isBlog={false}
+            />
+          }
         </View>
 
         {/* Full Announcement */}
@@ -439,7 +355,6 @@ export default function NewsScreen({
         theme={colorScheme.scheme == "dark" ? "DARK" : "LIGHT"}
         items={[
           { label: "All Announcements", value: "all" },
-          { label: "My Announcements", value: "my" },
           { label: "Blog", value: "blog" },
         ]}
         multiple={false}

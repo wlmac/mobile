@@ -86,6 +86,10 @@ export async function getSchedule(noAuth: boolean, session: Session, date?: Date
         return res;
     }
 
+    if(res.length == 0){
+        return "No schedule on this day";
+    }
+
     // TODO fix this
     const schedule: any[] = [];
     for(const segment of res){

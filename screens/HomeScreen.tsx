@@ -28,20 +28,20 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
   const [temperature, updateTemperature] = React.useState("Loading...");
   const [nextCourse, updateNextCourse] = React.useState<string | undefined>(undefined);
   const [timetableHeader, updateTimetableHeader] = React.useState<string | undefined>("Loading...");
-  const [dataUploaded, updateDataUploaded] = React.useState<string | undefined>(undefined);
-  //https://stackoverflow.com/questions/66762778/how-to-access-state-in-a-react-functional-component-from-a-settimeout-or-setinte
   const dataUploadedRef = React.useRef<string | undefined>();
-  dataUploadedRef.current = dataUploaded;
   const [preTimeText, updatePreTimeText] = React.useState<string | undefined>(undefined);
   const [course, updateCourse] = React.useState("Loading...");
   const [timeText, updateTimeText] = React.useState<string | undefined>("Loading...");
   const [timetable, updateTimetable] = React.useState<string | any[][] | undefined>("Fetching data...");
 
+  console.log(timetable);
+
   async function setSchedule(endpoint: string, userSchedule: boolean){
     try{
       let schedule = await getSchedule(!userSchedule, session);
+      // debugger;
       if (typeof schedule == "string"){
-        if (schedule === "No current term") {
+        if (schedule === "No current term" || schedule === "No schedule on this day") {
           updatePreTimeText(undefined);
           updateCourse("NO CLASS TODAY");
           updateTimeText(undefined);
@@ -79,13 +79,13 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
       if(userSchedule){
         if (dataUploadedRef.current == "public") {
           updateTimetable(displayedInfo);
-          updateDataUploaded("personal");
+          dataUploadedRef.current = "personal";
         }
       }else{
         updateTimetableHeader(schedule[0].cycle);
         if (!dataUploadedRef.current) {
           updateTimetable(displayedInfo);
-          updateDataUploaded("public");
+          dataUploadedRef.current = "public";
         }
       }
     }catch(err){
