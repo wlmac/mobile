@@ -20,7 +20,11 @@ export const axiosInstance = axios.create({
 /**
  * @returns the data if success, otherwise the error message.
  */
-export async function apiRequest<T>(endpoint: string, body: string | anyObject | undefined, method: "GET" | "POST" /* | etc... */,  session: Session, noAuth: boolean = false, options?: AxiosRequestConfig<T>): Promise<T | string> {
+export async function apiRequest<T>(endpoint: string, body: string | anyObject | undefined, method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH" /* | etc... */,  session: Session, noAuth = false, options?: AxiosRequestConfig<T>): Promise<T | string> {
+    if(/^\/?api\//.test(endpoint)){
+        console.warn("The base URL for apiRequest already includes /api/, try removing it from the endpoint");
+    }
+    
     let result;
     if(noAuth){
         result = await _apiRequest<T>(endpoint, body, method, options);
@@ -56,7 +60,7 @@ export async function apiRequest<T>(endpoint: string, body: string | anyObject |
     }
     return result;
 }
-async function _apiRequest<T>(endpoint: string, body: string | anyObject | undefined, method: "GET" | "POST" /* | etc... */, options?: AxiosRequestConfig<T>): Promise<T | string> {
+async function _apiRequest<T>(endpoint: string, body: string | anyObject | undefined, method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH" /* | etc... */, options?: AxiosRequestConfig<T>): Promise<T | string> {
     try{
         let response = await axiosInstance<T>(endpoint, { method, data: body, ...options });
         return response.data;

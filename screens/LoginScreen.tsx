@@ -11,7 +11,7 @@ import config from '../config.json';
 import { Text, View } from '../components/Themed';
 import Colors from '../constants/Colors';
 import { RootStackParamList } from '../types';
-import { login } from '../api';
+import { apiRequest, login } from '../api';
 import { SessionContext } from '../util/session';
 
 let state = {
@@ -21,6 +21,10 @@ let state = {
 
 
 export default function LoginScreen({ route, navigation }: { route: RouteProp<RootStackParamList, 'Login'>, navigation: StackNavigationProp<RootStackParamList, 'Login'> }) {
+  
+  console.log("login", route.params);
+
+  const session = React.useContext(SessionContext);
   const colorScheme = React.useContext(ThemeContext);
   const guestMode = React.useContext(GuestModeContext);
 
@@ -29,9 +33,21 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
 
   let [hasPressedLogin, setHasPressedLogin] = React.useState(false);
 
-  const session = React.useContext(SessionContext);
-
+  async function storeUserinfo(): Promise<void> {
+    console.log("storing user info");
+    await apiRequest("/me", undefined, "GET", session, false).then(res => {
+      if (typeof res !== "string") {
+        session.set("@userinfo", res as any);
+      }
+    }).catch(err => {
+      console.error(err);
+    });
+  }
+  
   const loginPress = async() => {
+    if(state.username === "" || state.password === ""){
+      return;
+    }
     if(!hasPressedLogin){
       setHasPressedLogin(true);
       updateLoginResText("Logging in... Please wait");
@@ -39,6 +55,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
         let val = await login(state.username, state.password, session);
         if (val === undefined) {
           updateLoginResText("Success! Preparing app...");
+          await storeUserinfo();
           navigation.replace('Root');
           return;
         }
@@ -64,10 +81,10 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
   const sessionContext = React.useContext(SessionContext);
 
   React.useEffect(() => {
-    if(sessionContext.loginNeeded)
+    if(route.params && route.params.loginNeeded)
       return;
     
-    navigation.replace('Root');
+    storeUserinfo().then(() => navigation.replace('Root'));
   }, [sessionContext]);
 
   //Keyboard animation code

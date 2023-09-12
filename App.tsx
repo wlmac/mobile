@@ -10,6 +10,7 @@ import Navigation from './navigation';
 import { SessionProvider } from './util/session';
 
 import { Text, View } from './components/Themed';
+import { axiosInstance } from './api/core';
 export default function App() {
   React.useEffect(() => {
     Device.getDeviceTypeAsync().then(type => {
@@ -19,6 +20,13 @@ export default function App() {
         ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
       }
     }).catch(err => { });
+    
+    // // debug axios
+    // axiosInstance.interceptors.request.use(request => {
+    //   console.log(`Starting Request to ${request.url} with params`, request.params, ":", request);
+    //   return request;
+    // });
+    
   }, []);
 
   return (

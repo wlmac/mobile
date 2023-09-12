@@ -6,7 +6,7 @@
 export type RootStackParamList = {
   Root: undefined;
   NotFound: undefined;
-  Login: {};
+  Login: { loginNeeded: boolean };
 };
 
 export type BottomTabParamList = {

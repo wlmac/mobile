@@ -18,7 +18,6 @@ import { BottomTabParamList } from "../types";
 import { AnnouncementData, BlogPostData, URLString, TagDescriptor } from '../api';
 import { AnnouncementDataHandler, BlogPostDataHandler, OrganizationDataHandler, TagDataHandler, UserDataHandler } from '../api/impl';
 import { SessionContext } from "../util/session";
-// @ts-ignore
 import loadingIcon from "../assets/images/loading.gif";
 
 export default function NewsScreen({
@@ -42,23 +41,21 @@ export default function NewsScreen({
   }[] = [];
 
   // stores announcements
-  /*
-  const [sacAnnouncements, setSacAnnouncements] = useState<AnnouncementData[]>([]);
-  */
   const [allAnnouncementsData, setAllAnnouncementsData] = useState<AnnouncementProps[]>([]);
+  const [sacAnnouncementsData, setSacAnnouncementsData] = useState<AnnouncementProps[]>([]);
   const [blogData, setBlogData] = useState<AnnouncementProps[]>([]);
   const [orgs, setOrgs] = useState(emptyOrgs);
   const [tags, setTags] = useState(emptyTags);
   const [users, setUsers] = useState(emptyUsers);
 
   const addOrgs = (id: number, name: string, icon: string) => {
-    let tmp = orgs;
+    const tmp = orgs;
     tmp[id] = { name: name, icon: icon };
     setOrgs(tmp);
   };
 
   const addTags = (id: number, name: string, color: string) => {
-    let tmp = tags;
+    const tmp = tags;
     tmp[id] = { name: name, color: color };
     setTags(tmp);
   };
@@ -70,7 +67,7 @@ export default function NewsScreen({
     last_name: string,
     graduating_year: number
   ) => {
-    let tmp = users;
+    const tmp = users;
     tmp[id] = {
       username: username,
       first_name: first_name,
@@ -80,31 +77,28 @@ export default function NewsScreen({
     setUsers(tmp);
   };
 
-  // tracking how many announcements have been loaded
-  /*
-  const [nextSacSet, setNextSacSet] = useState(0);
-  */
   // api iterators
-
-  const [announcementsIterator, setAnnouncementsIterator] = useState<AsyncIterableIterator<AnnouncementData>>();
+  const [allAnnouncementsIterator, setAllAnnouncementsIterator] = useState<AsyncIterableIterator<AnnouncementData>>();
+  const [sacAnnouncementsIterator, setSacAnnouncementsIterator] = useState<AsyncIterableIterator<AnnouncementData>>();
   const [blogsIterator, setBlogsIterator] = useState<AsyncIterableIterator<BlogPostData>>();
 
   // loading
   const [isLoading, setLoading] = useState(true); // initial loading
   const loadingMore = React.useRef({
-    ann: false,
+    all: false,
+    sac: false,
     blog: false,
   }); // loading more for lazy
   const [loadError, setLoadError] = useState(false); // TODO this is never used?
 
-  const [feedType, setFeedType] = useState<"all" | "blog">("all");
+  const [feedType, setFeedType] = useState<"all" | "sac" | "blog">("all");
 
   // toggle between scroll feed and full announcement feed
   const [fullAnn, setAnn] = useState<{
     id: number,
     tags: TagDescriptor[],
     title: string,
-    organization: string,
+    organization: string | undefined,
     icon: URLString
     author: string,
     date: Date,
@@ -118,7 +112,9 @@ export default function NewsScreen({
     }
 
     const ann = (
-      feedType === "all" ? allAnnouncementsData : blogData
+      feedType === "all" ? allAnnouncementsData : 
+      feedType === "sac" ? sacAnnouncementsData :
+      blogData
     ).find((e) => e.id === id);
 
     if (ann === undefined) {
@@ -159,32 +155,15 @@ export default function NewsScreen({
     layoutMeasurement,
     contentOffset,
     contentSize,
-  }: any): boolean {
+  }: NativeScrollEvent): boolean {
     return layoutMeasurement.height + contentOffset.y >= contentSize.height - 5;
   }
 
-  /*
-  function changeDropdown(): void {
-    if(lastdropdown == dropdownSelection) return;
-    if (dropdownSelection === "All Announcements") {
-      allA.current?.scrollTo({ x: 0, y: 0, animated: false });
-      setFilter(false);
-    }
-    if (dropdownSelection === "SAC Announcements") {
-      sacA.current?.scrollTo({ x: 0, y: 0, animated: false });
-      setFilter(true);
-    }
-    if (dropdownSelection === "Blog") {
-      allB.current?.scrollTo({ x: 0, y: 0, animated: false });
-      setBlog(true);
-    } else {
-      setBlog(false);
-  */
   function changeDropdown() {
     if (lastdropdown == dropdownSelection) return;
 
-    if(["all", "blog"].includes(dropdownSelection)){
-      setFeedType(dropdownSelection as any);
+    if(["all", "sac", "blog"].includes(dropdownSelection)){
+      setFeedType(dropdownSelection as typeof feedType);
     }else{
       console.warn("Invalid dropdown selection", dropdownSelection);
     }
@@ -207,43 +186,88 @@ export default function NewsScreen({
       );
     }
 
-    setAnnouncementsIterator(AnnouncementDataHandler.list(sessionContext));
-    // TODO: SAC announcements iterator
+    setAllAnnouncementsIterator(AnnouncementDataHandler.list(sessionContext));
+    setSacAnnouncementsIterator(AnnouncementDataHandler.list(sessionContext, undefined, undefined, {
+      params: {
+        organization: 8
+      }
+    }))
     setBlogsIterator(BlogPostDataHandler.list(sessionContext));
 
     setLoading(false);
   };
 
   React.useEffect(() => {
-    if (announcementsIterator === undefined) return;
+    if (allAnnouncementsIterator === undefined) return;
 
     (async () => {
       await Promise.allSettled([
-        loadAnnouncements(),
+        loadAnnouncements("all"),
+        loadAnnouncements("sac"),
         loadBlogs()
       ]);
     })();
-  }, [announcementsIterator]);
+  }, [allAnnouncementsIterator]);
 
-  /*
-  const loadSacAnnouncements = async () =>
-    loadResults(
-      `/api/v3/obj/announcement?format=json&organization=8&limit=${loadNum}&offset=${nextSacSet}`,
-      setSacAnnouncements,
-      setNextSacSet
-    );
-  */
-  async function loadAnnouncements() {
-    if (loadingMore.current.ann) return;
 
-    loadingMore.current.ann = true;
+  async function loadBlogs() {
+    if(!blogsIterator)
+      throw new Error("Iterator not set");
+
+    if (loadingMore.current.blog) return;
+
+    loadingMore.current.blog = true;
 
     try {
 
       let data: AnnouncementProps[] = [];
 
       for (let i = 0; i < loadNum; i++) {
-        const next = await announcementsIterator!.next();
+        const next = await blogsIterator!.next();
+        const ann: BlogPostData = next.value;
+        data.push({
+          id: ann.id,
+          title: ann.title,
+          iconUrl: ann.author?.gravatar_url,
+          author: ann.author?.username,
+          organization: undefined,
+          date: ann.created_date,
+          tags: ann.tags,
+          body: ann.body,
+        })
+      }
+
+      data = blogData.concat(data);
+
+      setBlogData(data);
+
+      setLoadError(false);
+
+    } catch (e) {
+      console.error(e);
+      setLoadError(true);
+    }
+
+    loadingMore.current.blog = false;
+  }
+
+  async function loadAnnouncements(id: "all" | "sac") {
+
+    const iterator = (id === "all" ? allAnnouncementsIterator : sacAnnouncementsIterator);
+
+    if(!iterator)
+      throw new Error("Iterator not set");
+
+    if (loadingMore.current[id]) return;
+
+    loadingMore.current[id] = true;
+
+    try {
+
+      const data: AnnouncementProps[] = [];
+
+      for (let i = 0; i < loadNum; i++) {
+        const next = await iterator.next();
         const ann: AnnouncementData = next.value;
         data.push({
           id: ann.id,
@@ -257,7 +281,7 @@ export default function NewsScreen({
         })
       }
 
-      setAllAnnouncementsData(allAnnouncementsData.concat(data));
+      (id === "all" ? setAllAnnouncementsData : setSacAnnouncementsData)(allAnnouncementsData.concat(data));
 
       setLoadError(false);
 
@@ -266,7 +290,7 @@ export default function NewsScreen({
       setLoadError(true);
     }
 
-    loadingMore.current.ann = false;
+    loadingMore.current[id] = false;
   }
 
   // fetch data from API
@@ -294,37 +318,33 @@ export default function NewsScreen({
             ]
         }
       >
-        {/* Sac Feed Announcement
-        { !isBlog && isFilter && fullAnnId === "-1" && <ScrollView
-          ref={sacA}
-          style={styles.scrollView}
-          onScroll={({ nativeEvent }) => {
-            if (isCloseToBottom(nativeEvent)) loadSacAnnouncements();
-          }}
-          scrollEventThrottle={0}
-        >
-          {Object.entries(sacAnnouncements).map(([key, ann]) => (
-            <Announcement key={key} ann={ann} fullAnn={setFullAnnId} />
-          ))}
-          {loadError ? (
-            <View style={styles.error}>
-              <Text style={styles.errorMessage}>An error occured.</Text>
-              <Button
-                title="Retry"
-                onPress={() => {
-                  loadSacAnnouncements();
-                }}
-              ></Button>
-            </View>
-          ) : undefined} */}
-
         <View style={{
           backgroundColor:
             colorScheme.scheme === "dark" ? "#252525" : "#eaeaea",
           display: fullAnn ? "none" : undefined,
         }}>
           {dropdown()}
-          {feedType === "blog" ?
+          {feedType === "all" ?
+            /* School Announcements */
+            <AnnouncementsViewer
+              announcements={allAnnouncementsData}
+              sref={allA}
+              isAtBottom={isCloseToBottom}
+              loadAnnouncements={() => loadAnnouncements("all")}
+              setFullAnnId={setFullAnnId}
+              isBlog={false}
+            />
+          :  feedType === "sac" ?
+            /* SAC Announcements */
+            <AnnouncementsViewer
+              announcements={sacAnnouncementsData}
+              sref={sacA}
+              isAtBottom={isCloseToBottom}
+              loadAnnouncements={() => loadAnnouncements("sac")}
+              setFullAnnId={setFullAnnId}
+              isBlog={false}
+            />
+          :
             /* Blog */
             <AnnouncementsViewer
               announcements={blogData}
@@ -333,16 +353,6 @@ export default function NewsScreen({
               loadAnnouncements={loadBlogs}
               setFullAnnId={setFullAnnId}
               isBlog={true}
-            />
-          : 
-            /* School Announcements */
-            <AnnouncementsViewer
-              announcements={allAnnouncementsData}
-              sref={allA}
-              isAtBottom={isCloseToBottom}
-              loadAnnouncements={() => loadAnnouncements()}
-              setFullAnnId={setFullAnnId}
-              isBlog={false}
             />
           }
         </View>
@@ -376,11 +386,9 @@ export default function NewsScreen({
     return (
       <DropDownPicker
         theme={colorScheme.scheme == "dark" ? "DARK" : "LIGHT"}
-        items={[/*
-          { label: "All Announcements", value: "All Announcements" },
-          { label: "SAC Announcements", value: "SAC Announcements" },
-          { label: "Blog", value: "Blog" },*/
+        items={[
           { label: "All Announcements", value: "all" },
+          { label: "SAC Announcements", value: "sac" },
           { label: "Blog", value: "blog" },
         ]}
         multiple={false}
@@ -442,7 +450,7 @@ interface AnnouncementProps {
   title: string,
   iconUrl: URLString,
   author: string,
-  organization: string,
+  organization: string | undefined,
   date: Date,
   tags: TagDescriptor[],
   body: string,
@@ -463,7 +471,7 @@ function AnnouncementsViewer({
   sref: React.RefObject<ScrollView>,
   isAtBottom: (event: NativeScrollEvent) => boolean,
   loadAnnouncements: () => void,
-  setFullAnnId: (id: number) => any,
+  setFullAnnId: (id: number) => void,
   errored?: boolean,
   children?: React.ReactNode,
   isBlog: boolean,

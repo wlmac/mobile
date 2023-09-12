@@ -3,8 +3,6 @@ import { ScrollView, StyleSheet, Alert, TouchableOpacity, useColorScheme, StyleP
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
 
-
-import apiRequest from "../lib/apiRequest";
 import { Text, View } from '../components/Themed';
 import { RootStackParamList } from '../types';
 import Changelog from '../components/Changelog';
@@ -17,13 +15,17 @@ import * as Notifications from 'expo-notifications';
 
 
 import { Logs } from 'expo'
+import { apiRequest } from '../api';
+import { SessionContext } from '../util/session';
 
 
 Logs.enableExpoCliLogging()
 
 export default function SettingsScreen({ navigation }: { navigation: StackNavigationProp<RootStackParamList, 'Root'> }) {
+  const session = React.useContext(SessionContext);
+
   const [curView, setView] = React.useState(-1);
-  const [userinfo, setUserinfo] = React.useState<any>(null);
+  const userinfo = session.get("@userinfo") as any;
 
   /*
   curView:
@@ -76,8 +78,8 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
     }
 
     expoPushToken = expoPushToken.slice(18, -1);
-    let res = await apiRequest("/api/v3/notif/token", JSON.stringify({"expo_push_token": expoPushToken}), "DELETE", false);
-    if (!res.success) {
+    let res = await apiRequest("/api/v3/notif/token", { "expo_push_token": expoPushToken }, "DELETE", session);
+    if (typeof res === 'string') {
       Alert.alert('Error', 'Failed to log out (clearing server-side notification settings failed)', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
     }
     Alert.alert('Success', 'Logged out successfully', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
@@ -106,25 +108,6 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
       });
     }
   }
- 
-    useEffect(() => {
-      const fetchData = async() => {
-        if (!guestMode.guest) {  
-          AsyncStorage.getItem("@userinfo").then((data: string | null) => {
-            if (data !== null) {
-              let info = JSON.parse(data);
-              setUserinfo(info);
-            }
-          }).catch(err => {console.error(err)});          
-
-        }
-        return;
-      }
-      fetchData();
-      return;
-      
-    }, []);
-
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("blur", () => {

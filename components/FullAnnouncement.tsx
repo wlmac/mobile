@@ -31,7 +31,7 @@ export default function FullAnnouncement({
     id: number,
     tags: TagDescriptor[],
     title: string,
-    organization: string,
+    organization: string | undefined,
     icon: URLString
     author: string,
     date: Date,
@@ -127,15 +127,17 @@ const ImageResizeAfter = ({uri, desiredWidth}: {uri: string, desiredWidth: numbe
 }
 
 const rules = {
-  image: (
+  image: function(
     node: any,
     children: any,
     parent: any,
     styles: any,
     allowedImageHandlers: any,
     defaultImageHandler: any,
-  ) => {
-    const {src, alt} = node.attributes;
+  ){
+    console.log("image", arguments);
+
+    const { src } = node.attributes;
 
     // we check that the source starts with at least one of the elements in allowedImageHandlers
     const show =

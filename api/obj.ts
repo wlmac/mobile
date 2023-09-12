@@ -86,13 +86,23 @@ export class Handler<T extends IDObject<T>, U extends IDDescriptor<U, T> = any>{
         return obj;
     }
 
-    async *list(session: Session, limit=50, offset=0, options?: AxiosRequestConfig<LimitOffsetPagination<T>>): AsyncIterableIterator<T> {
+    async *list(session: Session, limit=50, offset=0, options: AxiosRequestConfig<LimitOffsetPagination<T>> = {}): AsyncIterableIterator<T> {
         if(["comment", "flatpage"].includes(this.type))
             throw new Error(`Cannot list ${this.type} objects`);
         
+        options = {
+            ...options,
+            params: {
+                ...options.params,
+                limit,
+                offset,
+            }
+        };
+
         try{
-            let url: URLString | null = `v3/obj/${this.type}?limit=${limit}&offset=${offset}`;
+            let url: URLString | null = `v3/obj/${this.type}`;
             do{
+                console.log(this, options);
                 let response: LimitOffsetPagination<T> = (await axiosInstance.get<LimitOffsetPagination<T>>(url, options)).data;
                 for(const data of response.results)
                     yield this.fromRawData(data);
@@ -172,7 +182,6 @@ export abstract class IDObject<T extends IDObject<T>>{
         if(id === undefined)
             return undefined!;
         if(typeof id === "object"){
-            debugger;
             const obj = new handler.object(handler, id);
             handler.addToCache(obj);
             id = id.id;

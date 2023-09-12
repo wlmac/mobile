@@ -12,7 +12,7 @@ import { BottomTabParamList } from "../types";
 import { ChangeLogModal } from '../components/Changelog';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
-import { getSchedule } from '../api';
+import { apiRequest, getSchedule } from '../api';
 import { SessionContext } from '../util/session';
 
 export default function HomeScreen({ navigation }: { navigation: BottomTabNavigationProp<BottomTabParamList, "Home"> }) {
@@ -59,8 +59,6 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
       shouldSetBadge: false,
     }),
   });  
-
-  console.log(timetable);
 
   async function setSchedule(endpoint: string, userSchedule: boolean){
     try{
@@ -209,12 +207,12 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
       }
     }
 
-    await apiRequest("/api/v3/notif/token", JSON.stringify({"expo_push_token": expoPushToken, "options": options}), "PUT", false).then((res) => {
-      if (!res.success) {
-        console.error("An error occurred while trying to set the expo notification token: " + res.error);
+    await apiRequest("/v3/notif/token", { "expo_push_token": expoPushToken, "options": options }, "PUT", session, false).then((res) => {
+      if (typeof res === "string") {
+        console.error("An error occurred while trying to set the expo notification token: " + res);
         return undefined;
       } else {
-        console.log("Successfully updated notif token " + res.response);
+        console.log("Successfully updated notif token " + JSON.stringify(res));
         setExpoNotificationToken(expoPushToken);
       }
     }).catch((err) => {

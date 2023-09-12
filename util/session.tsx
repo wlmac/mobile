@@ -125,6 +125,7 @@ export function SessionProvider(props: { children: any }) {
         }
     }
     */
+   function cacheObjects(){}
 
     const session: Session = {
         _data: data,
