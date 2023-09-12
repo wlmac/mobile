@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, TextInput, TouchableOpacity, Image, Platform, Keyboard, useWindowDimensions} from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity, Image, Platform, Keyboard, useWindowDimensions, DimensionValue} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
@@ -203,7 +203,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
   );
 }
 
-let elementWidth = "60%"
+let elementWidth: DimensionValue = "60%";
 const styles = StyleSheet.create({
 
   /* ---- MAIN CONTAINER -----*/
