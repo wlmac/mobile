@@ -9,11 +9,9 @@ import {ThemeContext} from '../hooks/useColorScheme';
 import { EventData } from '../api';
 import Tag, { darkenColor } from './Tag';
 
-let theme;
-
 // Event card
 export function EventCard({ event } : { event: EventData }) {
-  theme = React.useContext(ThemeContext);
+  const theme = React.useContext(ThemeContext);
 
   const color = event.tags.length == 0 ? '#74e1ed' : event.tags[0].color;
 
@@ -32,7 +30,7 @@ export function EventCard({ event } : { event: EventData }) {
       >
 
         <View style={[styles.quickInfo, {backgroundColor: 'transparent'}]}>
-          {TimeRange(event.start_date, event.end_date, color)}
+          {TimeRange(event.start_date, event.end_date, theme.scheme === 'light' ? color : darkenColor(color))}
           <View style={[styles.info, {backgroundColor: theme.scheme === 'light' ? '#f3f3f3' : '#1c1c1c'}]}>
             <Text style={[styles.titleText, {color: theme.scheme === 'light' ? '#404040' : '#fff'}]}>{event.name}</Text>
             <Text style={styles.organizationText}>{event.organization.name}</Text>
@@ -95,7 +93,7 @@ function TimeRange(startDate: Date, endDate: Date, color: string) {
   if (endHour === 0) endHour = 12;
 
   return (
-    <View style={[styles.timeRange, {backgroundColor: darkenColor(color)}]}>
+    <View style={[styles.timeRange, {backgroundColor: color}]}>
       <Text style={styles.timeRangeText}>{startDateYMD[0]}/{startDateYMD[1]}/{startDateYMD[2]}</Text>
       {
         !(startHour == 12 && startDateTime[1] == "00" && startIsMorning && endHour == 11 && endDateTime[1] == "59" && !endIsMorning) && 
