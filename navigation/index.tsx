@@ -69,7 +69,7 @@ function RootNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {toLogin ? [
-        <Stack.Screen name="Login" component={LoginScreen} key="loginstackscreen" />,
+        <Stack.Screen name="Login" component={LoginScreen} key="loginstackscreen" initialParams={{ loginNeeded: true }} />,
         <Stack.Screen name="Root" component={BottomTabNavigator} key="rootstackscreen" />
       ] : [
         <Stack.Screen name="Root" component={BottomTabNavigator} key="rootstackscreen" />,

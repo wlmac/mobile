@@ -34,14 +34,13 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
   let [hasPressedLogin, setHasPressedLogin] = React.useState(false);
 
   async function storeUserinfo(): Promise<void> {
-    console.log("storing user info");
-    await apiRequest("/me", undefined, "GET", session, false).then(res => {
-      if (typeof res !== "string") {
-        session.set("@userinfo", res as any);
-      }
-    }).catch(err => {
-      console.error(err);
-    });
+    if(guestMode.guest){
+      return;
+    }
+    const userInfo = await apiRequest("/me", undefined, "GET", session, false);
+    if (typeof userInfo !== "string") {
+      session.set("@userinfo", userInfo as any);
+    }
   }
   
   const loginPress = async() => {

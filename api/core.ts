@@ -24,7 +24,7 @@ export async function apiRequest<T>(endpoint: string, body: string | anyObject |
     if(/^\/?api\//.test(endpoint)){
         console.warn("The base URL for apiRequest already includes /api/, try removing it from the endpoint");
     }
-    
+
     let result;
     if(noAuth){
         result = await _apiRequest<T>(endpoint, body, method, options);
@@ -32,6 +32,7 @@ export async function apiRequest<T>(endpoint: string, body: string | anyObject |
         // Log in
         let accessToken = session.get<string>("@accesstoken"), tokenData;
         if(accessToken === undefined){
+            console.warn("No access token while noAuth is set, this is probably a mistake");
             return await _apiRequest<T>(endpoint, body, method, options);
         }
         try{
