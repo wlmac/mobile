@@ -8,7 +8,7 @@ import { Text, View } from '../components/Themed';
 import { EventCard } from '../components/EventCard';
 import {ThemeContext} from '../hooks/useColorScheme';
 
-import { EventDataHandler } from '../api';
+import { EventData, EventDataHandler } from '../api';
 import { SessionContext } from '../util/session';
 import { MarkedDates } from 'react-native-calendars/src/types';
 
@@ -19,12 +19,6 @@ const staticCalendarProps = {
   showSixWeeks: true,
   disableMonthChange: true,
 };
-
-// month names
-const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
-// day names
-const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 // calendar screen
 export default function CalendarScreen({ navigation }: { navigation: BottomTabNavigationProp<BottomTabParamList, 'Calendar'> }) {
@@ -42,14 +36,15 @@ export default function CalendarScreen({ navigation }: { navigation: BottomTabNa
   const [selectedDay, setSelectedDay] = useState(today);
   const [displayedDate, setDisplayedDate] = useState(today);
   const [currentKey, setCurrentKey] = useState(new Date());
-  const [eventDays, setEventDays] = useState<YMDDate[]>([]);
+  // Map has to use string instead of YMDDate as key since objects are compared by reference
+  const [eventDays, setEventDays] = useState<Map<string, EventData[]> | undefined>();
 
   // use effect on component load
   useEffect (() => { (async () => {
     setSelectedDay(today);
     setDisplayedDate(today);
     // add every single event day to the set
-    let tempEventDays = new Set<YMDDate>();
+    let tempEventDays = new Map<string, EventData[]>();
     
     for await (const event of EventDataHandler.list(session, 5000)) {
       let startDate: Date = event.start_date;
@@ -57,12 +52,19 @@ export default function CalendarScreen({ navigation }: { navigation: BottomTabNa
 
       // iterate through all days between start and end dates
       while(startDate <= endDate) {
-        tempEventDays.add(YMDDate.fromDate(startDate));
+        const date = YMDDate.fromDate(startDate);
+        const key = date.toString();
+        if(!tempEventDays.has(key)) {
+          tempEventDays.set(key, []);
+        }
+
+        tempEventDays.get(key)!.push(event);
+
         startDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000);
       }
     }
     // convert set to array, and set as eventDays
-    setEventDays(Array.from(tempEventDays));
+    setEventDays(tempEventDays);
   })() }, []);
 
 
@@ -71,22 +73,8 @@ export default function CalendarScreen({ navigation }: { navigation: BottomTabNa
     setCurrentKey(new Date());
   }, [colorScheme.scheme]);
 
-  function getEventsOnDay(day: YMDDate) {
-    const date = day.toDate();
-
-    let tempEventsToday = [];
-    for (const event of EventDataHandler.listCached()) {
-      const startDate: Date = event.start_date;
-      const endDate: Date = event.end_date;
-      // startDate is before or on selected day and endDate is after or on selected day add to tempEventsToday (use the compare method)
-      if (startDate <= date && endDate >= date) {
-        tempEventsToday.push(event);
-      }
-    }
-    return tempEventsToday;
-  }
-
-  const eventsToday = getEventsOnDay(selectedDay);
+  const selectedDayKey = selectedDay.toString();
+  const eventsToday = eventDays?.get(selectedDayKey);
 
   return (
     <View style={[styles.container, {backgroundColor: colorScheme.scheme === 'dark' ? '#252525' : '#e0e0e0'}]}>
@@ -97,6 +85,7 @@ export default function CalendarScreen({ navigation }: { navigation: BottomTabNa
 
           {/* --- Calendar component ---*/}
           <Calendar
+            displayLoadingIndicator={true}
             key={currentKey.toISOString()}
             theme = {
               {
@@ -141,17 +130,17 @@ export default function CalendarScreen({ navigation }: { navigation: BottomTabNa
                 selectedTextColor: selectedDay.equals(today) ? '#f7c40c' : '#fff',
               },  
 
-              ...eventDays.reduce<MarkedDates>((obj, eventDay) => {
+              ...(eventDays && Array.from(eventDays.keys()).reduce<MarkedDates>((obj, eventDay) => {
                 obj[eventDay.toString()] = {
                   marked: true,
                   dotColor: '#6e9bc4',
-                  selected: selectedDay.equals(eventDay),
-                  disableTouchEvent: selectedDay.equals(eventDay),
+                  selected: selectedDayKey === eventDay,
+                  disableTouchEvent: selectedDayKey === eventDay,
                   selectedColor: '#105fb0',
                   selectedTextColor: selectedDay.equals(today) ? '#f7c40c' : '#fff',
                 };
                 return obj;
-              }, {}),
+              }, {})),
             }}
 
             // arrow change left
@@ -216,7 +205,7 @@ export default function CalendarScreen({ navigation }: { navigation: BottomTabNa
               })}
             </Text>
             {
-              eventsToday.length === 0
+              !eventsToday
               ?
               // if there's no events, display `no events`
               <Text style={[styles.eventsCountText, {color: colorScheme.scheme === 'light' ? '#000' : '#fff'}]}>No events on this day</Text>
