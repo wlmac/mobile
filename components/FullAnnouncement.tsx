@@ -135,8 +135,6 @@ const rules = {
     allowedImageHandlers: any,
     defaultImageHandler: any,
   ){
-    console.log("image", arguments);
-
     const { src } = node.attributes;
 
     // we check that the source starts with at least one of the elements in allowedImageHandlers

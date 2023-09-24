@@ -102,7 +102,6 @@ export class Handler<T extends IDObject<T>, U extends IDDescriptor<U, T> = any>{
         try{
             let url: URLString | null = `v3/obj/${this.type}`;
             do{
-                console.log(this, options);
                 let response: LimitOffsetPagination<T> = (await axiosInstance.get<LimitOffsetPagination<T>>(url, options)).data;
                 for(const data of response.results)
                     yield this.fromRawData(data);

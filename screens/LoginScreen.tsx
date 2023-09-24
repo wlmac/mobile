@@ -22,8 +22,6 @@ let state = {
 
 export default function LoginScreen({ route, navigation }: { route: RouteProp<RootStackParamList, 'Login'>, navigation: StackNavigationProp<RootStackParamList, 'Login'> }) {
   
-  console.log("login", route.params);
-
   const session = React.useContext(SessionContext);
   const colorScheme = React.useContext(ThemeContext);
   const guestMode = React.useContext(GuestModeContext);
