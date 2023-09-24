@@ -224,6 +224,8 @@ export default function NewsScreen({
 
       for (let i = 0; i < loadNum; i++) {
         const next = await blogsIterator!.next();
+        if(next.done) break;
+
         const ann: BlogPostData = next.value;
         data.push({
           id: ann.id,
@@ -268,6 +270,8 @@ export default function NewsScreen({
 
       for (let i = 0; i < loadNum; i++) {
         const next = await iterator.next();
+        if(next.done) break;
+        
         const ann: AnnouncementData = next.value;
         data.push({
           id: ann.id,
