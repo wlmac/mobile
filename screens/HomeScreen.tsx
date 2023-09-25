@@ -208,13 +208,8 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
     }
 
     await apiRequest("/v3/notif/token", { "expo_push_token": expoPushToken, "options": options }, "PUT", session, false).then((res) => {
-      if (typeof res === "string") {
-        console.error("An error occurred while trying to set the expo notification token: " + res);
-        return undefined;
-      } else {
-        console.log("Successfully updated notif token " + JSON.stringify(res));
-        setExpoNotificationToken(expoPushToken);
-      }
+      console.log("Successfully uploaded token to server: " + JSON.stringify(res));
+      setExpoNotificationToken(expoPushToken);
     }).catch((err) => {
       console.error("An error occurred while trying to set the expo notification token: " + err);
       // no notifs allowed

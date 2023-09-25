@@ -64,10 +64,10 @@ export function ChangeLogModal() {
     React.useEffect(() => {
         const val = sessionContext.get<string>('@changelogseenver');
         console.log(val);
-        console.log(Constants.manifest?.version ?? '0.0.0');
+        console.log(Constants.expoConfig?.version ?? '0.0.0');
         console.log(changelog[0].version);
         // val = '1.0.0'; // testing modal
-        if ((!val || val !== Constants.manifest?.version) && changelog[0].version === Constants.manifest?.version) {
+        if ((!val || val !== Constants.expoConfig?.version) && changelog[0].version === Constants.expoConfig?.version) {
             setModalVisible(true);
         }
     }, [])

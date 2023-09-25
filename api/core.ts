@@ -66,7 +66,7 @@ async function _apiRequest<T>(endpoint: string, body: string | anyObject | undef
         let response = await axiosInstance<T>(endpoint, { method, data: body, ...options });
         return response.data;
     }catch(err){
-        console.error(err);
+        console.error(err + " at endpoint " + endpoint);
         return 'API error';
     }
 }

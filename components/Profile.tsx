@@ -15,11 +15,9 @@ export default function Profile({ back, userinfo }: { back: Function, userinfo: 
 
     const colorScheme = React.useContext(ThemeContext);
     const btnBgColor = colorScheme.scheme === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
-    console.log(userinfo.organizations);
     
     let clubsFollowing = "";
     let stuff = userinfo.organizations;
-    console.log(stuff);
     for (let i = 0; i < stuff.length; i++) {
         clubsFollowing += stuff[i] + (i+1 == stuff.length? "" : ', ');
     }
