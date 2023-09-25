@@ -1,11 +1,12 @@
 import * as React from 'react';
-import { ScrollView, StyleSheet, Alert, TouchableOpacity, Linking, Image } from 'react-native';
+import { StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Text, View } from '../components/Themed';
-import {ThemeContext} from '../hooks/useColorScheme';
+import { ThemeContext } from '../hooks/useColorScheme';
+import { UserData } from '../api';
 
 
 
-export default function Profile({ back, userinfo }: { back: Function, userinfo: any }) {
+export default function Profile({ back, userinfo }: { back: (x: number) => void, userinfo: UserData }) {
 
     if (!userinfo) {
         return (<View>

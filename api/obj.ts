@@ -129,7 +129,7 @@ export class Handler<T extends IDObject<T>, U extends IDDescriptor<U, T> = any>{
 export abstract class IDObject<T extends IDObject<T>>{
     readonly handler: Handler<T, any>;
     readonly id: ID<T>;
-    public fetched: boolean = false;
+    public fetched = false;
 
     public constructor(handler: Handler<T, any>, data: anyObject, fromCache: boolean = false){
         this.handler = handler;
@@ -196,10 +196,10 @@ export abstract class IDObject<T extends IDObject<T>>{
     }
     protected createNullableIDRequestor<T extends IDObject<T>, B extends undefined | never = never>(id: Nullable<ID<T> | anyObject> | B, handler: Handler<T, any>): Requestor<Nullable<T>> | B {
         if(id === null){
-            const requestor = async() => null;
-            requestor.id = null as any;
+            const requestor = async () => null;
+            requestor.id = null;
             requestor.getUnchecked = () => null;
-            requestor.type = "nullable-id" as "nullable-id";
+            requestor.type = "nullable-id" as const;
             return requestor;
         }
         

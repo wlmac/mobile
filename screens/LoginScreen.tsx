@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { StyleSheet, TextInput, TouchableOpacity, Image, Platform, Keyboard, useWindowDimensions, DimensionValue} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import * as WebBrowser from 'expo-web-browser';
@@ -11,7 +10,7 @@ import config from '../config.json';
 import { Text, View } from '../components/Themed';
 import Colors from '../constants/Colors';
 import { RootStackParamList } from '../types';
-import { apiRequest, login } from '../api';
+import { anyObject, apiRequest, login } from '../api';
 import { SessionContext } from '../util/session';
 
 let state = {
@@ -35,9 +34,9 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
     if(guestMode.guest){
       return;
     }
-    const userInfo = await apiRequest("/me", undefined, "GET", session, false);
+    const userInfo = await apiRequest<anyObject>("/me", undefined, "GET", session, false);
     if (typeof userInfo !== "string") {
-      session.set("@userinfo", userInfo as any);
+      session.set("@userinfo", userInfo);
     }
   }
   

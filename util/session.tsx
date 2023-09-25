@@ -1,6 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Api from '../api';
-import React from 'react';
+import React, { ReactNode } from 'react';
 import loadResources from '../hooks/useResources';
 import * as SplashScreen from 'expo-splash-screen';
 
@@ -8,10 +7,10 @@ export interface Session{
     isLoggedIn?: boolean;
     loginNeeded?: boolean; // TODO document this
 
-    _data: {[key: string]: string | { [key: string]: any }} | undefined;
+    _data: {[key: string]: string | { [key: string]: unknown }} | undefined;
 
-    set(key: string, value: string | { [key: string]: any }): void;
-    setAll(data: {[key: string]: string | { [key: string]: any }}): void;
+    set(key: string, value: string | { [key: string]: unknown }): void;
+    setAll(data: {[key: string]: string | { [key: string]: unknown }}): void;
     get<T>(key: string): T;
     remove(key: string): void;
 }
@@ -29,23 +28,23 @@ export const SessionContext = React.createContext<Session>({
     remove: loadedError,
 });
 
-export function SessionProvider(props: { children: any }) {
+export function SessionProvider(props: { children: ReactNode }) {
 
-    const [ data, setData ] = React.useState<{ [key: string]: string | { [key: string]: any } } | undefined>(undefined);
+    const [ data, setData ] = React.useState<{ [key: string]: string | { [key: string]: unknown } } | undefined>(undefined);
     
     async function load(){
+        const loadedData: typeof data = {};
+
         if(data)
             return true;
         
         const keys = await AsyncStorage.getAllKeys();
 
-        const loadedData: {[key: string]: any} = {};
-
         await Promise.allSettled(keys.map(async (key) => {
             const value = await AsyncStorage.getItem(key);
             let data;
             try{
-                data = JSON.parse(value!);
+                data = JSON.parse(value ?? "");
             }catch(e){
                 data = value;
             }
@@ -55,8 +54,11 @@ export function SessionProvider(props: { children: any }) {
         setData(loadedData);
     }
 
-    function set(key: string, value: any){
-        setData(data => ({
+    function set(key: string, value: Exclude<typeof data, undefined>[string]){
+        if(data === undefined)
+            throw new Error("Session data not loaded yet");
+
+        setData((data) => ({
             ...data,
             [key]: value,
         }));
@@ -65,8 +67,11 @@ export function SessionProvider(props: { children: any }) {
             .catch((e) => console.error("Error writing to async storage:", e));
     }
     
-    function setAll(newData: {[key: string]: any}) {
-        setData(data => ({
+    function setAll(newData: Exclude<typeof data, undefined>) {
+        if(data === undefined)
+            throw new Error("Session data not loaded yet");
+
+        setData((data) => ({
             ...data,
             ...newData,
         }));
@@ -77,11 +82,17 @@ export function SessionProvider(props: { children: any }) {
     }
 
     function get<T>(key: string): T{
-        return data![key] as T;
+        if(data === undefined)
+            throw new Error("Session data not loaded yet");
+
+        return data[key] as T;
     }
 
     function remove(key: string){
-        setData(data => Object.fromEntries(Object.entries(data!).filter(([k, v]) => k != key)));
+        if(data === undefined)
+            throw new Error("Session data not loaded yet");
+
+        setData((data) => data && Object.fromEntries(Object.entries(data).filter(([k]) => k != key)));
 
         AsyncStorage.removeItem(key);
     }
@@ -125,7 +136,7 @@ export function SessionProvider(props: { children: any }) {
         }
     }
     */
-   function cacheObjects(){}
+   function cacheObjects(){ /* Caching disabled for now */ }
 
     const session: Session = {
         _data: data,

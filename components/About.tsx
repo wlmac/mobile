@@ -1,10 +1,10 @@
 import * as React from 'react';
-import { ScrollView, StyleSheet, Alert, TouchableOpacity, Linking } from 'react-native';
+import { StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import { Text, View } from '../components/Themed';
 import * as WebBrowser from 'expo-web-browser';
 import {ThemeContext} from '../hooks/useColorScheme';
 import config from '../config.json';
-export default function About({ back }: { back: Function }) {
+export default function About({ back }: { back: (x: number) => void }) {
     const colorScheme = React.useContext(ThemeContext);
     const btnBgColor = colorScheme.scheme === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
     return (

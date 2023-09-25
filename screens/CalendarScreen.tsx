@@ -1,7 +1,5 @@
 import React, {useState, useEffect} from 'react';
 import { Dimensions, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { BottomTabParamList } from '../types';
 import { Calendar } from 'react-native-calendars';
 
 import { Text, View } from '../components/Themed';
@@ -21,7 +19,7 @@ const staticCalendarProps = {
 };
 
 // calendar screen
-export default function CalendarScreen({ navigation }: { navigation: BottomTabNavigationProp<BottomTabParamList, 'Calendar'> }) {
+export default function CalendarScreen() {
 
   // session
   const session = React.useContext(SessionContext);
@@ -58,7 +56,7 @@ export default function CalendarScreen({ navigation }: { navigation: BottomTabNa
           tempEventDays.set(key, []);
         }
 
-        tempEventDays.get(key)!.push(event);
+        tempEventDays.get(key)?.push(event);
 
         startDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000);
       }

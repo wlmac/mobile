@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ScrollView, StyleSheet, Button, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 import { Text, View } from '../components/Themed';
 import Modal from "react-native-modal";
@@ -10,7 +10,7 @@ import {ThemeContext} from '../hooks/useColorScheme';
 import changelog from '../changelog.json';
 import { SessionContext } from '../util/session';
 
-export default function Changelog({ back }: { back: Function }) {
+export default function Changelog({ back }: { back: (x: number) => void }) {
 
     const colorScheme = React.useContext(ThemeContext);
     const btnBgColor = colorScheme.scheme === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
@@ -26,7 +26,7 @@ export default function Changelog({ back }: { back: Function }) {
                         <Text style={[styles.version, { color: colorScheme.scheme === "dark" ? '#348feb' : '#105fb0' }]}> v{change.version} </Text>
                         <Text style={{ color: colorScheme.scheme === "dark" ? '#cccccc' : '#555555', fontSize: 15 }}> {new Date(change.time).toLocaleString() + '\n'} </Text>
                         <View style={{backgroundColor: BgColor}}>
-                            {/* this appears as an error in vscode but not on the app? oh well, it works */}
+                            { /* @ts-ignore */ }
                             <Markdown style={colorScheme.scheme === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={url => {
                                 if(url) {
                                     WebBrowser.openBrowserAsync(url);
@@ -79,11 +79,12 @@ export function ChangeLogModal() {
             <View style={[modalStyles.wrapper, {backgroundColor: BgColor, shadowColor: colorScheme.scheme === 'light' ? '#1c1c1c' : '#e6e6e6'}]}>
                 <ScrollView style={{backgroundColor: BgColor}} contentContainerStyle={modalStyles.scrollView}>
                         <Ionicons size={30} style={modalStyles.xIcon} name="close" color={xColor} onPress={modalOff} />
-                        <Text style={styles.title}>What's New</Text>
+                        <Text style={styles.title}>What&apos;s New</Text>
                         <View style={modalStyles.modalSeparator} lightColor="#adadad" darkColor="rgba(255,255,255,0.1)" />
                         <Text style={[styles.version, { color: colorScheme.scheme === "dark" ? '#348feb' : '#105fb0' }]}> v{changelog[0].version} </Text>
                         <Text style={{ color: colorScheme.scheme === "dark" ? '#cccccc' : '#555555', fontSize: 15 }}> {new Date(changelog[0].time).toLocaleString() + '\n'} </Text>
                         <View>
+                            { /* @ts-ignore */ }
                             <Markdown style={colorScheme.scheme === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true}>{changelog[0].changes}</Markdown>
                         </View>
                         <TouchableOpacity onPress={modalOff} style={[modalStyles.button, { backgroundColor: btnBgColor }]}><Text>Close</Text></TouchableOpacity>

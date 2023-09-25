@@ -10,24 +10,16 @@ import {
 import { Text, View } from "../components/Themed";
 import Announcement from "../components/Announcement";
 import FullAnnouncement from "../components/FullAnnouncement";
-import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import DropDownPicker from "react-native-dropdown-picker";
 import { ThemeContext } from "../hooks/useColorScheme";
-import { GuestModeContext } from "../hooks/useGuestMode";
-import { BottomTabParamList } from "../types";
 import { AnnouncementData, BlogPostData, URLString, TagDescriptor } from '../api';
 import { AnnouncementDataHandler, BlogPostDataHandler, OrganizationDataHandler, TagDataHandler, UserDataHandler } from '../api/impl';
 import { SessionContext } from "../util/session";
 import loadingIcon from "../assets/images/loading.gif";
 
-export default function NewsScreen({
-  navigation,
-}: {
-  navigation: BottomTabNavigationProp<BottomTabParamList, "News">;
-}) {
+export default function NewsScreen() {
   // get color scheme
   const colorScheme = React.useContext(ThemeContext);
-  const guestMode = React.useContext(GuestModeContext);
   const sessionContext = React.useContext(SessionContext);
   const loadNum = 5; // # announcements to load at a time
 
@@ -89,7 +81,6 @@ export default function NewsScreen({
     sac: false,
     blog: false,
   }); // loading more for lazy
-  const [loadError, setLoadError] = useState(false); // TODO this is never used?
 
   const [feedType, setFeedType] = useState<"all" | "sac" | "blog">("all");
 
@@ -223,7 +214,7 @@ export default function NewsScreen({
       let data: AnnouncementProps[] = [];
 
       for (let i = 0; i < loadNum; i++) {
-        const next = await blogsIterator!.next();
+        const next = await blogsIterator?.next();
         if(next.done) break;
 
         const ann: BlogPostData = next.value;
@@ -243,11 +234,8 @@ export default function NewsScreen({
 
       setBlogData(data);
 
-      setLoadError(false);
-
     } catch (e) {
       console.error(e);
-      setLoadError(true);
     }
 
     loadingMore.current.blog = false;
@@ -287,11 +275,8 @@ export default function NewsScreen({
 
       (id === "all" ? setAllAnnouncementsData : setSacAnnouncementsData)(allAnnouncementsData.concat(data));
 
-      setLoadError(false);
-
     } catch (e) {
       console.error(e);
-      setLoadError(true);
     }
 
     loadingMore.current[id] = false;

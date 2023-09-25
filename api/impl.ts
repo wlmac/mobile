@@ -1,5 +1,6 @@
+
 import { AxiosRequestConfig } from 'axios';
-import { Base64String, DateTimeString, ID, LimitOffsetPagination, Nullable, TermType, TimezoneString, URLString, anyObject } from './misc';
+import { Base64String, LimitOffsetPagination, Nullable, TermType, TimezoneString, URLString, anyObject } from './misc';
 import { Handler, IDDescriptor, IDObject, Requestor } from './obj';
 import { apiRequest } from './core';
 import { Session } from '../util/session';
@@ -162,7 +163,8 @@ class EventDataHandlerImpl extends Handler<EventData> {
             return;
         }
 
-        const request = await apiRequest<any[]>(`v3/events?limit=${limit}&offset=${offset}`, undefined, "GET", session, true, options as any);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const request = await apiRequest<EventData[]>(`v3/events?limit=${limit}&offset=${offset}`, undefined, "GET", session, true, options as any);
         if(typeof request == "string")
             throw new Error(request);
         
@@ -194,7 +196,7 @@ export class UserData extends IDObject<UserData>{
     saved_announcements!: Requestor<AnnouncementData>[];
 
     protected preprocess(data: anyObject): anyObject {
-        const { organizations, following, saved_blogs, saved_announcements, ...rest } = super.preprocess(data);;
+        const { organizations, following, saved_blogs, saved_announcements, ...rest } = super.preprocess(data);
 
         this.organizations = this.createIDRequestorArray(organizations, OrganizationDataHandler);
         this.tags_following = this.createIDRequestorArray(following, UserDataHandler);
@@ -235,7 +237,7 @@ export class OrganizationData extends IDObject<OrganizationData>{
     links!: string[];
 
     protected preprocess(data: anyObject): anyObject {
-        const { owner, supervisors, execs, members, tags, registered_date, ...rest } = super.preprocess(data);;
+        const { owner, supervisors, execs, members, tags, registered_date, ...rest } = super.preprocess(data);
 
         this.owner = this.createIDRequestor<UserData>(owner, UserDataHandler);
         this.supervisors = this.createIDRequestorArray<UserData>(supervisors, UserDataHandler);
@@ -268,7 +270,7 @@ export class CommentData extends IDObject<CommentData>{
     children!: CommentDescriptor[];
 
     protected preprocess(data: anyObject): anyObject {
-        const { author, created_at, ...rest } = super.preprocess(data);;
+        const { author, created_at, ...rest } = super.preprocess(data);
         
         this.author = this.createNullableIDRequestor<UserData>(author, UserDataHandler);
         this.created_at = created_at ? new Date(created_at) : null;
@@ -283,6 +285,7 @@ export class CommentData extends IDObject<CommentData>{
 export const CommentDataHandler = new Handler<CommentData>("comment", CommentData); 
 
 // Unused for now
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 interface BannerData{
     current: { content: string }[];

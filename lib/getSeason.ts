@@ -1,3 +1,8 @@
+
+//a complete overkill method adapted to TypeScript from https://stackoverflow.com/a/5671172
+
+/* eslint-disable */
+
 function fromJulian(j: any) {
     j = (+j) + (30.0 / (24 * 60 * 60));
     var A: any = julianArray(j, true);
@@ -80,24 +85,21 @@ function degCos(d: number) {
     return Math.cos(degRad(d));
 };
 
-//a complete overkill method adapted to TypeScript from https://stackoverflow.com/a/5671172
-
-export default function getSeason() : string {
+export default function getSeason() : 'spring' | 'summer' | 'fall' | 'winter' {
     var mine = getSeasons();
     let today = new Date();
     let firstSpring = mine[1];
     let firstSummer = mine[2];
     let firstFall = mine[3];
     let firstWinter = mine[4];
-    var season = '';
     if (today >= firstSpring && today < firstSummer) {
-        season = 'spring';
+        return 'spring';
     } else if (today >= firstSummer && today < firstFall) {
-        season = 'summer';
+        return 'summer';
     } else if (today >= firstFall && today < firstWinter) {
-        season = 'fall';
+        return 'fall';
     } else if (today >= firstWinter || today < firstSpring) {
-        season = 'winter';
+        return 'winter';
     }
-    return season;
+    throw Error('Season not found');
 }

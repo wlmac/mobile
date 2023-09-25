@@ -1,48 +1,44 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
+import { SessionContext } from '../util/session';
 
 // Provides a state/setState to be used in a context
 export default function useGuestMode() {
   const [guest, setGuest] = useState(false);
   const [guestLoaded, setGuestLoaded] = useState(false);
   const updateGuest = (guest: boolean) => {
-    setGuestMode(guest).catch((err) => { console.error(err); });
+    setGuestMode(guest)
     setGuest(guest);
   }
   useEffect(() => {
-    loadGuest().then(loaded => {
-      setGuest(loaded);
-      setGuestLoaded(true);
-    }).catch((err) => { console.error(err); });
+    setGuest(loadGuest());
+    setGuestLoaded(true);
   }, []);
   return { guest, guestLoaded, updateGuest };
 }
 
-async function loadGuest() {
-  return new Promise<boolean>((resolve, reject) => {
-    AsyncStorage.getItem("@guestmode").then((guest: any) => {
-      if (guest) {
-        resolve(guest == 'guest');
-      }
-      else {
-        resolve(false);
-      }
-    }).catch((err) => {
-      reject("Async storage error: " + err);
-    });
-  })
+function loadGuest() {
+  const session = React.useContext(SessionContext);
+
+  const guest = session.get("@guestmode");
+  if (guest) {
+    return guest == 'guest';
+  } else {
+    return false;
+  }
 }
 
-async function setGuestMode(guest: boolean): Promise<void> {
-  return new Promise((resolve, reject) => {
-    AsyncStorage.setItem("@guestmode", guest ? 'guest' : 'noguest').then(() => {
-      resolve();
-    }).catch(err => { reject(); });
-  })
+function setGuestMode(guest: boolean): void {
+  const session = React.useContext(SessionContext);
+
+  session.set("@guestmode", guest ? 'guest' : 'noguest');
 }
 
-export const GuestModeContext = React.createContext({
+export const GuestModeContext = React.createContext<{
+  guest: boolean,
+  guestLoaded: boolean,
+  updateGuest: (guest: boolean) => void
+}>({
   guest: false,
   guestLoaded: false,
-  updateGuest: (val: boolean) => { }
+  updateGuest: () => undefined
 });

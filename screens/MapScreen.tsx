@@ -1,14 +1,11 @@
 import * as React from "react";
 import { Text, View } from "../components/Themed";
-import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
-import { BottomTabParamList } from "../types";
 
 import {
   FlatList,
   Platform,
   StyleSheet,
   TouchableOpacity,
-  useColorScheme,
 } from "react-native";
 
 import { useState, useEffect } from "react";
@@ -25,14 +22,10 @@ import filter from "lodash.filter";
 import { ThemeContext } from "../hooks/useColorScheme";
 import maplocations from "../constants/maplocations.json";
 
-const floorOne = require("../assets/images/FloorOne.png");
-const floorTwo = require("../assets/images/FloorTwo.png");
+import floorOne from "../assets/images/FloorOne.png";
+import floorTwo from "../assets/images/FloorTwo.png";
 
-export default function MapScreen({
-  navigation,
-}: {
-  navigation: BottomTabNavigationProp<BottomTabParamList, "Map">;
-}) {
+export default function MapScreen() {
   const initialRegion: Region = {
     latitude: 43.75376776088882,
     longitude: -79.46106695372214,
@@ -41,12 +34,9 @@ export default function MapScreen({
   };
   const currRegion = React.useRef<Region>(initialRegion);
 
-  const [location, setAlti] = useState<{ altitude: null | number }>({
-    altitude: null,
-  });
-  var altitude: number | null = null;
-  const [errorMsg, setErrorMsg] = useState("");
-
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  let altitude: number | null = null;
+  
   const [isFloorTwo, setIsFloorTwo] = useState(false);
   const toggleSwitch = () => setIsFloorTwo((isEnabled) => !isEnabled);
   const [selectRoom, setSelectRoom] = useState({
@@ -65,7 +55,7 @@ export default function MapScreen({
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        setErrorMsg("Permission to access location was denied");
+        console.log("Permission to access location was denied");
         return;
       } else {
         let location = await Location.getCurrentPositionAsync();
@@ -91,8 +81,8 @@ export default function MapScreen({
   const handleSearch = (text: string) => {
     setChanged(!changed);
     setText(text);
-    var formattedQuery = text.toLowerCase();
-    var nextData = filter(data, (search) =>
+    const formattedQuery = text.toLowerCase();
+    const nextData = filter(data, (search) =>
       search.properties.title.includes(formattedQuery)
     );
     setState({ fullData: nextData, query: text });
@@ -307,11 +297,6 @@ export default function MapScreen({
       </View>
     </View>
   );
-}
-
-function readFloor(floor: any) {
-  if (floor == 1) return false;
-  else if (floor == 2) return true;
 }
 
 const styles = StyleSheet.create({

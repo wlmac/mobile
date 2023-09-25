@@ -1,3 +1,7 @@
+// This file is no longer used, but is kept for reference.
+
+/*
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiRequest from '../lib/apiRequest';
 
@@ -61,3 +65,5 @@ export async function storeApiCalls(): Promise<void> {
         })
     ]);
 }
+
+*/

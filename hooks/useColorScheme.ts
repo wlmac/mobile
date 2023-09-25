@@ -25,7 +25,7 @@ export default function useColorScheme() {
 
 async function loadScheme() {
   return new Promise<string>((resolve, reject) => {
-    AsyncStorage.getItem("@scheme").then((schemeFromStorage: any) => {
+    AsyncStorage.getItem("@scheme").then((schemeFromStorage) => {
       if (schemeFromStorage) {
         resolve(schemeFromStorage);
       }
@@ -42,12 +42,16 @@ async function updateColourScheme(updatedScheme: string): Promise<void> {
   return new Promise((resolve, reject) => {
     AsyncStorage.setItem("@scheme", updatedScheme).then(() => {
       resolve();
-    }).catch(err => { reject(); });
+    }).catch(() => { reject(); });
   })
 }
 
-export const ThemeContext = React.createContext({
+export const ThemeContext = React.createContext<{
+  scheme: NonNullable<ColorSchemeName>,
+  schemeLoaded: boolean,
+  updateScheme: (newscheme: string) => void
+}>({
   scheme: 'dark' as NonNullable<ColorSchemeName>,
   schemeLoaded: false,
-  updateScheme: (val: string) => {}
+  updateScheme: () => undefined
 });
