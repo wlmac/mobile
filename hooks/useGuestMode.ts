@@ -1,24 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { SessionContext } from '../util/session';
+import { Session, SessionContext } from '../util/session';
 
 // Provides a state/setState to be used in a context
 export default function useGuestMode() {
+  const session = React.useContext(SessionContext);
+
   const [guest, setGuest] = useState(false);
   const [guestLoaded, setGuestLoaded] = useState(false);
   const updateGuest = (guest: boolean) => {
-    setGuestMode(guest)
+    setGuestMode(session, guest);
     setGuest(guest);
   }
   useEffect(() => {
-    setGuest(loadGuest());
+    setGuest(loadGuest(session));
     setGuestLoaded(true);
   }, []);
   return { guest, guestLoaded, updateGuest };
 }
 
-function loadGuest() {
-  const session = React.useContext(SessionContext);
-
+function loadGuest(session: Session) {
   const guest = session.get("@guestmode");
   if (guest) {
     return guest == 'guest';
@@ -27,9 +27,7 @@ function loadGuest() {
   }
 }
 
-function setGuestMode(guest: boolean): void {
-  const session = React.useContext(SessionContext);
-
+function setGuestMode(session: Session, guest: boolean): void {
   session.set("@guestmode", guest ? 'guest' : 'noguest');
 }
 

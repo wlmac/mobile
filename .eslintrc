@@ -22,6 +22,7 @@
     ],
     "rules": {
         "@typescript-eslint/ban-ts-comment": "off",
-        "prefer-const": "off"
+        "prefer-const": "off",
+        "no-debugger": "off"
     }
 }

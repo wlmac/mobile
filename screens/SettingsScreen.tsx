@@ -85,7 +85,8 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
         scheme.updateScheme(scheme.scheme);
         guestMode.updateGuest(false);
         navigation.replace('Login', { loginNeeded: true });
-      }).catch(() => {
+      }).catch((err) => {
+        console.error(err);
         Alert.alert('Error', 'Failed to log out (clearing local data failed)', [{ text: 'Ok' }], { cancelable: false });
       });
     } else {
@@ -94,10 +95,12 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
           scheme.updateScheme(scheme.scheme);
           guestMode.updateGuest(false);
           navigation.replace('Login', { loginNeeded: true });
-        }).catch(() => {
+        }).catch((err) => {
+          console.error(err);
           Alert.alert('Error', 'Failed to log out (clearing local data failed)', [{ text: 'Ok' }], { cancelable: false });
         });
-      }).catch(() => {
+      }).catch((err) => {
+        console.error(err);
         console.error("error when deleting server-side notification settings");
       });
     }
@@ -114,13 +117,13 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
   return (
     <View style={styles.container}>
       {curView == 1 ? <ScrollView ref={topChangeLog} style={{ flex: 1, width: "100%" }}>
-        <Changelog back={setView}></Changelog>
+        <Changelog back={setView} />
       </ScrollView> : curView == 2 ?
       <ScrollView ref={topAbout} style={{ flex: 1, width: "100%" }}>
-        <About back={setView}></About>
-      </ScrollView> :
+        <About back={setView} />
+      </ScrollView> : userinfo && guestMode.guest &&
       <ScrollView ref={topUserProfile} style={{ flex: 1, width: "100%" }}>
-        <Profile back={setView} userinfo={userinfo}></Profile>
+        <Profile back={setView} userinfo={userinfo} />
       </ScrollView> }
      
       <TouchableOpacity style={curView == -1 ? [styles.userProfile] : { display: "none" }}

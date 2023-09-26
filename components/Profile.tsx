@@ -9,9 +9,10 @@ import { UserData } from '../api';
 export default function Profile({ back, userinfo }: { back: (x: number) => void, userinfo: UserData }) {
 
     if (!userinfo) {
+        console.warn("userinfo is invalid");
         return (<View>
             <Text>API Error</Text>
-        </View>)
+        </View>);
     }
 
     const colorScheme = React.useContext(ThemeContext);
