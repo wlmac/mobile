@@ -13,11 +13,6 @@ import { RootStackParamList } from '../types';
 import { anyObject, apiRequest, login } from '../api';
 import { SessionContext } from '../util/session';
 
-let state = {
-  username: "",
-  password: ""
-}
-
 
 export default function LoginScreen({ route, navigation }: { route: RouteProp<RootStackParamList, 'Login'>, navigation: StackNavigationProp<RootStackParamList, 'Login'> }) {
   
@@ -25,10 +20,16 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
   const colorScheme = React.useContext(ThemeContext);
   const guestMode = React.useContext(GuestModeContext);
 
-  let [loginResText, updateLoginResText] = React.useState("");
-  let [keyboardUp, updateKeyboardUp] = React.useState(false);
+  const state = React.useRef({
+    username: "",
+    password: ""
+  }).current;
+  
+  const [loginResText, updateLoginResText] = React.useState("");
+  const [keyboardUp, updateKeyboardUp] = React.useState(false);
 
-  let [hasPressedLogin, setHasPressedLogin] = React.useState(false);
+  const [hasPressedLogin, setHasPressedLogin] = React.useState(false);
+  const [loggedIn, setLoggedIn] = React.useState(false);
 
   async function storeUserinfo(): Promise<void> {
     if(guestMode.guest){
@@ -38,9 +39,11 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
     if (typeof userInfo !== "string") {
       session.set("@userinfo", userInfo);
     }
+
+    navigation.replace('Root');
   }
   
-  const loginPress = async() => {
+  const loginPress = async () => {
     if(state.username === "" || state.password === ""){
       return;
     }
@@ -51,8 +54,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
         let val = await login(state.username, state.password, session);
         if (val === undefined) {
           updateLoginResText("Success! Preparing app...");
-          await storeUserinfo();
-          navigation.replace('Root');
+          setLoggedIn(true);
           return;
         }
         else {
@@ -77,11 +79,16 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
   const sessionContext = React.useContext(SessionContext);
 
   React.useEffect(() => {
-    if(route.params && route.params.loginNeeded)
-      return;
-    
-    storeUserinfo().then(() => navigation.replace('Root'));
+    if(!(route.params && route.params.loginNeeded)){
+      storeUserinfo();
+    }
   }, [sessionContext]);
+
+  React.useEffect(() => {
+    if(loggedIn){
+      storeUserinfo();
+    }
+  }, [loggedIn]);
 
   //Keyboard animation code
   const keyboardShown = () => {
@@ -93,8 +100,8 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
   }
 
   React.useEffect (()=>{
-    const sub1 = Keyboard.addListener(Platform.OS === `android` ? `keyboardDidShow`: `keyboardWillShow`, keyboardShown);
-    const sub2 = Keyboard.addListener(Platform.OS === `android` ? `keyboardDidHide`: `keyboardWillHide`, keyboardHidden);
+    const sub1 = Keyboard.addListener(Platform.OS === `android` ? `keyboardDidShow` : `keyboardWillShow`, keyboardShown);
+    const sub2 = Keyboard.addListener(Platform.OS === `android` ? `keyboardDidHide` : `keyboardWillHide`, keyboardHidden);
 
     return () => {
       sub1.remove();
@@ -114,7 +121,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
       <View style={styles.pictureContainer}>
       
         <Image style={{width:"100%", height: "100%"}} 
-          source={colorScheme.scheme === "light"? require('../assets/images/LogInGraphics_LightMode.png'): require('../assets/images/LogInGraphics_DarkMode.png')}/>
+          source={colorScheme.scheme === "light" ? require('../assets/images/LogInGraphics_LightMode.png') : require('../assets/images/LogInGraphics_DarkMode.png')}/>
 
       {/* ---- PICTURE CONTAINER -----*/}
       </View>

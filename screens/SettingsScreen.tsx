@@ -113,10 +113,6 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
     return unsubscribe;
   }, [navigation]);
 
-  if(userinfo === undefined && !guestMode.guest) {
-    console.error("userinfo is undefined yet it is not guest mode");
-  }
-
   return (
     <View style={styles.container}>
       {curView == 1 ? <ScrollView ref={topChangeLog} style={{ flex: 1, width: "100%" }}>
