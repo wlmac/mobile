@@ -83,7 +83,7 @@ export default function CalendarScreen() {
 
           {/* --- Calendar component ---*/}
           <Calendar
-            displayLoadingIndicator={true}
+            displayLoadingIndicator={eventDays === undefined}
             key={currentKey.toISOString()}
             theme = {
               {
