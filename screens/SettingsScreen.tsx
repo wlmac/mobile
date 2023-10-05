@@ -113,6 +113,9 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
     return unsubscribe;
   }, [navigation]);
 
+  if(userinfo === undefined && !guestMode.guest) {
+    console.error("userinfo is undefined yet it is not guest mode");
+  }
 
   return (
     <View style={styles.container}>
@@ -121,22 +124,22 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
       </ScrollView> : curView == 2 ?
       <ScrollView ref={topAbout} style={{ flex: 1, width: "100%" }}>
         <About back={setView} />
-      </ScrollView> : userinfo && guestMode.guest &&
-      <ScrollView ref={topUserProfile} style={{ flex: 1, width: "100%" }}>
+      </ScrollView> : userinfo && !guestMode.guest &&
+      <ScrollView ref={topUserProfile} style={{ width: "80%", marginBottom: 24, borderRadius: 10 }}>
         <Profile back={setView} userinfo={userinfo} />
       </ScrollView> }
      
-      <TouchableOpacity style={curView == -1 ? [styles.userProfile] : { display: "none" }}
+      <TouchableOpacity style={curView == -1 ? styles.userProfile : { display: "none" }}
         onPress={() => { 
-          if (!guestMode.guest) {topUserProfile?.current?.scrollTo({ x: 0, y: 0, animated: false }); setView(3) }
+          if (!guestMode.guest) { topUserProfile?.current?.scrollTo({ x: 0, y: 0, animated: false }); setView(3); }
         }}
         >
-          <Text style={{ color: "#b8b8b8", fontSize: 12 }}> {guestMode.guest ? 'Not Logged In' : 'Logged In As'} </Text>
-          {(userinfo || guestMode.guest) && <Text style={{ color: "white", fontSize: 26 }}> {guestMode.guest ? 'Guest' : userinfo.username}</Text>}
+          <Text style={{ color: "#b8b8b8", fontSize: 12, marginBottom: 13 }}> {guestMode.guest ? 'Not Logged In' : 'Logged In As'} </Text>
+          {guestMode.guest || userinfo ? <Text style={{ color: "white", fontSize: 26 }}> {guestMode.guest ? 'Guest' : userinfo.username}</Text> : <Text> API Error </Text>}
       </TouchableOpacity>
      
       <TouchableOpacity
-        style={curView == -1 ? [styles.button] : { display: "none" }}
+        style={curView == -1 ? styles.button : { display: "none" }}
         onPress={() => {
           if (scheme.scheme === 'dark') scheme.updateScheme('light');
           else scheme.updateScheme('dark');
@@ -151,7 +154,7 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
           <Text> About </Text>
           <Ionicons name="information-circle-outline" size={18} style={styles.icon} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => { topChangeLog?.current?.scrollTo({ x: 0, y: 0, animated: false }); setView(1) }}>
+        <TouchableOpacity style={[styles.button, { marginBottom: 0 }]} onPress={() => { topChangeLog?.current?.scrollTo({ x: 0, y: 0, animated: false }); setView(1) }}>
           <Text> View Changelog </Text>
           <Ionicons name="cog-outline" size={18} style={styles.icon} />
         </TouchableOpacity>
@@ -171,6 +174,7 @@ const baseStyle = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 32,
   },
   title: {
     fontSize: 20,
@@ -193,23 +197,19 @@ const baseStyle = StyleSheet.create({
   userProfile: {
     width: "80%",
     borderRadius: 5,
-    alignItems: 'flex-start',
     height: "15%",
     padding: "4%",
     marginBottom: "10%",
-    flexDirection: 'column',
-    justifyContent: 'space-between',
     backgroundColor: '#073763',
     fontWeight: "500",
     textAlign: "left",
-    color: '#e2e2e2'
+    color: '#e2e2e2',
   },
   logoutButton: {
     width: "80%",
     borderRadius: 5,
     alignItems: 'center',
     padding: 10,
-    marginTop: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
 

@@ -13,7 +13,7 @@ export default function About({ back }: { back: (x: number) => void }) {
                 About
             </Text>
             <View style={[styles.container, {backgroundColor: colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525'}]}>
-                <Text>The Metropolis app is the mobile app for {' '}
+                <Text>The Metropolis app is the mobile app for &nbsp;
                     <TouchableOpacity onPress={() => { WebBrowser.openBrowserAsync(config.server) }}>
                         <Text style={styles.link}>
                             {config.server}
