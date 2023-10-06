@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 // Basic types
 
@@ -10,7 +12,7 @@ export type ID<T> = number;
 
 export type Nullable<T> = T | null;
 
-export type anyObject = { [key: string]: any };
+export type anyObject = Record<string, any>;
 
 // Miscellaneous types
 

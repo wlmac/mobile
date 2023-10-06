@@ -1,71 +1,67 @@
 import * as React from 'react';
-import { ScrollView, StyleSheet, Alert, TouchableOpacity, Linking, Image } from 'react-native';
+import { StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Text, View } from '../components/Themed';
-import {ThemeContext} from '../hooks/useColorScheme';
+import { ThemeContext } from '../hooks/useColorScheme';
+import { UserData } from '../api';
 
 
 
-export default function Profile({ back, userinfo }: { back: Function, userinfo: any }) {
+export default function Profile({ back, userinfo }: { back: (x: number) => void, userinfo: UserData }) {
 
     if (!userinfo) {
+        console.warn("userinfo is invalid");
         return (<View>
             <Text>API Error</Text>
-        </View>)
+        </View>);
     }
 
     const colorScheme = React.useContext(ThemeContext);
     const btnBgColor = colorScheme.scheme === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
     
-    let clubsFollowing = "";
-    let stuff = userinfo.organizations;
-    for (let i = 0; i < stuff.length; i++) {
-        clubsFollowing += stuff[i] + (i+1 == stuff.length? "" : ', ');
-    }
-    //stuff.forEach(function(value: any, index: any) {
-    //    clubsFollowing += stuff[index] + ', ';
-    //});
+    let clubsFollowing = userinfo.organizations.join(', ');
     return (
-        <View style={[styles.container, {backgroundColor: colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525'}]}>
+        <View style={[styles.container, {backgroundColor: colorScheme.scheme === 'light' ? '#c2c2c2' : '#1f1f1f'}]}>
             
-            <Text style={styles.greeting}>{"Welcome Back,"}</Text>
-            <View style={{ flexDirection: 'row', backgroundColor: colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525'}}> 
+            <Text style={styles.greeting}>Welcome Back,</Text>
+            <View style={{ flexDirection: 'row', backgroundColor: "transparent"}}> 
                 <Image
                     style={styles.avatar}
                     source={{
                         uri: userinfo.gravatar_url,
                     }}
                 />
-                <View style={{ flexDirection: 'column', backgroundColor: colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525'}}> 
+                <View style={{ flexDirection: 'column', backgroundColor: "transparent"}}> 
                     <Text 
                         style={styles.title}
                     >
-                        {userinfo.first_name + " " + userinfo.last_name}
-                    
+                        {userinfo.first_name} {userinfo.last_name}
                     </Text>
                     <Text style={styles.name}>{userinfo.username}</Text>
                 </View>
             </View>
                     
             <View style={styles.separator} lightColor="#adadad" darkColor="rgba(255,255,255,0.1)" />
-            <View style={{flexDirection: 'column', padding: '5%', backgroundColor: colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525'}}>
-                <View style={{ flexDirection: 'row', backgroundColor: colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525'}}>
-                    <Text style={styles.leftText}> {'Graduating Year'} </Text>
-                    <Text style={styles.rightText} > {userinfo.graduating_year} </Text>
+            <View style={{flexDirection: 'column', padding: '5%', backgroundColor: "transparent"}}>
+                <View style={{ flexDirection: 'row', backgroundColor: "transparent"}}>
+                    <Text style={styles.leftText}>Graduating Year</Text>
+                    <Text style={styles.rightText}>{userinfo.graduating_year}</Text>
                 </View>
-                <View style={{ flexDirection: 'row', backgroundColor: colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525'}}>
-                    <Text style={styles.leftText} > {'Following'} </Text>
-                    <Text style={styles.rightText}>
-                        {clubsFollowing}
-                    </Text>
-                </View>   
+                {
+                    clubsFollowing ? <View style={{ flexDirection: 'row', backgroundColor: "transparent"}}>
+                        <Text style={styles.leftText} > Following </Text>
+                        <Text style={styles.rightText}>
+                            {clubsFollowing}
+                        </Text>
+                    </View> : undefined
+                }
                 <Text></Text>
                 
-                <Text style={styles.rightText} > {userinfo.bio == "" ? 'This user has not shared any information': userinfo.bio} </Text>
+                <Text style={styles.rightText}>{userinfo.bio || 'This user has not shared any information'}</Text>
             </View>
             
             
 
-            <View style={{ justifyContent: 'space-between' , backgroundColor: colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525'}}>
+            <View style={{ justifyContent: 'space-between' , backgroundColor: "transparent"}}>
                 <TouchableOpacity style={[styles.button, { backgroundColor: btnBgColor }]} onPress={() => { back(-1) }}>
                     <Text> Back </Text>
                 </TouchableOpacity>
@@ -75,9 +71,10 @@ export default function Profile({ back, userinfo }: { back: Function, userinfo: 
 }
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        marginVertical: 15,
-        marginHorizontal: 10,
+        alignSelf: 'center',
+        width: "100%",
+        borderRadius: 10,
+        paddingVertical: "5%",
     },
     title: {
         fontSize: 30,
@@ -134,7 +131,6 @@ const styles = StyleSheet.create({
     },
     greeting: {
         marginLeft: '5%',
-        marginTop: '5%',
         marginBottom: '4%',
         color: '#3a6a96',
         fontSize: 40,

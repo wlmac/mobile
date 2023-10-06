@@ -1,5 +1,5 @@
 import * as React from "react";
-import { StyleSheet, Image, ImageBackground, Button, Platform, } from "react-native";
+import { StyleSheet, Image, ImageBackground, Platform, ImageSourcePropType, } from "react-native";
 import { ThemeContext } from "../hooks/useColorScheme";
 import { GuestModeContext } from "../hooks/useGuestMode";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
@@ -14,20 +14,22 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { apiRequest, getSchedule } from '../api';
 import { SessionContext } from '../util/session';
+import loadingGif from "../assets/images/loading.gif";
+import noWifiIcon from "../assets/images/nowifi.png";
 
 export default function HomeScreen({ navigation }: { navigation: BottomTabNavigationProp<BottomTabParamList, "Home"> }) {
   const colorScheme = React.useContext(ThemeContext);
   const guestMode = React.useContext(GuestModeContext);
   const session = React.useContext(SessionContext);
 
-  const notificationListener = React.useRef<any>();
-  const responseListener = React.useRef<any>();
+  const notificationListener = React.useRef<Notifications.Subscription>();
+  const responseListener = React.useRef<Notifications.Subscription>();
 
   let criticalTimes: {start: number, end: number, course: string}[] = [];
   let season = getSeason();
   let textColor = useThemeColor({}, "text");
 
-  const [weatherIcon, updateIcon] = React.useState(require("../assets/images/loading.gif"));
+  const [weatherIcon, updateIcon] = React.useState(loadingGif);
   const [weather, updateWeather] = React.useState("c");
   const [temperature, updateTemperature] = React.useState("Loading...");
   const [nextCourse, updateNextCourse] = React.useState<string | undefined>(undefined);
@@ -36,9 +38,12 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
   const [preTimeText, updatePreTimeText] = React.useState<string | undefined>(undefined);
   const [course, updateCourse] = React.useState("Loading...");
   const [timeText, updateTimeText] = React.useState<string | undefined>("Loading...");
-  const [timetable, updateTimetable] = React.useState<string | any[][] | undefined>("Fetching data...");
+  const [timetable, updateTimetable] = React.useState<string | [string, string][] | undefined>("Fetching data...");
+
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const [expoNotificationToken, setExpoNotificationToken] = React.useState<string | undefined>(undefined);
-  const [notification, setNotification] = React.useState<Object | undefined>(undefined);
+  const [notification, setNotification] = React.useState<unknown | undefined>(undefined);
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   const theme = colorScheme.scheme === "light" ? {
     color1: "#005C99",
@@ -81,7 +86,7 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
         }
         return;
       }
-      let displayedInfo: any[][] = [];
+      let displayedInfo: [string, string][] = [];
       for (let i = 0; i < schedule.length; i++) {
         const course = schedule[i].course ?? `Period ${i + 1}`;
 
@@ -227,8 +232,8 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
     });
 
     return () => {
-      Notifications.removeNotificationSubscription(notificationListener.current);
-      Notifications.removeNotificationSubscription(responseListener.current);
+      if(notificationListener.current) Notifications.removeNotificationSubscription(notificationListener.current);
+      if(responseListener.current) Notifications.removeNotificationSubscription(responseListener.current);
     };
   }
 
@@ -246,7 +251,7 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
       updateWeather(data.weather_state_abbr);
     }).catch(() => {
       updateTemperature("Unknown");
-      updateIcon(require("../assets/images/nowifi.png"));
+      updateIcon(noWifiIcon);
     });
 
     let interval: number;
@@ -321,6 +326,7 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
                 <Table>
                   <Rows data={
                     timetable.map(([times, course]) =>
+                      // eslint-disable-next-line react/jsx-key
                       [<Text style={styles.time}>{times}</Text>, <View style={[styles.courseRightText, { borderColor: textColor }]}><Text>{course}</Text></View>])
                   } widthArr={[148, 200]} textStyle={{ color: textColor }}/>
                   
@@ -477,7 +483,7 @@ class Weather {
 }
 
 const wIcons: {
-  [key: string]: any
+  [key: string]: ImageSourcePropType
 } = {
   c: require("../assets/images/weather/c.png"),
   h: require("../assets/images/weather/h.png"),
@@ -492,7 +498,7 @@ const wIcons: {
 }
 
 const seasonBase: {
-  [key: string]: any
+  [key: string]: ImageSourcePropType
 } = {
   spring: require("../assets/images/weather/background/base_spring.png"),
   summer: require("../assets/images/weather/background/base_summer.png"),
@@ -502,7 +508,12 @@ const seasonBase: {
 
 //all properties here are specified as spring, summer, fall, and winter
 const wLayers: {
-  [key: string]: any
+  [key: string]: {
+    spring: ImageSourcePropType,
+    summer: ImageSourcePropType,
+    fall: ImageSourcePropType,
+    winter: ImageSourcePropType
+  }
 } = {
   c: {
     spring: require("../assets/images/weather/background/clear_spring.png"),

@@ -1,19 +1,19 @@
 import * as React from 'react';
 import { StyleSheet, Image, ScrollView, Dimensions } from 'react-native';
 import { Text, View } from '../components/Themed';
-import Markdown, { MarkdownIt } from 'react-native-markdown-display';
+import Markdown, { MarkdownIt, RenderRules } from 'react-native-markdown-display';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import {ThemeContext} from '../hooks/useColorScheme';
 import * as WebBrowser from 'expo-web-browser';
-import { TagData, TagDescriptor, URLString } from '../api';
+import { TagDescriptor, URLString } from '../api';
 import Tag from './Tag';
+import loadingImage from '../assets/images/blank.png';
 
 
-var lightC = "#3a6a96";
-var darkC = "#42a4ff";
+const lightC = "#3a6a96";
+const darkC = "#42a4ff";
 const markdownItInstance = MarkdownIt({linkify: true, typographer: true});
 const {width} = Dimensions.get('window');
-const loadingImage = require('../assets/images/blank.png');
 export default function FullAnnouncement({
     id,
     tags,
@@ -38,7 +38,7 @@ export default function FullAnnouncement({
     featured_image: URLString | undefined,
     body: string,
     
-    backToScroll: Function,
+    backToScroll: (x: number) => void,
     isBlog: boolean
 }) {
     const colorScheme = React.useContext(ThemeContext);
@@ -126,21 +126,18 @@ const ImageResizeAfter = ({uri, desiredWidth}: {uri: string, desiredWidth: numbe
     )
 }
 
-const rules = {
+const rules: RenderRules = {
   image: function(
-    node: any,
-    children: any,
-    parent: any,
-    styles: any,
-    allowedImageHandlers: any,
-    defaultImageHandler: any,
+    node,
+    allowedImageHandlers,
+    defaultImageHandler,
   ){
     const { src } = node.attributes;
 
     // we check that the source starts with at least one of the elements in allowedImageHandlers
     const show =
-      allowedImageHandlers.filter((value: any) => {
-        return src.toLowerCase().startsWith(value.toLowerCase());
+      allowedImageHandlers.filter((value) => {
+        return typeof value === "string" && src.toLowerCase().startsWith(value.toLowerCase());
       }).length > 0;
 
     if (show === false && defaultImageHandler === null) {

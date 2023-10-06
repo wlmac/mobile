@@ -1,4 +1,4 @@
-module.exports = {
+{
     "env": {
         "browser": false,
         "es2021": true
@@ -18,10 +18,11 @@ module.exports = {
     "plugins": [
         "react",
         "@typescript-eslint",
-        "only-warn",
+        "only-warn"
     ],
     "rules": {
         "@typescript-eslint/ban-ts-comment": "off",
         "prefer-const": "off",
+        "no-debugger": "off"
     }
 }

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ScrollView, StyleSheet, Alert, TouchableOpacity, useColorScheme, StyleProp } from 'react-native';
+import React, { useEffect } from 'react';
+import { ScrollView, StyleSheet, Alert, TouchableOpacity, StyleProp } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
 
@@ -15,7 +15,7 @@ import * as Notifications from 'expo-notifications';
 
 
 import { Logs } from 'expo'
-import { apiRequest } from '../api';
+import { UserData, apiRequest } from '../api';
 import { SessionContext } from '../util/session';
 
 
@@ -25,7 +25,7 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
   const session = React.useContext(SessionContext);
 
   const [curView, setView] = React.useState(-1);
-  const userinfo = session.get("@userinfo") as any;
+  const userinfo: UserData = session.get("@userinfo");
 
   /*
   curView:
@@ -55,12 +55,6 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
   const topAbout = React.useRef<ScrollView>(null);
   const topUserProfile = React.useRef<ScrollView>(null);
 
-
-  //helper function
-  function styleIf(view: number, style: any){
-    return curView == view ? style : { display: "none" };
-  }
-
   async function deletePushToken() {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     
@@ -73,16 +67,17 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
 
     // if the existingStatus is denied, the token was not sent to server; assume no token was deleted
     if (!expoPushToken || existingStatus !== 'granted') {
-      Alert.alert('Success', 'Logged out successfully (no server-side notification settings deleted)', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
+      Alert.alert('Success', 'Logged out successfully (no server-side notification settings deleted)', [{ text: 'Ok', onPress: () => undefined }], { cancelable: false });
       return;
     }
 
     expoPushToken = expoPushToken.slice(18, -1);
-    await apiRequest("/v3/notif/token", { "expo_push_token": expoPushToken, "options" : {} }, "DELETE", session, false).then((res) => {
-      Alert.alert('Success', 'Logged out successfully', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
-    }).catch((err) => {
+    const res = await apiRequest("/v3/notif/token", { "expo_push_token": expoPushToken, "options" : {} }, "DELETE", session, false);
+    if(typeof res === "string"){
       Alert.alert('Error', 'Failed to log out (clearing server-side notification settings failed)', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
-    });
+    }else{
+      Alert.alert('Success', 'Logged out successfully', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
+    }
   }
   
   function logout() {
@@ -91,8 +86,9 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
         scheme.updateScheme(scheme.scheme);
         guestMode.updateGuest(false);
         navigation.replace('Login', { loginNeeded: true });
-      }).catch(() => {
-        Alert.alert('Error', 'Failed to log out (clearing local data failed)', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
+      }).catch((err) => {
+        console.error(err);
+        Alert.alert('Error', 'Failed to log out (clearing local data failed)', [{ text: 'Ok' }], { cancelable: false });
       });
     } else {
       deletePushToken().then(() => {
@@ -100,10 +96,12 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
           scheme.updateScheme(scheme.scheme);
           guestMode.updateGuest(false);
           navigation.replace('Login', { loginNeeded: true });
-        }).catch(() => {
-          Alert.alert('Error', 'Failed to log out (clearing local data failed)', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
+        }).catch((err) => {
+          console.error(err);
+          Alert.alert('Error', 'Failed to log out (clearing local data failed)', [{ text: 'Ok' }], { cancelable: false });
         });
-      }).catch(() => {
+      }).catch((err) => {
+        console.error(err);
         console.error("error when deleting server-side notification settings");
       });
     }
@@ -116,31 +114,29 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
     return unsubscribe;
   }, [navigation]);
 
-
   return (
     <View style={styles.container}>
-      <ScrollView ref={topAbout} style={styleIf(2, { flex: 1, width: "100%" })}>
-        <About back={setView}></About>
-      </ScrollView>
-      <ScrollView ref={topChangeLog} style={styleIf(1, { flex: 1, width: "100%" })}>
-        <Changelog back={setView}></Changelog>
-      </ScrollView>
+      {curView == 1 ? <ScrollView ref={topChangeLog} style={{ flex: 1, width: "100%" }}>
+        <Changelog back={setView} />
+      </ScrollView> : curView == 2 ?
+      <ScrollView ref={topAbout} style={{ flex: 1, width: "100%" }}>
+        <About back={setView} />
+      </ScrollView> : userinfo && !guestMode.guest &&
+      <ScrollView ref={topUserProfile} style={{ width: "80%", marginBottom: 24, borderRadius: 10 }}>
+        <Profile back={setView} userinfo={userinfo} />
+      </ScrollView> }
      
-      <ScrollView ref={topUserProfile} style={styleIf(3, { flex: 1, width: "100%" })}>
-        <Profile back={setView} userinfo={userinfo}></Profile>
-      </ScrollView>
-     
-      <TouchableOpacity style={curView == -1 ? [styles.userProfile] : { display: "none" }}
+      <TouchableOpacity style={curView == -1 ? styles.userProfile : { display: "none" }}
         onPress={() => { 
-          if (!guestMode.guest) {topUserProfile?.current?.scrollTo({ x: 0, y: 0, animated: false }); setView(3) }
+          if (!guestMode.guest) { topUserProfile?.current?.scrollTo({ x: 0, y: 0, animated: false }); setView(3); }
         }}
         >
-          <Text style={{ color: "#b8b8b8", fontSize: 12 }}> {guestMode.guest ? 'Not Logged In' : 'Logged In As'} </Text>
-          {(userinfo || guestMode.guest) && <Text style={{ color: "white", fontSize: 26 }}> {guestMode.guest ? 'Guest' : userinfo.username}</Text>}
+          <Text style={{ color: "#b8b8b8", fontSize: 12, marginBottom: 13 }}> {guestMode.guest ? 'Not Logged In' : 'Logged In As'} </Text>
+          {guestMode.guest || userinfo ? <Text style={{ color: "white", fontSize: 26 }}> {guestMode.guest ? 'Guest' : userinfo.username}</Text> : <Text> API Error </Text>}
       </TouchableOpacity>
      
       <TouchableOpacity
-        style={curView == -1 ? [styles.button] : { display: "none" }}
+        style={curView == -1 ? styles.button : { display: "none" }}
         onPress={() => {
           if (scheme.scheme === 'dark') scheme.updateScheme('light');
           else scheme.updateScheme('dark');
@@ -150,21 +146,21 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
       </TouchableOpacity>
 
 
-
-
-      <TouchableOpacity style={styleIf(-1, styles.button)} onPress={() => { topAbout?.current?.scrollTo({ x: 0, y: 0, animated: false }); setView(2) }}>
-        <Text> About </Text>
-        <Ionicons name="information-circle-outline" size={18} style={styles.icon} />
-      </TouchableOpacity>
-      <TouchableOpacity style={styleIf(-1, styles.button)} onPress={() => { topChangeLog?.current?.scrollTo({ x: 0, y: 0, animated: false }); setView(1) }}>
-        <Text> View Changelog </Text>
-        <Ionicons name="cog-outline" size={18} style={styles.icon} />
-      </TouchableOpacity>
-      <View style={styles.separator} lightColor="#adadad" darkColor="rgba(255,255,255,0.1)" />
-      <TouchableOpacity style={styleIf(-1, styles.logoutButton)} onPress={logout}>
-        <Text style={{ color: "white" }}> Log {guestMode.guest ? 'In' : 'Out'} </Text>
-        <Ionicons name="exit-outline" size={18} style={styles.logoutIcon} />
-      </TouchableOpacity>
+      { curView === -1 && <>
+        <TouchableOpacity style={styles.button} onPress={() => { topAbout?.current?.scrollTo({ x: 0, y: 0, animated: false }); setView(2) }}>
+          <Text> About </Text>
+          <Ionicons name="information-circle-outline" size={18} style={styles.icon} />
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.button, { marginBottom: 0 }]} onPress={() => { topChangeLog?.current?.scrollTo({ x: 0, y: 0, animated: false }); setView(1) }}>
+          <Text> View Changelog </Text>
+          <Ionicons name="cog-outline" size={18} style={styles.icon} />
+        </TouchableOpacity>
+        <View style={styles.separator} lightColor="#adadad" darkColor="rgba(255,255,255,0.1)" />
+        <TouchableOpacity style={styles.logoutButton} onPress={logout}>
+          <Text style={{ color: "white" }}> Log {guestMode.guest ? 'In' : 'Out'} </Text>
+          <Ionicons name="exit-outline" size={18} style={styles.logoutIcon} />
+        </TouchableOpacity>
+      </> }
     </View>
   );
 }
@@ -175,6 +171,7 @@ const baseStyle = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 32,
   },
   title: {
     fontSize: 20,
@@ -197,23 +194,19 @@ const baseStyle = StyleSheet.create({
   userProfile: {
     width: "80%",
     borderRadius: 5,
-    alignItems: 'flex-start',
     height: "15%",
     padding: "4%",
     marginBottom: "10%",
-    flexDirection: 'column',
-    justifyContent: 'space-between',
     backgroundColor: '#073763',
     fontWeight: "500",
     textAlign: "left",
-    color: '#e2e2e2'
+    color: '#e2e2e2',
   },
   logoutButton: {
     width: "80%",
     borderRadius: 5,
     alignItems: 'center',
     padding: 10,
-    marginTop: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
 

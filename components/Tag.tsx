@@ -1,7 +1,7 @@
 import React from "react";
 import { StyleSheet } from 'react-native';
 import { TagDescriptor } from "../api";
-import { Text, View } from '../components/Themed';
+import { Text } from '../components/Themed';
 import { ThemeContext } from "../hooks/useColorScheme";
 
 import { hexToHsv, hsvToHex } from '../lib/colors';

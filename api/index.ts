@@ -6,8 +6,7 @@ import config from '../config.json';
 import { TagData, OrganizationData, AnnouncementData, BlogPostData, CommentData, EventData, UserData, EventDataHandler } from './impl';
 import { DateTimeString, LimitOffsetPagination, TimetableCourse, TokenPair, Weather } from './misc';
 import { apiRequest, axiosInstance, refreshLogin, login } from './core';
-import React from 'react';
-import { Session, SessionContext } from '../util/session';
+import { Session } from '../util/session';
 
 export type { TagData, OrganizationData, AnnouncementData, BlogPostData, CommentData, EventData, UserData };
 export type { LimitOffsetPagination, TokenPair, Weather };
@@ -39,7 +38,9 @@ export async function getEventsInRange(start: DateTimeString, end: DateTimeStrin
         params: {
             start,
             end,
+            ...options?.params,
         },
+        ...options
     })){
         events.push(event);
     }
@@ -90,8 +91,7 @@ export async function getSchedule(noAuth: boolean, session: Session, date?: Date
         return "No schedule on this day";
     }
 
-    // TODO fix this
-    const schedule: any[] = [];
+    const schedule: TimetableCourse[] = [];
     for(const segment of res){
         const { time, ...rest } = segment;
         schedule.push({

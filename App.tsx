@@ -4,13 +4,9 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as Device from 'expo-device';
-import loadResources from './hooks/useResources';
-import useColorScheme from './hooks/useColorScheme';
 import Navigation from './navigation';
 import { SessionProvider } from './util/session';
 
-import { Text, View } from './components/Themed';
-import { axiosInstance } from './api/core';
 export default function App() {
   React.useEffect(() => {
     Device.getDeviceTypeAsync().then(type => {
@@ -19,7 +15,7 @@ export default function App() {
       if (type != 2) {
         ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
       }
-    }).catch(err => { });
+    }).catch(() => undefined);
     
     // // debug axios
     // axiosInstance.interceptors.request.use(request => {
@@ -36,12 +32,5 @@ export default function App() {
         <StatusBar />
       </SessionProvider>
     </SafeAreaProvider>
-    // <Text style={
-    //   {
-    //     color: "black"
-    //   }
-    // }>
-    //   AAAAAA
-    // </Text>
   );
 }

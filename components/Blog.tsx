@@ -5,10 +5,9 @@ import { Text, View } from "./Themed";
 import { ThemeContext } from "../hooks/useColorScheme";
 import removeMd from "remove-markdown";
 import * as colorConvert from "color-convert";
-import { AnnouncementData } from "./Announcement";
 
-var lightC = "#3a6a96";
-var darkC = "#42a4ff";
+const lightC = "#3a6a96";
+const darkC = "#42a4ff";
 
 function darkenColor(color: string) {
   let hsv = colorConvert.hex.hsv.raw(color);
@@ -46,7 +45,7 @@ export default function Blog({
   fullAnn,
 }: {
   ann: BlogData;
-  fullAnn: Function;
+  fullAnn: (id: number) => void;
 }) {
   const scheme = React.useContext(ThemeContext).scheme;
   return (

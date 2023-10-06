@@ -1,10 +1,9 @@
-import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import config from '../config.json';
 import NetInfo from "@react-native-community/netinfo";
 import { Buffer } from "buffer";
 import { TokenPair, anyObject } from './misc';
 import { Session } from '../util/session';
-import React from 'react';
 
 export const axiosInstance = axios.create({
     baseURL: config.server,
@@ -99,7 +98,7 @@ export async function refreshLogin(session: Session): Promise<boolean> {
             "@refreshtoken": tokens.refresh,
         });
         return true;
-    }catch(err: any){
+    }catch(err: unknown){
         if(err instanceof AxiosError && err.response && err.response.data.code == "token_not_valid"){
             console.error("invalid/expired token");
             session.remove("@accesstoken");
@@ -122,6 +121,7 @@ export async function login(username: string, password: string, session: Session
         });
         const tokens = response.data;
         if (tokens.access && tokens.refresh) {
+            console.log("setting state:", tokens);
             session.setAll({
                 "@accesstoken": tokens.access,
                 "@refreshtoken": tokens.refresh,

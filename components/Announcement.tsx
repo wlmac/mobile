@@ -7,8 +7,8 @@ import removeMd from 'remove-markdown';
 import { TagDescriptor, URLString } from '../api';
 import Tag from './Tag';
 
-var lightC = "#3a6a96";
-var darkC = "#42a4ff";
+const lightC = "#3a6a96";
+const darkC = "#42a4ff";
 
 export default function Announcement({
     title,
@@ -26,7 +26,7 @@ export default function Announcement({
     date: Date,
     tags: TagDescriptor[],
     body: string,
-    showFull: () => any,
+    showFull: () => void,
     children?: React.ReactNode
 }) {
     const scheme = React.useContext(ThemeContext).scheme;
