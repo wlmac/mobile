@@ -121,7 +121,7 @@ export async function login(username: string, password: string, session: Session
         });
         const tokens = response.data;
         if (tokens.access && tokens.refresh) {
-            console.log("setting state:", tokens);
+            //console.log("setting state:", tokens);
             session.setAll({
                 "@accesstoken": tokens.access,
                 "@refreshtoken": tokens.refresh,

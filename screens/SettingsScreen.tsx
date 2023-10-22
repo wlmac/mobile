@@ -72,12 +72,11 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
     }
 
     expoPushToken = expoPushToken.slice(18, -1);
-    const res = await apiRequest("/v3/notif/token", { "expo_push_token": expoPushToken, "options" : {} }, "DELETE", session, false);
-    if(typeof res === "string"){
-      Alert.alert('Error', 'Failed to log out (clearing server-side notification settings failed)', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
-    }else{
+    await apiRequest("/v3/notif/token", { "expo_push_token": expoPushToken, "options" : {} }, "DELETE", session, false).then((res) => {
       Alert.alert('Success', 'Logged out successfully', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
-    }
+    }).catch((err) => {
+      Alert.alert('Error', 'Failed to log out (clearing server-side notification settings failed)', [{ text: 'Ok', onPress: () => { } }], { cancelable: false });
+    });
   }
   
   function logout() {

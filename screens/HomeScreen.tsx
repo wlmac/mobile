@@ -213,7 +213,7 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
     }
 
     await apiRequest("/v3/notif/token", { "expo_push_token": expoPushToken, "options": options }, "PUT", session, false).then((res) => {
-      console.log("Successfully uploaded token to server: " + JSON.stringify(res));
+      console.log("Successfully uploaded token to server: " + expoPushToken);
       setExpoNotificationToken(expoPushToken);
     }).catch((err) => {
       console.error("An error occurred while trying to set the expo notification token: " + err);

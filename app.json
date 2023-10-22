@@ -2,6 +2,7 @@
   "expo": {
     "name": "Metropolis",
     "slug": "metropolis",
+    "owner": "metropolis",
     "privacy": "hidden",
     "version": "1.1.2",
     "githubUrl": "https://github.com/wlmac/mobile",
@@ -61,6 +62,11 @@
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "7cece997-cdba-4ad5-917e-7ef47015ac99"
+      }
     }
   }
 }
