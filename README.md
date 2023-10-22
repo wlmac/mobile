@@ -26,7 +26,7 @@
 1. Install latest deps
     1. Use npm install --legacy-peer-deps --include-dev
 2. Check for updates
-    1. Before you do anything, ensure you are up to date with remote and the dependencies are up to date
+    1. Before you do anything, ensure you are up-to-date with remote and the dependencies are up-to-date
     2. Outdated dep check: npm outdated
     3. Update deps command: npm update --legacy-peer-deps --include-dev -- save --save-dev
 3. Branch
@@ -36,7 +36,7 @@
     1. For development testing, run npx expo start --tunnel
     2. For production testing, run npx expo start --tunnel --no-dev --minify
 5. Bugs/PRs
-    1. Use the issues/prs tabs on github respectively for these issues, or simply just discuss in the app dev chat
+    1. Use the issues/prs tabs on GitHub respectively for these issues, or simply just discuss in the app dev chat
 
 ## **Updating**
 
