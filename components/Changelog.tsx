@@ -10,7 +10,7 @@ import {ThemeContext} from '../hooks/useColorScheme';
 import changelog from '../changelog.json';
 import { SessionContext } from '../util/session';
 
-export default function Changelog({ back }: { back: (x: number) => void }) {
+export default function Changelog({ back }: { back: () => void }) {
 
     const colorScheme = React.useContext(ThemeContext);
     const btnBgColor = colorScheme.scheme === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
@@ -39,7 +39,7 @@ export default function Changelog({ back }: { back: (x: number) => void }) {
                     </View>
                 ))}
             </View>
-            <TouchableOpacity style={[styles.button, { backgroundColor: btnBgColor }]} onPress={() => { back(-1) }}>
+            <TouchableOpacity style={[styles.button, { backgroundColor: btnBgColor }]} onPress={() => { back() }}>
                 <Text> Back </Text>
             </TouchableOpacity>
         </View>

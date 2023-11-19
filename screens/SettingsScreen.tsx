@@ -19,12 +19,14 @@ import { UserData, apiRequest } from '../api';
 import { SessionContext } from '../util/session';
 
 
-Logs.enableExpoCliLogging()
+Logs.enableExpoCliLogging();
+
+type ViewType = null | "changelog" | "about" | "profile";
 
 export default function SettingsScreen({ navigation }: { navigation: StackNavigationProp<RootStackParamList, 'Root'> }) {
   const session = React.useContext(SessionContext);
 
-  const [curView, setView] = React.useState(-1);
+  const [curView, setView] = React.useState<ViewType>(null);
   const userinfo: UserData = session.get("@userinfo");
 
   /*
@@ -108,49 +110,56 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("blur", () => {
-      setView(-1);
+      setView(null);
     });
     return unsubscribe;
   }, [navigation]);
 
   return (
     <View style={styles.container}>
-      {curView == 1 ? <ScrollView ref={topChangeLog} style={{ flex: 1, width: "100%" }}>
-        <Changelog back={setView} />
-      </ScrollView> : curView == 2 ?
+      {curView === "changelog" ? <ScrollView ref={topChangeLog} style={{ flex: 1, width: "100%" }}>
+        <Changelog back={() => setView(null)} />
+      </ScrollView> : curView === "about" ?
       <ScrollView ref={topAbout} style={{ flex: 1, width: "100%" }}>
-        <About back={setView} />
-      </ScrollView> : userinfo && !guestMode.guest &&
+        <About back={() => setView(null)} />
+      </ScrollView> : userinfo && !guestMode.guest ?
       <ScrollView ref={topUserProfile} style={{ width: "80%", marginBottom: 24, borderRadius: 10 }}>
-        <Profile back={setView} userinfo={userinfo} />
-      </ScrollView> }
+        <Profile back={() => setView(null)} userinfo={userinfo} />
+      </ScrollView> : undefined }
      
-      <TouchableOpacity style={curView == -1 ? styles.userProfile : { display: "none" }}
-        onPress={() => { 
-          if (!guestMode.guest) { topUserProfile?.current?.scrollTo({ x: 0, y: 0, animated: false }); setView(3); }
-        }}
-        >
-          <Text style={{ color: "#b8b8b8", fontSize: 12, marginBottom: 13 }}> {guestMode.guest ? 'Not Logged In' : 'Logged In As'} </Text>
-          {guestMode.guest || userinfo ? <Text style={{ color: "white", fontSize: 26 }}> {guestMode.guest ? 'Guest' : userinfo.username}</Text> : <Text> API Error </Text>}
-      </TouchableOpacity>
-     
-      <TouchableOpacity
-        style={curView == -1 ? styles.button : { display: "none" }}
-        onPress={() => {
-          if (scheme.scheme === 'dark') scheme.updateScheme('light');
-          else scheme.updateScheme('dark');
+      {curView === null && <>
+        <TouchableOpacity style={styles.userProfile}
+          onPress={() => { 
+            if (!guestMode.guest) {
+              topUserProfile?.current?.scrollTo({ x: 0, y: 0, animated: false });
+              setView("profile");
+            }
+          }}
+          >
+            <Text style={{ color: "#b8b8b8", fontSize: 12, marginBottom: 13 }}> {guestMode.guest ? 'Not Logged In' : 'Logged In As'} </Text>
+            {guestMode.guest || userinfo ? <Text style={{ color: "white", fontSize: 26 }}> {guestMode.guest ? 'Guest' : userinfo.username}</Text> : <Text> API Error </Text>}
+        </TouchableOpacity>
+      
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => {
+            if (scheme.scheme === 'dark') scheme.updateScheme('light');
+            else scheme.updateScheme('dark');
+          }}>
+          <Text> Appearance: {scheme.scheme} </Text>
+          <Ionicons name="color-palette-outline" size={18} style={styles.icon} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => {
+          topAbout?.current?.scrollTo({ x: 0, y: 0, animated: false });
+          setView("changelog")
         }}>
-        <Text> Appearance: {scheme.scheme} </Text>
-        <Ionicons name="color-palette-outline" size={18} style={styles.icon} />
-      </TouchableOpacity>
-
-
-      { curView === -1 && <>
-        <TouchableOpacity style={styles.button} onPress={() => { topAbout?.current?.scrollTo({ x: 0, y: 0, animated: false }); setView(2) }}>
           <Text> About </Text>
           <Ionicons name="information-circle-outline" size={18} style={styles.icon} />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, { marginBottom: 0 }]} onPress={() => { topChangeLog?.current?.scrollTo({ x: 0, y: 0, animated: false }); setView(1) }}>
+        <TouchableOpacity style={[styles.button, { marginBottom: 0 }]} onPress={() => {
+          topChangeLog?.current?.scrollTo({ x: 0, y: 0, animated: false });
+          setView("about");
+        }}>
           <Text> View Changelog </Text>
           <Ionicons name="cog-outline" size={18} style={styles.icon} />
         </TouchableOpacity>

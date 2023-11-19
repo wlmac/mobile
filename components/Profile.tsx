@@ -6,13 +6,15 @@ import { UserData } from '../api';
 
 
 
-export default function Profile({ back, userinfo }: { back: (x: number) => void, userinfo: UserData }) {
+export default function Profile({ back, userinfo }: { back: () => void, userinfo: UserData }) {
 
     if (!userinfo) {
         console.warn("userinfo is invalid");
-        return (<View>
-            <Text>API Error</Text>
-        </View>);
+        return (
+            <View>
+                <Text>API Error</Text>
+            </View>
+        );
     }
 
     const colorScheme = React.useContext(ThemeContext);
@@ -62,7 +64,7 @@ export default function Profile({ back, userinfo }: { back: (x: number) => void,
             
 
             <View style={{ justifyContent: 'space-between' , backgroundColor: "transparent"}}>
-                <TouchableOpacity style={[styles.button, { backgroundColor: btnBgColor }]} onPress={() => { back(-1) }}>
+                <TouchableOpacity style={[styles.button, { backgroundColor: btnBgColor }]} onPress={back}>
                     <Text> Back </Text>
                 </TouchableOpacity>
             </View>
