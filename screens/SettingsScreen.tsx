@@ -21,22 +21,16 @@ import { SessionContext } from '../util/session';
 
 Logs.enableExpoCliLogging();
 
-type ViewType = null | "changelog" | "about" | "profile";
+type ViewType = "settings" | "changelog" | "about" | "profile";
 
 export default function SettingsScreen({ navigation }: { navigation: StackNavigationProp<RootStackParamList, 'Root'> }) {
   const session = React.useContext(SessionContext);
 
-  const [curView, setView] = React.useState<ViewType>(null);
-  const userinfo: UserData = session.get("@userinfo");
-
-  /*
-  curView:
-  -1 = Nothing viewed. Buttons visible
-  1 = Changelog
-  2 = About
-  */
   const scheme = React.useContext(ThemeContext);
   const guestMode = React.useContext(GuestModeContext);
+
+  const [curView, setView] = React.useState<ViewType>("settings");
+  const userinfo: UserData | null = guestMode.guest ? null : session.get("@userinfo");
 
 
   //this took me an hour to figure out ffs
@@ -64,7 +58,7 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
     try {
       expoPushToken = (await Notifications.getExpoPushTokenAsync()).data;
     } catch (error) {
-      console.log('Error fetching Expo token:', error, "\nFor developers, ensure you are logged in with your Expo account in order for notif testing to work.");
+      console.warn('Error fetching Expo token:', error, "\nFor developers, ensure you are logged in with your Expo account in order for notif testing to work.");
     }
 
     // if the existingStatus is denied, the token was not sent to server; assume no token was deleted
@@ -110,7 +104,7 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("blur", () => {
-      setView(null);
+      setView("settings");
     });
     return unsubscribe;
   }, [navigation]);
@@ -118,26 +112,24 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
   return (
     <View style={styles.container}>
       {curView === "changelog" ? <ScrollView ref={topChangeLog} style={{ flex: 1, width: "100%" }}>
-        <Changelog back={() => setView(null)} />
+        <Changelog back={() => setView("settings")} />
       </ScrollView> : curView === "about" ?
       <ScrollView ref={topAbout} style={{ flex: 1, width: "100%" }}>
-        <About back={() => setView(null)} />
-      </ScrollView> : userinfo && !guestMode.guest ?
+        <About back={() => setView("settings")} />
+      </ScrollView> : curView == "profile" ?
       <ScrollView ref={topUserProfile} style={{ width: "80%", marginBottom: 24, borderRadius: 10 }}>
-        <Profile back={() => setView(null)} userinfo={userinfo} />
+        <Profile back={() => setView("settings")} userinfo={userinfo} />
       </ScrollView> : undefined }
      
-      {curView === null && <>
-        <TouchableOpacity style={styles.userProfile}
+      {curView === "settings" && <>
+        <TouchableOpacity style={{ width: "80%", marginBottom: 48, borderRadius: 10 }}
           onPress={() => { 
             if (!guestMode.guest) {
               topUserProfile?.current?.scrollTo({ x: 0, y: 0, animated: false });
               setView("profile");
             }
-          }}
-          >
-            <Text style={{ color: "#b8b8b8", fontSize: 12, marginBottom: 13 }}> {guestMode.guest ? 'Not Logged In' : 'Logged In As'} </Text>
-            {guestMode.guest || userinfo ? <Text style={{ color: "white", fontSize: 26 }}> {guestMode.guest ? 'Guest' : userinfo.username}</Text> : <Text> API Error </Text>}
+          }}>
+          <Profile userinfo={userinfo} headerOnly />
         </TouchableOpacity>
       
         <TouchableOpacity

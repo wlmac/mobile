@@ -6,9 +6,9 @@ import { UserData } from '../api';
 
 
 
-export default function Profile({ back, userinfo }: { back: () => void, userinfo: UserData }) {
+export default function Profile({ back, userinfo, headerOnly }: { back?: () => void, userinfo: UserData | null, headerOnly?: boolean }) {
 
-    if (!userinfo) {
+    if (userinfo === undefined) {
         console.warn("userinfo is invalid");
         return (
             <View>
@@ -20,56 +20,66 @@ export default function Profile({ back, userinfo }: { back: () => void, userinfo
     const colorScheme = React.useContext(ThemeContext);
     const btnBgColor = colorScheme.scheme === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
     
-    let clubsFollowing = userinfo.organizations.join(', ');
     return (
         <View style={[styles.container, {backgroundColor: colorScheme.scheme === 'light' ? '#c2c2c2' : '#1f1f1f'}]}>
             
-            <Text style={styles.greeting}>Welcome Back,</Text>
-            <View style={{ flexDirection: 'row', backgroundColor: "transparent"}}> 
-                <Image
-                    style={styles.avatar}
-                    source={{
-                        uri: userinfo.gravatar_url,
-                    }}
-                />
-                <View style={{ flexDirection: 'column', backgroundColor: "transparent"}}> 
-                    <Text 
-                        style={styles.title}
-                    >
-                        {userinfo.first_name} {userinfo.last_name}
-                    </Text>
-                    <Text style={styles.name}>{userinfo.username}</Text>
-                </View>
-            </View>
+            { userinfo === null ?
+                <>
+                    <Text style={styles.title}>Not logged in</Text>
+                    <View style={{ flexDirection: 'column', backgroundColor: "transparent"}}> 
+                        <Text style={[styles.name, { marginBottom: 22 }]}>Guest</Text>
+                    </View>
+                </> : <>
+                    <Text style={styles.greeting}>Logged in as</Text>
+                    <View style={{ flexDirection: 'row', backgroundColor: "transparent"}}> 
+                        <Image
+                            style={styles.avatar}
+                            source={{
+                                uri: userinfo.gravatar_url,
+                            }}
+                        />
+                        <View style={{ flexDirection: 'column', backgroundColor: "transparent"}}> 
+                            <Text 
+                                style={styles.title}
+                            >
+                                {userinfo.first_name} {userinfo.last_name}
+                            </Text>
+                            <Text style={styles.name}>{userinfo.username}</Text>
+                        </View>
+                    </View>
                     
-            <View style={styles.separator} lightColor="#adadad" darkColor="rgba(255,255,255,0.1)" />
-            <View style={{flexDirection: 'column', padding: '5%', backgroundColor: "transparent"}}>
-                <View style={{ flexDirection: 'row', backgroundColor: "transparent"}}>
-                    <Text style={styles.leftText}>Graduating Year</Text>
-                    <Text style={styles.rightText}>{userinfo.graduating_year}</Text>
-                </View>
-                {
-                    clubsFollowing ? <View style={{ flexDirection: 'row', backgroundColor: "transparent"}}>
-                        <Text style={styles.leftText} > Following </Text>
-                        <Text style={styles.rightText}>
-                            {clubsFollowing}
-                        </Text>
-                    </View> : undefined
-                }
-                <Text></Text>
-                
-                <Text style={styles.rightText}>{userinfo.bio || 'This user has not shared any information'}</Text>
-            </View>
-            
-            
-
-            <View style={{ justifyContent: 'space-between' , backgroundColor: "transparent"}}>
-                <TouchableOpacity style={[styles.button, { backgroundColor: btnBgColor }]} onPress={back}>
-                    <Text> Back </Text>
-                </TouchableOpacity>
-            </View>
+                    {!headerOnly && <>
+                        <View style={styles.separator} lightColor="#adadad" darkColor="rgba(255,255,255,0.1)" />
+                        <View style={{flexDirection: 'column', padding: '5%', backgroundColor: "transparent"}}>
+                            <View style={{ flexDirection: 'row', backgroundColor: "transparent"}}>
+                                <Text style={styles.leftText}>Graduating Year</Text>
+                                <Text style={styles.rightText}>{userinfo.graduating_year}</Text>
+                            </View>
+                            {
+                                userinfo.organizations.length > 0 && <View style={{ flexDirection: 'row', backgroundColor: "transparent"}}>
+                                    <Text style={styles.leftText} > Following </Text>
+                                    <Text style={styles.rightText}>
+                                        {userinfo.organizations.join(', ')}
+                                    </Text>
+                                </View>
+                            }
+                            <Text></Text>
+                            
+                            <Text style={styles.rightText}>{userinfo.bio || 'This user has not shared any information'}</Text>
+                        </View>
+                        
+                        
+        
+                        <View style={{ justifyContent: 'space-between' , backgroundColor: "transparent"}}>
+                            <TouchableOpacity style={[styles.button, { backgroundColor: btnBgColor }]} onPress={back}>
+                                <Text> Back </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </>}
+                </>
+            }
         </View>
-    )
+    );
 }
 const styles = StyleSheet.create({
     container: {
