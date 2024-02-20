@@ -144,14 +144,14 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={() => {
           topAbout?.current?.scrollTo({ x: 0, y: 0, animated: false });
-          setView("changelog")
+          setView("about")
         }}>
           <Text> About </Text>
           <Ionicons name="information-circle-outline" size={18} style={styles.icon} />
         </TouchableOpacity>
         <TouchableOpacity style={[styles.button, { marginBottom: 0 }]} onPress={() => {
           topChangeLog?.current?.scrollTo({ x: 0, y: 0, animated: false });
-          setView("about");
+          setView("changelog");
         }}>
           <Text> View Changelog </Text>
           <Ionicons name="cog-outline" size={18} style={styles.icon} />
