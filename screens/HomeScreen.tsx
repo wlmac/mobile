@@ -177,7 +177,7 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
     }
     if (finalStatus !== 'granted') {
       // remove in production
-      alert('Failed to get push token for push notification! Perhaps your system permissions do not allow notifications?');
+      //alert('Failed to get push token for push notification! Perhaps your system permissions do not allow notifications?');
       return undefined;
     }
     if (Platform.OS === 'android') {
@@ -193,10 +193,11 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
       expoPushToken = (await Notifications.getExpoPushTokenAsync()).data;
     } catch (error) {
       console.log('Error fetching Expo token:', error, "\nFor developers, ensure you are logged in with your Expo account in order for notif testing to work.");
+      alert('Failed to get push token for push notification ' + expoPushToken);
     }
 
     if (!expoPushToken) {
-      alert('Failed to get push token for push notification');
+      alert('Failed to get push token for push notification ' + expoPushToken);
       return undefined;
     }
 
