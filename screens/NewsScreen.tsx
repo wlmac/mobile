@@ -273,7 +273,8 @@ export default function NewsScreen() {
         })
       }
 
-      (id === "all" ? setAllAnnouncementsData : setSacAnnouncementsData)(allAnnouncementsData.concat(data));
+      if(id == "all") setAllAnnouncementsData(allAnnouncementsData.concat(data));
+      else setSacAnnouncementsData(sacAnnouncementsData.concat(data));
 
     } catch (e) {
       console.error(e);
