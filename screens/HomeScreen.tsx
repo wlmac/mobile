@@ -190,10 +190,10 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
     }
     let expoPushToken: string | undefined = undefined;
     try {
-      expoPushToken = (await Notifications.getExpoPushTokenAsync()).data;
+      expoPushToken = (await Notifications.getExpoPushTokenAsync({projectId: "7cece997-cdba-4ad5-917e-7ef47015ac99"})).data;
     } catch (error) {
       console.log('Error fetching Expo token:', error, "\nFor developers, ensure you are logged in with your Expo account in order for notif testing to work.");
-      alert('Failed to get push token for push notification ' + expoPushToken);
+      alert('Failed to get push token for push notification ' + expoPushToken + " " + error);
     }
 
     if (!expoPushToken) {

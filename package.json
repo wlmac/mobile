@@ -38,7 +38,8 @@
     "react-native-screens": "~3.15.0",
     "react-native-table-component": "github:slice312/react-native-table-component",
     "react-native-web": "^0.18.12",
-    "remove-markdown": "^0.5.0"
+    "remove-markdown": "^0.5.0",
+    "expo-dev-client": "~2.4.13"
   },
   "devDependencies": {
     "@babel/core": "^7.23.3",
