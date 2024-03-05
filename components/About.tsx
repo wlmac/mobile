@@ -1,23 +1,19 @@
 import * as React from 'react';
-import { ScrollView, StyleSheet, Alert, TouchableOpacity, Linking } from 'react-native';
+import { StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import { Text, View } from '../components/Themed';
 import * as WebBrowser from 'expo-web-browser';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {ThemeContext} from '../hooks/useColorScheme';
 import config from '../config.json';
-
-export default function About({ back }: { back: Function }) {
-
+export default function About({ back }: { back: () => void }) {
     const colorScheme = React.useContext(ThemeContext);
     const btnBgColor = colorScheme.scheme === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
-
     return (
         <View style={[styles.container, {backgroundColor: colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525'}]}>
             <Text style={styles.title}>
                 About
             </Text>
             <View style={[styles.container, {backgroundColor: colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525'}]}>
-                <Text>The Metropolis app is the mobile app for {' '}
+                <Text>The Metropolis app is the mobile app for &nbsp;
                     <TouchableOpacity onPress={() => { WebBrowser.openBrowserAsync(config.server) }}>
                         <Text style={styles.link}>
                             {config.server}
@@ -39,13 +35,12 @@ export default function About({ back }: { back: Function }) {
                     Credits
                 </Text>
                 <Text style={{ marginBottom: 12 }}>
-                    <Text style={{ fontWeight: 'bold' }}>Lead Developer:</Text> Patrick Lin {'\n'}
-                    <Text style={{ fontWeight: 'bold' }}>Other Developers:</Text> Aaron Zhu, Shane Chen, Aava Sapkota, Vlad Surdu, Jeremy Liang {'\n'}
+                    <Text style={{ fontWeight: 'bold' }}>Lead Developers:</Text> Patrick Lin, Shane Chen {'\n'}
+                    <Text style={{ fontWeight: 'bold' }}>Other Developers:</Text> Aaron Zhu, Aava Sapkota, Vlad Surdu, Jeremy Liang, Max Sun, Colin Cai {'\n'}
                     <Text style={{ fontWeight: 'bold' }}>Backend:</Text> Ken Shibata, Paul Lee {'\n'}
-                    <Text style={{ fontWeight: 'bold' }}>Graphics and Design:</Text> Chelsea Wong, Justin Lu, Nicole Cui {'\n'}
+                    <Text style={{ fontWeight: 'bold' }}>Graphics and Design:</Text> Chelsea Wong, Annie Wong, Justin Lu, Nicole Cui {'\n'}
                     <Text style={{ fontWeight: 'bold' }}>Support:</Text> Project Metropolis, SAC, WLMAC {'\n'}
                 </Text>
-
                 <Text style={styles.subtitle}>
                     Contact
                 </Text>
@@ -69,14 +64,13 @@ export default function About({ back }: { back: Function }) {
                 </Text>
             </View>
             <View style={{ justifyContent: 'space-between' , backgroundColor: colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525'}}>
-                <TouchableOpacity style={[styles.button, { backgroundColor: btnBgColor }]} onPress={() => { back(-1) }}>
+                <TouchableOpacity style={[styles.button, { backgroundColor: btnBgColor }]} onPress={() => { back() }}>
                     <Text> Back </Text>
                 </TouchableOpacity>
             </View>
         </View>
     )
 }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,

@@ -1,46 +1,97 @@
 import * as React from 'react';
-import { ScrollView, StyleSheet, Button, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 import { Text, View } from '../components/Themed';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Modal from "react-native-modal";
 import Constants from 'expo-constants';
 import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 import {ThemeContext} from '../hooks/useColorScheme';
 import changelog from '../changelog.json';
+import { SessionContext } from '../util/session';
 
-export default function Changelog({ back }: { back: Function }) {
+export default function Changelog({ back }: { back: () => void }) {
 
     const colorScheme = React.useContext(ThemeContext);
     const btnBgColor = colorScheme.scheme === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
+    const BgColor = colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525';
 
     return (
-        <View style={[styles.container, {backgroundColor: colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525'}]}>
-            <View style={[styles.changelog, {backgroundColor: colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525'}]}>
+        <View style={[styles.container, {backgroundColor: BgColor}]}>
+            <View style={[styles.changelog, {backgroundColor: BgColor}]}>
                 <Text style={styles.title}> Changelog </Text>
                 <View style={styles.separator} lightColor="#adadad" darkColor="rgba(255,255,255,0.1)" />
                 {Object.entries(changelog).map(([key, change]) => (
-                    <View key={key} style={[{backgroundColor: colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525'}, {paddingBottom: 50}]}>
-                        <Text style={{ fontSize: 20, fontWeight: 'bold', color: colorScheme.scheme === "dark" ? '#348feb' : '#105fb0' }}> v{change.version} </Text>
+                    <View key={key} style={[{backgroundColor: BgColor}, {paddingBottom: 50}]}>
+                        <Text style={[styles.version, { color: colorScheme.scheme === "dark" ? '#348feb' : '#105fb0' }]}> v{change.version} </Text>
                         <Text style={{ color: colorScheme.scheme === "dark" ? '#cccccc' : '#555555', fontSize: 15 }}> {new Date(change.time).toLocaleString() + '\n'} </Text>
-                        <View style={{backgroundColor: colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525'}}>
+                        <View style={{backgroundColor: BgColor}}>
+                            { /* @ts-ignore */ }
                             <Markdown style={colorScheme.scheme === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={url => {
-                        if(url) {
-                            WebBrowser.openBrowserAsync(url);
-                            return false;
-                        }
-                        else {
-                            return true;
-                        }
-                    }}>{change.changes + '\n\n'}</Markdown></View>
+                                if(url) {
+                                    WebBrowser.openBrowserAsync(url);
+                                    return false;
+                                } else {
+                                    return true;
+                                }
+                            }}>{change.changes + '\n\n'}</Markdown>
+                        </View>
                     </View>
                 ))}
             </View>
-            <TouchableOpacity style={[styles.button, { backgroundColor: btnBgColor }]} onPress={() => { back(-1) }}>
+            <TouchableOpacity style={[styles.button, { backgroundColor: btnBgColor }]} onPress={() => { back() }}>
                 <Text> Back </Text>
             </TouchableOpacity>
         </View>
+    )
+}
+
+
+
+
+export function ChangeLogModal() {
+    const colorScheme = React.useContext(ThemeContext);
+    const sessionContext = React.useContext(SessionContext);
+    const btnBgColor = colorScheme.scheme === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
+    const BgColor = colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525';
+    const xColor = colorScheme.scheme === 'light' ? 'black' : 'white';
+
+    const [isModalVisible, setModalVisible] = React.useState(false);
+    const modalOff = () => {
+        setModalVisible(false);
+        sessionContext.set('@changelogseenver', Constants.manifest?.version ?? '0.0.0');
+    };
+    React.useEffect(() => {
+        const val = sessionContext.get<string>('@changelogseenver');
+        console.log(val);
+        console.log(Constants.expoConfig?.version ?? '0.0.0');
+        console.log(changelog[0].version);
+        // val = '1.0.0'; // testing modal
+        if ((!val || val !== Constants.expoConfig?.version) && changelog[0].version === Constants.expoConfig?.version) {
+            setModalVisible(true);
+        }
+    }, [])
+
+    
+    /*The string at the end is a hacky solution to elongate markdown text such that the button renders correctly. Contains zero-width spaces.*/
+    return (
+        <Modal isVisible={isModalVisible} style={modalStyles.modal}>
+            <View style={[modalStyles.wrapper, {backgroundColor: BgColor, shadowColor: colorScheme.scheme === 'light' ? '#1c1c1c' : '#e6e6e6'}]}>
+                <ScrollView style={{backgroundColor: BgColor}} contentContainerStyle={modalStyles.scrollView}>
+                        <Ionicons size={30} style={modalStyles.xIcon} name="close" color={xColor} onPress={modalOff} />
+                        <Text style={styles.title}>What&apos;s New</Text>
+                        <View style={modalStyles.modalSeparator} lightColor="#adadad" darkColor="rgba(255,255,255,0.1)" />
+                        <Text style={[styles.version, { color: colorScheme.scheme === "dark" ? '#348feb' : '#105fb0' }]}> v{changelog[0].version} </Text>
+                        <Text style={{ color: colorScheme.scheme === "dark" ? '#cccccc' : '#555555', fontSize: 15 }}> {new Date(changelog[0].time).toLocaleString() + '\n'} </Text>
+                        <View>
+                            { /* @ts-ignore */ }
+                            <Markdown style={colorScheme.scheme === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true}>{changelog[0].changes}</Markdown>
+                        </View>
+                        <TouchableOpacity onPress={modalOff} style={[modalStyles.button, { backgroundColor: btnBgColor }]}><Text>Close</Text></TouchableOpacity>
+                </ScrollView>
+                <View style={modalStyles.modalSeparator} lightColor="#adadad" darkColor="rgba(255,255,255,0.1)" />
+            </View>
+        </Modal>
     )
 }
 
@@ -55,6 +106,10 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 30,
+        fontWeight: 'bold',
+    },
+    version: {
+        fontSize: 20, 
         fontWeight: 'bold',
     },
     separator: {
@@ -72,40 +127,6 @@ const styles = StyleSheet.create({
     }
 });
 
-export function ChangeLogModal() {
-    const colorScheme = React.useContext(ThemeContext);
-    const btnBgColor = colorScheme.scheme === "light" ? "rgb(189, 189, 189)" : "rgb(64, 64, 64)";
-    const [isModalVisible, setModalVisible] = React.useState(false);
-    const modalOff = () => {
-        setModalVisible(false);
-        AsyncStorage.setItem(`@changelogseenver`, Constants.manifest?.version ?? '0.0.0').catch();
-    };
-    React.useEffect(() => {
-        AsyncStorage.getItem('@changelogseenver').then(val => {
-            if ((!val || val !== Constants.manifest?.version) && changelog[0].version === Constants.manifest?.version) {
-                setModalVisible(true);
-            } 
-        }).catch();
-    }, [])
-    /*The string at the end is a hacky solution to elongate markdown text such that the button renders correctly. Contains zero-width spaces.*/
-    return (
-        <Modal isVisible={isModalVisible} style={modalStyles.modal}>
-            <View style={modalStyles.wrapper}>
-                <ScrollView style={{backgroundColor: colorScheme.scheme === "light" ? "white" : "black"}} contentContainerStyle={modalStyles.scrollView}>
-                        <Ionicons size={30} style={{ position: 'absolute', right: 0, top: 0}} name="close" color="white" onPress={modalOff} />
-                        <Text style={styles.title}>What's New</Text>
-                        <Text style={{ fontSize: 20, fontWeight: 'bold' }}> v{changelog[0].version} </Text>
-                        <Text> {new Date(changelog[0].time).toLocaleString() + '\n'} </Text>
-                        <View>
-                            <Markdown style={colorScheme.scheme === "light" ? markdownStylesLight : markdownStylesDark} onLinkPress={() => true}>{changelog[0].changes}</Markdown>
-                        </View>
-                        <TouchableOpacity onPress={modalOff} style={[modalStyles.button, { backgroundColor: btnBgColor }]}><Text>Close</Text></TouchableOpacity>
-                </ScrollView>
-            </View>
-        </Modal>
-    )
-}
-
 const modalStyles = StyleSheet.create({
     modal: {
         position: "absolute",
@@ -116,12 +137,25 @@ const modalStyles = StyleSheet.create({
         justifyContent: "center",
         alignItems:"center",
     },
+    xIcon: {
+        position: 'absolute', 
+        right: 0, 
+        top: 0,
+        margin: 10,
+    },
+    modalSeparator: {
+        marginVertical: 15,
+        height: 1,
+        width: '80%',
+    },
     wrapper:{
-        width:"90%",
-        maxWidth: 500,
+        width:"100%",
         maxHeight:"70%",
         justifyContent: "center",
         alignItems:"center",
+        shadowOffset: {width: 0, height: 1},
+        shadowOpacity: 0.4,
+        borderRadius: 5,
     },
     scrollView:{
         alignItems: "center",

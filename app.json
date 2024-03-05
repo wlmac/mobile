@@ -2,9 +2,9 @@
   "expo": {
     "name": "Metropolis",
     "slug": "metropolis",
-    "owner": "apocalypsecalculator",
+    "owner": "metropolis",
     "privacy": "hidden",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "githubUrl": "https://github.com/wlmac/mobile",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -12,7 +12,8 @@
     "userInterfaceStyle": "automatic",
     "notification": {
       "color": "#073763",
-      "iosDisplayInForeground": true
+      "iosDisplayInForeground": true,
+      "icon": "./assets/images/icon.png"
     },
     "splash": {
       "image": "./assets/images/splash.png",
@@ -54,13 +55,18 @@
       "package": "com.maclyonsden.metropolis",
       "config": {
         "googleMaps": {
-          "apiKey": "API key here"
+          "apiKey": "AIzaSyDlMV1-9-UWkPNjNGRjauuBJ9wSMYUQZQA"
         }
       },
-      "versionCode": 8
+      "versionCode": 9
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "7cece997-cdba-4ad5-917e-7ef47015ac99"
+      }
     }
   }
 }

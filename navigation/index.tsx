@@ -14,6 +14,7 @@ import BottomTabNavigator from './BottomTabNavigator';
 
 import useColorScheme, { ThemeContext } from '../hooks/useColorScheme';
 import useGuestMode, { GuestModeContext } from '../hooks/useGuestMode';
+import { SessionContext } from '../util/session';
 
 const LightTheme = {
   dark: false,
@@ -32,7 +33,7 @@ const CustomDarkTheme = {
   },
 };
 
-export default function Navigation({ loginNeeded }: { loginNeeded: boolean }) {
+export default function Navigation() {
   const scheme = useColorScheme();
   const guest = useGuestMode();
 
@@ -45,7 +46,7 @@ export default function Navigation({ loginNeeded }: { loginNeeded: boolean }) {
         <GuestModeContext.Provider value={guest}>
           <NavigationContainer
             theme={scheme.scheme === 'dark' ? CustomDarkTheme : LightTheme}>
-            <RootNavigator loginNeeded={loginNeeded} />
+            <RootNavigator />
           </NavigationContainer>
         </GuestModeContext.Provider>
       </ThemeContext.Provider>
@@ -57,20 +58,22 @@ export default function Navigation({ loginNeeded }: { loginNeeded: boolean }) {
 // Read more here: https://reactnavigation.org/docs/modal
 const Stack = createStackNavigator<RootStackParamList>();
 
-function RootNavigator({ loginNeeded }: { loginNeeded: boolean }) {
+function RootNavigator() {
   const guestMode = React.useContext(GuestModeContext);
+  const { loginNeeded } = React.useContext(SessionContext);
   const [toLogin, setToLogin] = React.useState(loginNeeded && !guestMode.guest);
   React.useEffect(() => {
     setToLogin(loginNeeded && !guestMode.guest);
-  }, [guestMode.guest])
+  }, [guestMode.guest]);
+  
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {toLogin ? [
-        <Stack.Screen name="Login" component={LoginScreen} initialParams={{ loginNeeded: loginNeeded }} key="loginstackscreen" />,
+        <Stack.Screen name="Login" component={LoginScreen} key="loginstackscreen" initialParams={{ loginNeeded: true }} />,
         <Stack.Screen name="Root" component={BottomTabNavigator} key="rootstackscreen" />
       ] : [
         <Stack.Screen name="Root" component={BottomTabNavigator} key="rootstackscreen" />,
-        <Stack.Screen name="Login" component={LoginScreen} initialParams={{ loginNeeded: loginNeeded }} key="loginstackscreen" />
+        <Stack.Screen name="Login" component={LoginScreen} key="loginstackscreen" />
       ]}
       <Stack.Screen name="NotFound" component={NotFoundScreen} options={{ title: 'Oops!' }} />
     </Stack.Navigator>

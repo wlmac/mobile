@@ -3,42 +3,35 @@ import NetInfo from "@react-native-community/netinfo";
 
 import config from '../config.json';
 
-export default function defaultLogin(): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-        AsyncStorage.getItem("@refreshtoken").then(refreshtoken => {
-            if (!refreshtoken) {
-                resolve(true);
-            }
-            else {
-                NetInfo.fetch().then(state => {
-                    if (!state.isConnected) { //assumes logged in if a refresh token exists and there is no connection so the user may view cached resources
-                        resolve(false);
-                    }
-                    else {
-                        fetch(`${config.server}/api/auth/token/refresh`, { //refresh token endpoint
-                            method: "POST",
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                refresh: refreshtoken
-                            })
-                        }).then((response) => response.json())
-                            .then((json) => {
-                                if (json.access && json.refresh) {
-                                    AsyncStorage.setItem('@accesstoken', json.access).then(() => {
-                                        AsyncStorage.setItem('@refreshtoken', json.refresh).then(() => {
-                                            resolve(false);
-                                        }).catch(err => resolve(true));
-                                    }).catch(err => resolve(true));
-                                }
-                                else {
-                                    resolve(true);
-                                }
-                            }).catch(err => resolve(true));
-                    }
-                })
-            }
-        }).catch(err => resolve(true));
-    })
+// btw: this returns false if success and true if fail for some reason
+export default async function defaultLogin(): Promise<boolean> {
+    try{
+        const refreshtoken = await AsyncStorage.getItem("@refreshtoken");
+        if (!refreshtoken) {
+            return true;
+        }
+        const state = await NetInfo.fetch();
+        if (!state.isConnected) { //assumes logged in if a refresh token exists and there is no connection so the user may view cached resources
+            return false;
+        }
+        const response = await fetch(`${config.server}/api/auth/token/refresh`, { //refresh token endpoint
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                refresh: refreshtoken
+            })
+        });
+        const json = await response.json();
+
+        if (!(json.access && json.refresh)) {
+            return true;
+        }
+        await AsyncStorage.setItem('@accesstoken', json.access);
+        await AsyncStorage.setItem('@refreshtoken', json.refresh);
+        return false;
+    }catch(err){
+        return true;
+    }
 }

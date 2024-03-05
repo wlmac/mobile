@@ -3,7 +3,7 @@
  * https://reactnavigation.org/docs/bottom-tab-navigator
  */
 
-import { Ionicons } from '@expo/vector-icons';
+ import Ionicons from '@expo/vector-icons/Ionicons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import * as React from 'react';
@@ -11,11 +11,11 @@ import * as React from 'react';
 import Colors from '../constants/Colors';
 import {ThemeContext} from '../hooks/useColorScheme';
 import HomeScreen from '../screens/HomeScreen';
-import AnnouncementScreen from '../screens/AnnouncementScreen';
+import NewsScreen from '../screens/NewsScreen';
 import CalendarScreen from '../screens/CalendarScreen';
 import MapScreen from '../screens/MapScreen';
 import SettingsScreen from '../screens/SettingsScreen';
-import { BottomTabParamList, HomeParamList, AnnouncementParamList, CalendarParamList, MapParamList, SettingsParamList } from '../types';
+import { BottomTabParamList, HomeParamList, NewsParamList, CalendarParamList, MapParamList, SettingsParamList } from '../types';
 
 const BottomTab = createBottomTabNavigator<BottomTabParamList>();
 
@@ -25,20 +25,26 @@ export default function BottomTabNavigator() {
   return (
     <BottomTab.Navigator
       initialRouteName="Home"
-      screenOptions={{ tabBarActiveTintColor: Colors[colorScheme.scheme].tint, tabBarStyle: { display: "flex" } }}>
+      screenOptions={{
+        tabBarActiveTintColor: Colors[colorScheme.scheme].tint,
+        tabBarStyle: { display: "flex" },
+        tabBarLabelStyle: {fontSize: 9}}}>
       <BottomTab.Screen
         name="Home"
         component={HomeNavigator}
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
           headerTitle: "Home",
+          headerTitleAlign: "center",
         }}
       />
       <BottomTab.Screen
-        name="Announcements"
-        component={AnnouncementNavigator}
+        name="News"
+        component={NewsNavigator}
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="megaphone" color={color} />,
+          headerTitle: "News",
+          headerTitleAlign: "center",
         }}
       />
       <BottomTab.Screen
@@ -47,6 +53,7 @@ export default function BottomTabNavigator() {
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="calendar" color={color} />,
           headerTitle: "Calendar",
+          headerTitleAlign: "center",
         }}
       />
       <BottomTab.Screen
@@ -55,6 +62,7 @@ export default function BottomTabNavigator() {
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="map" color={color} />,
           headerTitle: "School Map",
+          headerTitleAlign: "center",
         }}
       />
       <BottomTab.Screen
@@ -63,6 +71,7 @@ export default function BottomTabNavigator() {
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="settings" color={color} />,
           headerTitle: "Settings",
+          headerTitleAlign: "center",
         }}
       />
     </BottomTab.Navigator>
@@ -91,17 +100,17 @@ function HomeNavigator() {
   );
 }
 
-const AnnouncementStack = createStackNavigator<AnnouncementParamList>();
+const NewsStack = createStackNavigator<NewsParamList>();
 
-function AnnouncementNavigator() {
+function NewsNavigator() {
   return (
-    <AnnouncementStack.Navigator>
-      <AnnouncementStack.Screen
-        name="AnnouncementScreen"
-        component={AnnouncementScreen}
+    <NewsStack.Navigator>
+      <NewsStack.Screen
+        name="NewsScreen"
+        component={NewsScreen}
         options={{ headerTitle: () => { return null; }, headerShown: false }}
       />
-    </AnnouncementStack.Navigator>
+    </NewsStack.Navigator>
   );
 }
 

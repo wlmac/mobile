@@ -3,75 +3,73 @@ import { StyleSheet, Image } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Text, View } from '../components/Themed';
 import { ThemeContext } from '../hooks/useColorScheme';
+import removeMd from 'remove-markdown';
+import { TagDescriptor, URLString } from '../api';
+import Tag from './Tag';
 
-var lightC = "#3a6a96";
-var darkC = "#42a4ff";
+const lightC = "#3a6a96";
+const darkC = "#42a4ff";
 
-export default function Announcement({ann, fullAnn}:{ann: any, fullAnn: Function}) {
-
-    const colorScheme = React.useContext(ThemeContext);
-    //console.log(ann.id, ann.title);
+export default function Announcement({
+    title,
+    iconUrl,
+    author,
+    date,
+    tags,
+    body,
+    showFull,
+    children
+}: {
+    title: string,
+    iconUrl: URLString,
+    author: string,
+    date: Date,
+    tags: TagDescriptor[],
+    body: string,
+    showFull: () => void,
+    children?: React.ReactNode
+}) {
+    const scheme = React.useContext(ThemeContext).scheme;
     return (
-        <View style={[styles.announcement, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c', shadowColor: colorScheme.scheme === 'light' ? '#1c1c1c' : '#e6e6e6'}]}>
-            <View style={[styles.tags, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
-                {Object.entries(ann.tags).map(([key, tag]) => (
-                    createTag(key, tag)
-                ))}
+        <View style={[styles.announcement, { backgroundColor: scheme === 'light' ? '#f7f7f7' : '#1c1c1c', shadowColor: scheme === 'light' ? '#1c1c1c' : '#e6e6e6' }]}>
+            {/* tags */}
+            <View style={[styles.tags, { backgroundColor: scheme === 'light' ? '#f7f7f7' : '#1c1c1c' }]}>
+                {tags.map((tag, index) => <Tag key={index} tag={tag} />)}
             </View>
 
-            {createHeader(ann.title)}
-            
-            {annDetails(ann.name, ann.icon, ann.author.slug, ann.created_date, colorScheme.scheme)}
-            {previewText(ann.body)}
+            {/* title */}
+            <Text style={styles.header}>{title}</Text>
 
-            {/* View More Details */}
-            <View style={[styles.click, {backgroundColor: colorScheme.scheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
-                <TouchableOpacity onPress={() => {fullAnn(ann.id)}}>
-                    <Text style={[{color: colorScheme.scheme === "light" ? lightC : darkC}]}>{"See announcement  >"}</Text>
+            {/* info */}
+            <View style={styles.details}>
+                <View style={[styles.detailsHeading, { backgroundColor: scheme === 'light' ? '#f7f7f7' : '#1c1c1c' }]}>
+                    {/* icon */}
+                    <View style={[styles.iconShadow, { shadowColor: scheme === "light" ? "black" : "white" }]}>
+                        <Image style={styles.orgIcon} source={{ uri: iconUrl }} />
+                    </View>
+                    {/* name */}
+                    <Text style={[styles.name, { color: scheme === "light" ? lightC : darkC }]}>{author}</Text>
+                </View>
+                {/* time */}
+                <View style={[styles.detailsSubheading, { backgroundColor: scheme === 'light' ? '#f7f7f7' : '#1c1c1c' }]}>
+                    <Text style={styles.timeStamp}>{date.toLocaleString("en-US", { timeZone: "EST" })}</Text>
+                    <Text style={[styles.author, { color: scheme === "light" ? lightC : darkC }]}>{author}</Text>
+                </View>
+            </View>
+
+            {/* body */}
+            <Text style={styles.text} numberOfLines={5}>{removeMd(body)}</Text>
+
+            {/* view more */}
+            <View style={[styles.click, { backgroundColor: scheme === 'light' ? '#f7f7f7' : '#1c1c1c' }]}>
+                <TouchableOpacity onPress={showFull}>
+                    <Text style={[{ color: scheme === "light" ? lightC : darkC }]}>{children}</Text>
                 </TouchableOpacity>
             </View>
         </View>
     );
 }
 
-function createTag(key: any, tag: any) {
-    return (
-        <Text key={key} style={[styles.tag, {backgroundColor: tag.color}]}>{tag.name}</Text>
-    );
-}
-
-function createHeader(title: string) {
-    return (
-        <Text style={styles.header}>{title}</Text>
-    );
-}
-
-function annDetails(org: string, orgIcon: string, author: string, timeStamp: string, colorScheme: string) {
-
-    return (
-        <View style={styles.details}>
-            <View style={[styles.detailsHeading, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
-                <View style={[styles.iconShadow, {shadowColor: colorScheme === "light" ? "black" : "white"}]}>
-                    <Image style={styles.orgIcon} source={{uri: orgIcon}}></Image>
-                </View>
-                <Text style={[styles.clubName, {color: colorScheme === "light" ? lightC : darkC}]}>{org}</Text>
-            </View>
-            <View style={[styles.detailsSubheading, {backgroundColor: colorScheme === 'light' ? '#f7f7f7' : '#1c1c1c'}]}>
-                <Text style={styles.timeStamp}>{new Date(timeStamp).toLocaleString("en-US", {timeZone: "EST"})}</Text>
-                <Text style={[styles.author, {color: colorScheme === "light" ? lightC : darkC}]}>{author}</Text>
-            </View>
-        </View>
-    );
-}
-
-// markdown to plaintext
-function previewText(text: string) {
-    const removeMd = require('remove-markdown');
-    const plaintext = removeMd(text);
-    return (
-        <Text style={styles.text} numberOfLines={5} >{plaintext}</Text>
-    )
-}
 
 // ----- STYLES -----
 const styles = StyleSheet.create({
@@ -79,8 +77,8 @@ const styles = StyleSheet.create({
         marginVertical: 15,
         marginHorizontal: 10,
         paddingTop: 5,
-        paddingHorizontal:12,
-        shadowOffset: {width: 0, height: 1},
+        paddingHorizontal: 12,
+        shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.4,
         borderRadius: 5,
     },
@@ -90,16 +88,6 @@ const styles = StyleSheet.create({
         flexWrap: "wrap",
         marginTop: 10,
     },
-    tag: {
-        color: "black",
-        overflow: "hidden",
-        paddingVertical: 2,
-        paddingHorizontal: 7,
-        marginBottom: 5,
-        marginRight: 5,
-        borderRadius: 5,
-        fontSize: 13,
-    },
     header: {
         fontSize: 24,
         fontWeight: "bold",
@@ -108,29 +96,29 @@ const styles = StyleSheet.create({
     },
 
     details: {
-        flex:1,
+        flex: 1,
     },
-    detailsHeading:{
-        width:"100%",
-        flexDirection:"row",
-        alignItems:"center",
-        paddingBottom:5,
+    detailsHeading: {
+        width: "100%",
+        flexDirection: "row",
+        alignItems: "center",
+        paddingBottom: 5,
     },
-    detailsSubheading:{
-        flex:1,
+    detailsSubheading: {
+        flex: 1,
     },
     iconShadow: {
         width: 32,
         height: 32,
-        shadowOffset: {width: 0, height: 1},
+        shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.4,
         shadowRadius: 2,
-        borderRadius: 32/2,
+        borderRadius: 32 / 2,
     },
     orgIcon: {
-        width:"100%",
-        height:"100%",
-        borderRadius: 32/2,
+        width: "100%",
+        height: "100%",
+        borderRadius: 32 / 2,
     },
     text: {
         marginTop: 5,
@@ -138,18 +126,18 @@ const styles = StyleSheet.create({
         overflow: "hidden",
         height: 100,
     },
-    clubName: {
-        marginLeft:7,
-        flex:1,
+    name: {
+        marginLeft: 7,
+        flex: 1,
         fontWeight: "bold",
         fontSize: 17,
     },
     author: {
-        marginVertical:3,
+        marginVertical: 3,
         fontWeight: "bold",
     },
     timeStamp: {
-        marginVertical:3,
+        marginVertical: 3,
         color: '#939393',
     },
     click: {

@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, TextInput, TouchableOpacity, Image, Platform, Keyboard, useWindowDimensions} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { StyleSheet, TextInput, TouchableOpacity, Image, Platform, Keyboard, useWindowDimensions, DimensionValue} from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import * as WebBrowser from 'expo-web-browser';
@@ -11,41 +10,85 @@ import config from '../config.json';
 import { Text, View } from '../components/Themed';
 import Colors from '../constants/Colors';
 import { RootStackParamList } from '../types';
-import cacheResources from '../lib/cacheResources';
-
-let state = {
-  username: "",
-  password: ""
-}
+import { anyObject, apiRequest, login } from '../api';
+import { SessionContext } from '../util/session';
 
 
 export default function LoginScreen({ route, navigation }: { route: RouteProp<RootStackParamList, 'Login'>, navigation: StackNavigationProp<RootStackParamList, 'Login'> }) {
+  
+  const session = React.useContext(SessionContext);
   const colorScheme = React.useContext(ThemeContext);
   const guestMode = React.useContext(GuestModeContext);
 
-  let [loginResText, updateLoginResText] = React.useState("");
-  let [keyboardUp, updateKeyboardUp] = React.useState(false);
+  const state = React.useRef({
+    username: "",
+    password: ""
+  }).current;
+  
+  const [loginResText, updateLoginResText] = React.useState("");
+  const [keyboardUp, updateKeyboardUp] = React.useState(false);
 
-  const { loginNeeded } = route.params;
-  let loginPress = () => {
-    updateLoginResText("Logging in... Please wait");
-    login().then(val => {
-      if (val == "success") {
-        updateLoginResText("Success! Preparing app...");
-        cacheResources().then(() => {
-          navigation.replace('Root');
-        })
-      }
-      else {
-        updateLoginResText(String(val));
-      }
-    }).catch(err => console.log(err));
+  const [hasPressedLogin, setHasPressedLogin] = React.useState(false);
+  const [loggedIn, setLoggedIn] = React.useState(false);
+
+  async function storeUserinfo(): Promise<void> {
+    if(guestMode.guest){
+      return;
+    }
+    const userInfo = await apiRequest<anyObject>("/me", undefined, "GET", session, false);
+    if (typeof userInfo !== "string") {
+      session.set("@userinfo", userInfo);
+    }
+
+    navigation.replace('Root');
   }
-  if (!loginNeeded) {
-    React.useEffect(() => {
+  
+  const loginPress = async () => {
+    if(state.username === "" || state.password === ""){
+      return;
+    }
+    if(!hasPressedLogin){
+      setHasPressedLogin(true);
+      updateLoginResText("Logging in... Please wait");
+      try{
+        let val = await login(state.username, state.password, session);
+        if (val === undefined) {
+          updateLoginResText("Success! Preparing app...");
+          setLoggedIn(true);
+          return;
+        }
+        else {
+          updateLoginResText(String(val));
+        }
+      }catch(err){
+        console.error(err);
+      }
+      setHasPressedLogin(false);
+    }
+  }
+
+  const guestLoginPress = async () => {
+    if(!hasPressedLogin){
+      updateLoginResText("Please wait...");
+      guestMode.updateGuest(true);
+      setHasPressedLogin(true);
       navigation.replace('Root');
-    }, []);
+    }
   }
+
+  const sessionContext = React.useContext(SessionContext);
+
+  React.useEffect(() => {
+    if(!(route.params && route.params.loginNeeded)){
+      storeUserinfo();
+    }
+  }, [sessionContext]);
+
+  React.useEffect(() => {
+    if(loggedIn){
+      storeUserinfo();
+    }
+  }, [loggedIn]);
 
   //Keyboard animation code
   const keyboardShown = () => {
@@ -57,12 +100,12 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
   }
 
   React.useEffect (()=>{
-    Keyboard.addListener(Platform.OS === `android`? `keyboardDidShow`: `keyboardWillShow`, keyboardShown);
-    Keyboard.addListener(Platform.OS === `android`? `keyboardDidHide`: `keyboardWillHide`, keyboardHidden);
+    const sub1 = Keyboard.addListener(Platform.OS === `android` ? `keyboardDidShow` : `keyboardWillShow`, keyboardShown);
+    const sub2 = Keyboard.addListener(Platform.OS === `android` ? `keyboardDidHide` : `keyboardWillHide`, keyboardHidden);
 
     return () => {
-      Keyboard.removeListener(Platform.OS === `android`? `keyboardDidShow`: `keyboardWillShow`, keyboardShown);
-      Keyboard.removeListener(Platform.OS === `android`? `keyboardDidHide`: `keyboardWillHide`, keyboardHidden);
+      sub1.remove();
+      sub2.remove();
     }
   },[]);
 
@@ -78,7 +121,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
       <View style={styles.pictureContainer}>
       
         <Image style={{width:"100%", height: "100%"}} 
-          source={colorScheme.scheme === "light"? require('../assets/images/LogInGraphics_LightMode.png'): require('../assets/images/LogInGraphics_DarkMode.png')}/>
+          source={colorScheme.scheme === "light" ? require('../assets/images/LogInGraphics_LightMode.png') : require('../assets/images/LogInGraphics_DarkMode.png')}/>
 
       {/* ---- PICTURE CONTAINER -----*/}
       </View>
@@ -121,7 +164,10 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
           {/*<Text>{loginResText}</Text>*/}
 
           <View style={styles.logInButton}>
-            <TouchableOpacity style={styles.logInButton} onPress={loginPress}>
+            <TouchableOpacity style={styles.logInButton}
+              disabled={hasPressedLogin}
+              onPress={loginPress}
+            >
               <Text style={{color: "white"}}> Login </Text>
             </TouchableOpacity>
           </View>
@@ -140,13 +186,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
           </TouchableOpacity>
         </View>
         <View style={styles.helpContainer}>
-        <TouchableOpacity style={styles.helpLink} onPress={() => {
-          updateLoginResText("Please wait...");
-          guestMode.updateGuest(true);
-          cacheResources().then(() => {
-            navigation.replace('Root');
-          })
-        }}>
+        <TouchableOpacity style={styles.helpLink} onPress={guestLoginPress} disabled={hasPressedLogin}>
             <Text style={[styles.helpLinkText, {color: colorScheme.scheme == 'light' ? Colors.light.text : Colors.dark.text}]} lightColor={Colors.light.tint} darkColor={Colors.dark.tint}>
               Continue in Guest Mode
             </Text>
@@ -166,7 +206,7 @@ export default function LoginScreen({ route, navigation }: { route: RouteProp<Ro
   );
 }
 
-let elementWidth = "60%"
+let elementWidth: DimensionValue = "60%";
 const styles = StyleSheet.create({
 
   /* ---- MAIN CONTAINER -----*/
@@ -292,43 +332,4 @@ function handleRegisterPress() {
 
 function handleForgotPasswordPress() {
   WebBrowser.openBrowserAsync(`${config.server}/accounts/password/reset/`).catch(err => console.error("Couldn't load page", err));
-}
-
-function login() {
-  return new Promise((resolve, reject) => {
-    fetch(`${config.server}/api/auth/token`, { //refresh token endpoint
-      method: "POST",
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        username: state.username,
-        password: state.password
-      })
-    }).then((response) => response.json())
-      .then((json) => {
-        if (json.access && json.refresh) {
-          AsyncStorage.setItem('@accesstoken', json.access).then(() => {
-            AsyncStorage.setItem('@refreshtoken', json.refresh).then(() => {
-              resolve("success");
-            }).catch(err => {
-              console.log(err);
-              resolve("Error occurred. Was storage permission denied?");
-            });
-          }).catch(err => {
-            console.log(err);
-            resolve("Error occurred. Was storage permission denied?");
-          });
-        }
-        else if (json.detail) {
-          resolve("Username or password incorrect");
-        }
-        else {
-          resolve("Something went wrong. Please try again later.");
-        }
-      }).catch(err => {
-        console.log(err);
-        resolve("Network error. Please try again later.");
-      });
-  })
 }

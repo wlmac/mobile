@@ -1,211 +1,273 @@
-import * as React from 'react';
-import { StyleSheet, Image, ImageBackground } from 'react-native';
-import { ThemeContext } from '../hooks/useColorScheme';
-import { GuestModeContext } from '../hooks/useGuestMode';
-import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import * as React from "react";
+import { StyleSheet, Image, ImageBackground, Platform, ImageSourcePropType, } from "react-native";
+import { ThemeContext } from "../hooks/useColorScheme";
+import { GuestModeContext } from "../hooks/useGuestMode";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import { Table, Rows } from 'react-native-table-component';
 
-import apiRequest from '../lib/apiRequest';
-import { Text, View } from '../components/Themed';
+import { Text, View, useThemeColor } from "../components/Themed";
+import config from "../config.json";
+import getSeason from "../lib/getSeason";
+import { BottomTabParamList } from "../types";
 import { ChangeLogModal } from '../components/Changelog';
-import config from '../config.json';
-import getSeason from '../lib/getSeason';
-import { BottomTabParamList } from '../types';
+import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
+import { apiRequest, getSchedule } from '../api';
+import { SessionContext } from '../util/session';
+import loadingGif from "../assets/images/loading.gif";
+import noWifiIcon from "../assets/images/nowifi.png";
 
-let theme;
-
-export default function HomeScreen({ navigation }: { navigation: BottomTabNavigationProp<BottomTabParamList, 'Home'> }) {
+export default function HomeScreen({ navigation }: { navigation: BottomTabNavigationProp<BottomTabParamList, "Home"> }) {
   const colorScheme = React.useContext(ThemeContext);
   const guestMode = React.useContext(GuestModeContext);
+  const session = React.useContext(SessionContext);
 
-  let criticalTimes: any[];
-  let time: number;
-  let schedule: any;
-  let termSchedule: any;
-  let dayOfTheWeek: number;
+  const notificationListener = React.useRef<Notifications.Subscription>();
+  const responseListener = React.useRef<Notifications.Subscription>();
+
+  let criticalTimes: {start: number, end: number, course: string}[] = [];
   let season = getSeason();
+  let textColor = useThemeColor({}, "text");
 
-  let [timetable, updateTimeTable] = React.useState("Fetching data...");
-  let [weatherIcon, updateIcon] = React.useState(require('../assets/images/loading.gif'));
-  let [weather, updateWeather] = React.useState('c');
-  let [temp, updateTemp] = React.useState('Loading...');
-  let [course, updateCourse] = React.useState("Loading...");
-  let [timeText, updateTimeText] = React.useState("Loading...");
-  let [nextCourse, updateNextCourse] = React.useState("");
-  let [dayHomepage, updateHomePage] = React.useState("No School!");
-  let [dataUploaded, updateDataUploaded] = React.useState("");
-  let [currentDay, setCurrentDay] = React.useState(new Date().getDay());
+  const [weatherIcon, updateIcon] = React.useState(loadingGif);
+  const [weather, updateWeather] = React.useState("c");
+  const [temperature, updateTemperature] = React.useState("Loading...");
+  const [nextCourse, updateNextCourse] = React.useState<string | undefined>(undefined);
+  const [timetableHeader, updateTimetableHeader] = React.useState<string | undefined>("Loading...");
+  const dataUploadedRef = React.useRef<string | undefined>();
+  const [preTimeText, updatePreTimeText] = React.useState<string | undefined>(undefined);
+  const [course, updateCourse] = React.useState("Loading...");
+  const [timeText, updateTimeText] = React.useState<string | undefined>("Loading...");
+  const [timetable, updateTimetable] = React.useState<string | [string, string][] | undefined>("Fetching data...");
 
-  criticalTimes = [];
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  const [expoNotificationToken, setExpoNotificationToken] = React.useState<string | undefined>(undefined);
+  const [notification, setNotification] = React.useState<unknown | undefined>(undefined);
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 
-  apiRequest(`/api/term/current/schedule`, '', 'GET', true).then(res => {
-    if (res.success) {
-      termSchedule = JSON.parse(res.response);
-      if (termSchedule && termSchedule[0]) {
-        let displayedInfo = ``;
-        updateHomePage(`${termSchedule[0].cycle}`);
-        for (let i = 0; i < termSchedule.length; i++) {
-          if (termSchedule[i].course == null) {
-            termSchedule[i].course = "Period " + (i + 1);
-          }
-          displayedInfo += `${termSchedule[i].description.time}\t|  ${termSchedule[i].course}`;
-          let timeobj = {
-            start: ((Date.parse(termSchedule[i].time.start) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
-            end: ((Date.parse(termSchedule[i].time.end) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
-            course: termSchedule[i].course
-          }
-          criticalTimes.push(timeobj);
-          if (i !== termSchedule.length - 1) {
-            displayedInfo += `\n`;
-          }
+  const theme = colorScheme.scheme === "light" ? {
+    color1: "#005C99",
+    color2: "#003D66",
+    websiteColor: "rgb(58, 106, 150)",
+    tint: "transparent"
+  } : {
+    color1: "#e6e6e6",
+    color2: "#e0e0e0",
+    websiteColor: "rgb(58, 106, 150)",
+    tint: "rgba(0, 0, 0, 0.3)"
+  };
+
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+    }),
+  });  
+
+  async function setSchedule(endpoint: string, userSchedule: boolean){
+    try{
+      let schedule = await getSchedule(!userSchedule, session);
+      // debugger;
+      if (typeof schedule == "string"){
+        if (schedule === "No current term" || schedule === "No schedule on this day") {
+          updatePreTimeText(undefined);
+          updateCourse("NO CLASS TODAY");
+          updateTimeText(undefined);
+          updateTimetableHeader(undefined);
+          updateTimetable(undefined);
+          return;
+        }else if (!dataUploadedRef.current && !userSchedule) {
+          updatePreTimeText(undefined);
+          updateCourse("Currently Offline");
+          updateTimeText("No internet");
+          updateTimetableHeader("Error");
+          updateTimetable("Could not connect to server!");
         }
-        if (criticalTimes.length >= 2) { //if there are more than 2 courses, there must be a lunch in there somewhere, right?
-          let pindx = Math.floor(criticalTimes.length / 2.0) - 1;
-          let lunchobj = {
-            start: criticalTimes[pindx].end,
-            end: criticalTimes[pindx + 1].start,
-            course: 'LUNCH'
-          }
-          criticalTimes.splice(pindx + 1, 0, lunchobj);
-        }
-        if (dataUploaded == '') {
-          updateTimeTable(displayedInfo);
-          updateDataUploaded("public");
-        }
-      } else {
-        updateTimeTable(`No class today!             `); //having spaces here aligns the text to the left bar
-        updateCourse(`SCHOOL DAY FINISHED`);
-        updateTimeText(``);
+        return;
       }
-    }
-  }).catch(err => {
-    updateTimeTable(`Uh-oh, error occurred :(`);
-  })
-  getWeather().then((data) => {
-    updateIcon(wIcons[data.weather_state_abbr]);
-    updateTemp(`${data.the_temp}°`);
-    updateWeather(data.weather_state_abbr);
-  }).catch(() => {
-    updateTemp(`Unknown`);
-    updateIcon(require('../assets/images/nowifi.png'));
-  })
+      let displayedInfo: [string, string][] = [];
+      for (let i = 0; i < schedule.length; i++) {
+        const course = schedule[i].course ?? `Period ${i + 1}`;
 
-  apiRequest(`/api/me/schedule`, '', 'GET').then(res => {
-    if (res.success) {
-      schedule = JSON.parse(res.response);
-      if (schedule && schedule[0]) {
-        let displayedInfo = ``;
-        for (let i = 0; i < schedule.length; i++) {
-          if (schedule[i].course == null) {
-            schedule[i].course = "Period " + (i + 1);
-          }
-          displayedInfo += `${schedule[i].description.time}\t|  ${schedule[i].course}`;
-          let timeobj = {
-            start: ((Date.parse(schedule[i].time.start) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
-            end: ((Date.parse(schedule[i].time.end) - new Date().getTimezoneOffset() * 60000) % 86400000) / 60000,
-            course: schedule[i].course
-          }
+        displayedInfo.push([schedule[i].description.time, course]);
+        
+        let { start, end } = schedule[i];
+
+        if(userSchedule){
           for (let j = 0; j < criticalTimes.length; j++) {
-            if (criticalTimes[j].start == timeobj.start && criticalTimes[j].end == timeobj.end) {
-              criticalTimes[j].course = timeobj.course;
+            if (criticalTimes[j].start == start && criticalTimes[j].end == end) {
+              criticalTimes[j].course = course;
               break;
             }
           }
-          if (i !== schedule.length - 1) {
-            displayedInfo += `\n`;
-          }
+        }else{
+          criticalTimes.push({ start, end, course });
         }
-        if (dataUploaded == 'public') {
-          updateTimeTable(displayedInfo);
-          updateDataUploaded("personal");
+      }
+      if(userSchedule){
+        if (dataUploadedRef.current == "public") {
+          updateTimetable(displayedInfo);
+          dataUploadedRef.current = "personal";
+        }
+      }else{
+        updateTimetableHeader(schedule[0].cycle);
+        if (!dataUploadedRef.current) {
+          updateTimetable(displayedInfo);
+          dataUploadedRef.current = "public";
+        }
+      }
+    }catch(err){
+      console.error(err);
+      updateTimetable("Uh-oh, an error occurred :(");
+    }
+  }
+
+  function determineTimeString(difference: number){
+    const hours = difference >= 3600 ? Math.floor(difference / 3600).toString().padStart(2, "0") + ":" : "";
+    const minutes = (Math.floor(difference / 60) % 60).toString().padStart(2, "0");
+    const seconds = (difference % 60).toString().padStart(2, "0");
+
+    return `${hours}${minutes}:${seconds}`;
+  }
+
+  function updateInfo(){
+    if (!dataUploadedRef.current)
+      return;
+    let time = Math.floor((Date.now() - new Date().setHours(0, 0, 0, 0)) / 1000), timeInMinutes = Math.floor(time / 60);
+    if(criticalTimes.length > 0){
+      if(new Date().getDay() >= 6 || timeInMinutes >= criticalTimes[criticalTimes.length - 1].end){
+        updatePreTimeText(undefined);
+        updateCourse("SCHOOL DAY FINISHED");
+        updateTimeText(undefined);
+        updateNextCourse(undefined);
+      }else{
+        for(let i = 0; i < criticalTimes.length; i++){
+          let curTime = criticalTimes[i];
+          if(timeInMinutes < curTime.end){
+            if(timeInMinutes >= curTime.start){
+              updatePreTimeText(undefined);
+              updateCourse(curTime.course);
+              updateTimeText(`Ends in ${determineTimeString(curTime.end * 60 - time)}`);
+              updateNextCourse(i < criticalTimes.length - 1 ? `Up next: ${criticalTimes[i + 1].course}` : undefined);
+            }else{
+              updatePreTimeText("Up next:");
+              updateCourse(curTime.course);
+              updateTimeText(`Starts in ${determineTimeString(curTime.start * 60 - time)}`);
+              updateNextCourse(undefined);
+            }
+            break;
+          }
         }
       }
     }
-    else if (dataUploaded == "" && !guestMode.guest) {
-      updateCourse(`Currently Offline`);
-      updateTimeText('No internet');
-      updateTimeTable(`Could not connect to server!`);
-    }
-  }).catch(err => {
-    updateTimeTable(`Uh-oh, error occurred :(`);
-  })
-  getWeather().then((data) => {
-    updateIcon(wIcons[data.weather_state_abbr]);
-    updateTemp(`${data.the_temp}°`);
-    updateWeather(data.weather_state_abbr);
-  }).catch(() => {
-    updateTemp(`Unknown`);
-    updateIcon(require('../assets/images/nowifi.png'));
-  })
-
-
-  const determineTimeString = (presentTime: number, futureTime: number) => {
-    const difference = futureTime - presentTime;
-    const hours = Math.floor(difference / 60) + "";
-    const minutes = difference % 60 + "";
-
-    return `${hours}h ${minutes}min`;
   }
 
-  var loopingInterval: any;
+
+  async function setupNotifToken(): Promise<string | undefined> {
+    if (!Device.isDevice) {
+      console.error("Not a device");
+      return undefined;
+    }
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== 'granted') {
+      // remove in production
+      //alert('Failed to get push token for push notification! Perhaps your system permissions do not allow notifications?');
+      return undefined;
+    }
+    if (Platform.OS === 'android') {
+      Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      });
+    }
+    let expoPushToken: string | undefined = undefined;
+    try {
+      expoPushToken = (await Notifications.getExpoPushTokenAsync({projectId: "7cece997-cdba-4ad5-917e-7ef47015ac99"})).data;
+    } catch (error) {
+      console.log('Error fetching Expo token:', error, "\nFor developers, ensure you are logged in with your Expo account in order for notif testing to work.");
+      alert('Failed to get push token for push notification ' + expoPushToken + " " + error);
+    }
+
+    if (!expoPushToken) {
+      alert('Failed to get push token for push notification ' + expoPushToken);
+      return undefined;
+    }
+
+    expoPushToken = expoPushToken.slice(18, -1);
+
+    const options = {
+      "allow": {
+        "event.all": {},
+        "event.singleday": {},
+        "blog": {},
+        "ann.personal": {},
+        "ann.public": {},
+      }
+    }
+
+    await apiRequest("/v3/notif/token", { "expo_push_token": expoPushToken, "options": options }, "PUT", session, false).then((res) => {
+      console.log("Successfully uploaded token to server: " + expoPushToken);
+      setExpoNotificationToken(expoPushToken);
+    }).catch((err) => {
+      console.error("An error occurred while trying to set the expo notification token: " + err);
+      // no notifs allowed
+    });
+    return expoPushToken;
+  }
+
+  function configureNotificationListeners() {
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      setNotification(notification);
+    });
+
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log(response);
+    });
+
+    return () => {
+      if(notificationListener.current) Notifications.removeNotificationSubscription(notificationListener.current);
+      if(responseListener.current) Notifications.removeNotificationSubscription(responseListener.current);
+    };
+  }
 
   React.useEffect(() => {
-    if (dataUploaded !== "") {
-      dayOfTheWeek = new Date().getDay();
-      clearInterval(loopingInterval);
-      loopingInterval = setInterval(() => {
-        if(currentDay !== new Date().getDay()) {
-          clearInterval(loopingInterval);
-          setCurrentDay(new Date().getDay());
-          updateDataUploaded("");
-        }
-        time = Math.floor((Date.now() - new Date().setHours(0, 0, 0, 0)) / 60000);
-        if (criticalTimes.length == 0) { }
-        else if (time >= criticalTimes[criticalTimes.length - 1].end || dayOfTheWeek > 5) {
-          updateCourse(`SCHOOL DAY FINISHED`);
-          updateTimeText(``);
-          updateNextCourse("");
-        }
-        else {
-          if (time < criticalTimes[0].start) {
-            updateTimeText(`Starts in ${determineTimeString(time, criticalTimes[0].start)}`);
-            updateCourse(criticalTimes[0].course);
-            updateNextCourse("");
-          } else {
-            for (let i: number = 0; i < criticalTimes.length; i++) {
-              if (time >= criticalTimes[i].start && time < criticalTimes[i].end) {
-                updateTimeText(`Ends in ${determineTimeString(time, criticalTimes[i].end)}`);
-                updateCourse(criticalTimes[i].course);
-                if (i != criticalTimes.length - 1) {
-                  updateNextCourse(`Up next: ${criticalTimes[i + 1].course}`);
-                } else {
-                  updateNextCourse("");
-                }
-                break;
-              }
-            }
-          }
-        }
-      }, 1000);
-      return () => clearInterval(loopingInterval);
+    if (!guestMode.guest) {
+      setupNotifToken().then(token => {
+        setExpoNotificationToken(token);
+      });
     }
-  }, [dataUploaded]);
+    configureNotificationListeners();
 
-  if (colorScheme.scheme === "light") {
-    theme = {
-      color1: "#005C99",
-      color2: "#003D66",
-      websiteColor: "rgb(58, 106, 150)",
-      tint: "transparent"
+    getWeather().then((data) => {
+      updateIcon(wIcons[data.weather_state_abbr]);
+      updateTemperature(`${data.the_temp}°`);
+      updateWeather(data.weather_state_abbr);
+    }).catch(() => {
+      updateTemperature("Unknown");
+      updateIcon(noWifiIcon);
+    });
+
+    let interval: number;
+    // TODO refactor this
+    const fun = () => setSchedule((guestMode.guest ? "term/current/schedule" : "me/schedule")/* + "?date=2023-02-22"*/, !guestMode.guest).then(() => {
+      interval = window.setInterval(() => updateInfo(), 1000);
+      updateInfo();
+    });
+    if(guestMode.guest){
+      fun();
+    }else{
+      setSchedule("term/current/schedule", false).then(fun);
     }
-  }
-  else {
-    theme = {
-      color1: "#e6e6e6",
-      color2: '#e0e0e0',
-      websiteColor: "rgb(58, 106, 150)",
-      tint: "rgba(0, 0, 0, 0.3)"
-    }
-  }
+    return () => window.clearInterval(interval);
+  }, []);
 
   return (
     <ImageBackground source={seasonBase[season]} resizeMode="cover" style={styles.backgroundImage}>
@@ -218,44 +280,59 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
           <View style={styles.weatherContainer}>
 
             {/* --- TEMPERATURE --- */}
-            <Text style={[styles.temperature, { color: theme.color1 }]}>{temp}</Text>
+            <Text style={[styles.temperatureText, { color: theme.color1 }]}>{temperature}</Text>
 
             {/* --- WEATHER DIVIDER --- */}
-            <View style={[styles.weatherDivider, { borderColor: 'rgb(58, 106, 150)' }]} />
+            <View style={styles.weatherDivider} />
 
             {/* --- WEATHER ICON --- */}
-            <Image style={styles.logo} source={weatherIcon} />
+            <Image style={styles.temperatureLogo} source={weatherIcon} />
 
             {/* ---WEATHER CONTAINER ---*/}
           </View>
 
+          {preTimeText && <Text style={[styles.timeText, { color: theme.color2 }]}>{preTimeText}</Text>}
 
+          {/* <Text>{expoNotificationToken}</Text> */}
 
           {/* --- COURSE ---*/}
-          <Text style={[styles.course, { color: theme.color2 }]}>{course}</Text>
+          <Text style={[styles.courseTitle, { color: theme.color2 }]}>{course}</Text>
 
           {/* --- TIME TEXT ---*/}
           <Text style={[styles.timeText, { color: theme.color2 }]}>{timeText}</Text>
 
           {/* --- TIME TEXT ---*/}
-          <Text style={[styles.timeText, { color: theme.color2 }]}>{nextCourse}</Text>
-          <Text style={[{ textAlign: 'center' }, guestMode.guest ? {display: "flex"} : {display: "none"}]}>
-            <Text style={{ color: colorScheme.scheme == 'dark' ? 'rgb(148, 180, 235)' : 'rgb(51,102,187)' }} onPress={() => { navigation.jumpTo('Settings') }}>{' '}Log in{' '}</Text>
-            to view your personal schedule here!</Text>
-
-
+          {nextCourse && <Text style={[styles.timeText, { color: theme.color2 }]}>{nextCourse}</Text>}
+          
+          {guestMode.guest ?
+            <Text style={{ textAlign: "center", marginTop: 10 }}>
+              <Text style={{ color: colorScheme.scheme == "dark" ? "rgb(148, 180, 235)" : "rgb(51,102,187)" }}
+                onPress={() => { navigation.jumpTo("Settings") }}>Log in&nbsp;</Text>
+              to view your personal schedule here!
+            </Text> : undefined
+          }
 
           {/* --- TIME TABLE CONTAINER ---*/}
-          <View style={styles.timeTableContainer}>
+          <View style={styles.timetableContainer}>
 
             {/* --- WEEK TEXT --- */}
-            <Text style={[styles.weekText, { color: theme.color1 }]}>{dayHomepage}</Text>
+            {timetableHeader && <Text style={[styles.weekText, { color: theme.color1 }]}>{timetableHeader}</Text>}
 
             {/* --- COURSE CONTAINER --- */}
             <View style={styles.courseContainer}>
 
               {/* --- COURSE TEXT --- */}
-              <Text style={[styles.courseText, { color: theme.color1 }]}>{timetable}</Text>
+              {
+                timetable && (Array.isArray(timetable) ? 
+                <Table>
+                  <Rows data={
+                    timetable.map(([times, course]) =>
+                      // eslint-disable-next-line react/jsx-key
+                      [<Text style={styles.time}>{times}</Text>, <View style={[styles.courseRightText, { borderColor: textColor }]}><Text>{course}</Text></View>])
+                  } widthArr={[148, 200]} textStyle={{ color: textColor }}/>
+                  
+                </Table> : <Text style={styles.courseText}>{timetable}</Text>)
+              }
 
               {/* --- COURSE CONTAINER --- */}
             </View>
@@ -265,7 +342,7 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
 
 
           {/* ---  Main Page Container ---*/}
-          {ChangeLogModal()}
+          <ChangeLogModal/>
         </View>
       </ImageBackground>
     </ImageBackground>
@@ -275,17 +352,16 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
 
-  /* --- BACKGROUND IMAGE --- */
   backgroundImage: {
     flex: 1,
   },
-  /* ---------- WEATHER ---------- */
 
-  /* ---WEATHER CONTAINER ---*/
+  /*---------- WEATHER ----------*/
+
   weatherContainer: {
 
     position: "absolute",
@@ -296,31 +372,30 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  /* ---TEMPERATURE ---*/
-  temperature: {
+  /* -------- TEMPERATURE --------*/
+  temperatureText: {
     fontWeight: "bold",
     fontSize: 35,
     fontFamily: "poppins",
   },
 
-  /* --- WEATHER DIVIDER --- */
   weatherDivider: {
     width: "90%",
     borderWidth: 1,
     marginBottom: 7,
+    borderColor: "rgb(58, 106, 150)",
   },
 
-  /* ---TEMPERATURE LOGO ---*/
-  logo: {
+  temperatureLogo: {
     width: 60,
     height: 60,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
     borderRadius: 20,
   },
 
   /*---------- MAIN INFO ----------*/
 
-  course: {
+  courseTitle: {
     width: "90%",
     fontSize: 40,
     fontWeight: "bold",
@@ -333,51 +408,69 @@ const styles = StyleSheet.create({
     width: "80%",
     fontSize: 20,
     textAlign: "center",
+    fontVariant: ["tabular-nums"]
   },
 
-  /*---------- TIME TABLE ----------*/
+  /*---------- TIMETABLE ----------*/
 
-  /* --- TIME TABLE CONTAINER --- */
-  timeTableContainer: {
+  timetableContainer: {
     backgroundColor: "transparent",
     position: "absolute",
     left: 10,
     bottom: 10,
   },
 
-  /* --- COURSE CONTAINER --- */
   courseContainer: {
     backgroundColor: "transparent",
+    marginVertical: 5,
+    marginLeft: 10,
+    fontSize: 17,
+    paddingLeft: 10,
     borderColor: "rgb(58, 106, 150)",
-    borderLeftWidth: 4,
+    borderLeftWidth: 4
+  },
+
+  courseItem: {
+    backgroundColor: "transparent",
     alignItems: "center",
   },
 
-  /* --- WEEK TEXT --- */
   weekText: {
     fontSize: 40,
     fontWeight: "bold",
     fontFamily: "poppins",
   },
 
-  /* --- COURSE TEXT --- */
   courseText: {
-    marginVertical: 5,
-    marginLeft: 10,
-    textAlign: "justify",
-    justifyContent: 'space-evenly',
-    fontSize: 17,
+    backgroundColor: "transparent"
   },
+
+  courseTextRightAlign: {
+    backgroundColor: "transparent",
+    textAlign: "right"
+  },
+
+  courseRightText: {
+    backgroundColor: "transparent",
+    borderLeftWidth: 1.2,
+    paddingLeft: 10
+  },
+
+  /*----------- MISC -----------*/
+
+  time: {
+    fontVariant: ["tabular-nums"]
+  }
 
 });
 
 function getWeather() {
   return new Promise<Weather>((resolve, reject) => {
-    fetch(`${config.weatherserver}/weather`).then((response) => response.json()).then((json) => {
+    fetch(`${config.weatherserver}/weather`).then(response => response.json()).then(json => {
       json.consolidated_weather[0];
       let weather = new Weather(json.consolidated_weather[0].weather_state_abbr, json.consolidated_weather[0].the_temp);
       resolve(weather);
-    }).catch(err => reject("network"));
+    }).catch(() => reject("network"));
   })
 }
 
@@ -391,91 +484,96 @@ class Weather {
 }
 
 const wIcons: {
-  [key: string]: any
+  [key: string]: ImageSourcePropType
 } = {
-  c: require(`../assets/images/weather/c.png`),
-  h: require(`../assets/images/weather/h.png`),
-  hc: require(`../assets/images/weather/hc.png`),
-  hr: require(`../assets/images/weather/hr.png`),
-  lc: require(`../assets/images/weather/lc.png`),
-  lr: require(`../assets/images/weather/lr.png`),
-  s: require(`../assets/images/weather/s.png`),
-  sl: require(`../assets/images/weather/sl.png`),
-  sn: require(`../assets/images/weather/sn.png`),
-  t: require(`../assets/images/weather/t.png`)
+  c: require("../assets/images/weather/c.png"),
+  h: require("../assets/images/weather/h.png"),
+  hc: require("../assets/images/weather/hc.png"),
+  hr: require("../assets/images/weather/hr.png"),
+  lc: require("../assets/images/weather/lc.png"),
+  lr: require("../assets/images/weather/lr.png"),
+  s: require("../assets/images/weather/s.png"),
+  sl: require("../assets/images/weather/sl.png"),
+  sn: require("../assets/images/weather/sn.png"),
+  t: require("../assets/images/weather/t.png")
 }
 
 const seasonBase: {
-  [key: string]: any
+  [key: string]: ImageSourcePropType
 } = {
-  spring: require(`../assets/images/weather/background/base_spring.png`),
-  summer: require(`../assets/images/weather/background/base_summer.png`),
-  fall: require(`../assets/images/weather/background/base_fall.png`),
-  winter: require(`../assets/images/weather/background/base_winter.png`)
+  spring: require("../assets/images/weather/background/base_spring.png"),
+  summer: require("../assets/images/weather/background/base_summer.png"),
+  fall: require("../assets/images/weather/background/base_fall.png"),
+  winter: require("../assets/images/weather/background/base_winter.png")
 }
 
 //all properties here are specified as spring, summer, fall, and winter
 const wLayers: {
-  [key: string]: any
+  [key: string]: {
+    spring: ImageSourcePropType,
+    summer: ImageSourcePropType,
+    fall: ImageSourcePropType,
+    winter: ImageSourcePropType
+  }
 } = {
   c: {
-    spring: require(`../assets/images/weather/background/clear_spring.png`),
-    summer: require(`../assets/images/weather/background/clear_summer.png`),
-    fall: require(`../assets/images/weather/background/clear_fall.png`),
-    winter: require(`../assets/images/weather/background/clear_winter.png`)
+    spring: require("../assets/images/weather/background/clear_spring.png"),
+    summer: require("../assets/images/weather/background/clear_summer.png"),
+    fall: require("../assets/images/weather/background/clear_fall.png"),
+    winter: require("../assets/images/weather/background/clear_winter.png")
   },
   h: {
-    spring: require(`../assets/images/weather/background/hail_all.png`),
-    summer: require(`../assets/images/weather/background/hail_all.png`),
-    fall: require(`../assets/images/weather/background/hail_all.png`),
-    winter: require(`../assets/images/weather/background/hail_all.png`)
+    spring: require("../assets/images/weather/background/hail_all.png"),
+    summer: require("../assets/images/weather/background/hail_all.png"),
+    fall: require("../assets/images/weather/background/hail_all.png"),
+    winter: require("../assets/images/weather/background/hail_all.png")
   },
   hc: {
-    spring: require(`../assets/images/weather/background/heavyclouds_winterspringfall.png`),
-    summer: require(`../assets/images/weather/background/heavyclouds_summer.png`),
-    fall: require(`../assets/images/weather/background/heavyclouds_winterspringfall.png`),
-    winter: require(`../assets/images/weather/background/heavyclouds_winterspringfall.png`)
+    spring: require("../assets/images/weather/background/heavyclouds_winterspringfall.png"),
+    summer: require("../assets/images/weather/background/heavyclouds_summer.png"),
+    fall: require("../assets/images/weather/background/heavyclouds_winterspringfall.png"),
+    winter: require("../assets/images/weather/background/heavyclouds_winterspringfall.png")
   },
   hr: {
-    spring: require(`../assets/images/weather/background/heavyrain_winterspringfall.png`),
-    summer: require(`../assets/images/weather/background/heavyrain_summer.png`),
-    fall: require(`../assets/images/weather/background/heavyrain_winterspringfall.png`),
-    winter: require(`../assets/images/weather/background/heavyrain_winterspringfall.png`)
+    spring: require("../assets/images/weather/background/heavyrain_winterspringfall.png"),
+    summer: require("../assets/images/weather/background/heavyrain_summer.png"),
+    fall: require("../assets/images/weather/background/heavyrain_winterspringfall.png"),
+    winter: require("../assets/images/weather/background/heavyrain_winterspringfall.png")
   },
   lc: {
-    spring: require(`../assets/images/weather/background/lightclouds_spring.png`),
-    summer: require(`../assets/images/weather/background/lightclouds_summer.png`),
-    fall: require(`../assets/images/weather/background/lightclouds_fall.png`),
-    winter: require(`../assets/images/weather/background/lightclouds_winter.png`)
+    spring: require("../assets/images/weather/background/lightclouds_spring.png"),
+    summer: require("../assets/images/weather/background/lightclouds_summer.png"),
+    fall: require("../assets/images/weather/background/lightclouds_fall.png"),
+    winter: require("../assets/images/weather/background/lightclouds_winter.png")
   },
   lr: {
-    spring: require(`../assets/images/weather/background/lightrain_winterspringfall.png`),
-    summer: require(`../assets/images/weather/background/lightrain_summer.png`),
-    fall: require(`../assets/images/weather/background/lightrain_winterspringfall.png`),
-    winter: require(`../assets/images/weather/background/lightrain_winterspringfall.png`)
+    spring: require("../assets/images/weather/background/lightrain_winterspringfall.png"),
+    summer: require("../assets/images/weather/background/lightrain_summer.png"),
+    fall: require("../assets/images/weather/background/lightrain_winterspringfall.png"),
+    winter: require("../assets/images/weather/background/lightrain_winterspringfall.png")
   },
   s: {
-    spring: require(`../assets/images/weather/background/showers_spring.png`),
-    summer: require(`../assets/images/weather/background/showers_summer.png`),
-    fall: require(`../assets/images/weather/background/showers_fall.png`),
-    winter: require(`../assets/images/weather/background/showers_winter.png`)
+    spring: require("../assets/images/weather/background/showers_spring.png"),
+    summer: require("../assets/images/weather/background/showers_summer.png"),
+    fall: require("../assets/images/weather/background/showers_fall.png"),
+    winter: require("../assets/images/weather/background/showers_winter.png")
   },
   sl: {
-    spring: require(`../assets/images/weather/background/sleet_all.png`),
-    summer: require(`../assets/images/weather/background/sleet_all.png`),
-    fall: require(`../assets/images/weather/background/sleet_all.png`),
-    winter: require(`../assets/images/weather/background/sleet_all.png`)
+    spring: require("../assets/images/weather/background/sleet_all.png"),
+    summer: require("../assets/images/weather/background/sleet_all.png"),
+    fall: require("../assets/images/weather/background/sleet_all.png"),
+    winter: require("../assets/images/weather/background/sleet_all.png")
   },
   sn: {
-    spring: require(`../assets/images/weather/background/snow_all.png`),
-    summer: require(`../assets/images/weather/background/snow_all.png`),
-    fall: require(`../assets/images/weather/background/snow_all.png`),
-    winter: require(`../assets/images/weather/background/snow_all.png`)
+    spring: require("../assets/images/weather/background/snow_all.png"),
+    summer: require("../assets/images/weather/background/snow_all.png"),
+    fall: require("../assets/images/weather/background/snow_all.png"),
+    winter: require("../assets/images/weather/background/snow_all.png")
   },
   t: {
-    spring: require(`../assets/images/weather/background/thunderstorm_winterspringfall.png`),
-    summer: require(`../assets/images/weather/background/thunderstorm_summer.png`),
-    fall: require(`../assets/images/weather/background/thunderstorm_winterspringfall.png`),
-    winter: require(`../assets/images/weather/background/thunderstorm_winterspringfall.png`)
+    spring: require("../assets/images/weather/background/thunderstorm_winterspringfall.png"),
+    summer: require("../assets/images/weather/background/thunderstorm_summer.png"),
+    fall: require("../assets/images/weather/background/thunderstorm_winterspringfall.png"),
+    winter: require("../assets/images/weather/background/thunderstorm_winterspringfall.png")
   }
 }
