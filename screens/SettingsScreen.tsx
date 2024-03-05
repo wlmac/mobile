@@ -56,7 +56,7 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
     
     let expoPushToken: string | undefined = undefined;
     try {
-      expoPushToken = (await Notifications.getExpoPushTokenAsync()).data;
+      expoPushToken = (await Notifications.getExpoPushTokenAsync({projectId: "7cece997-cdba-4ad5-917e-7ef47015ac99"})).data;
     } catch (error) {
       console.warn('Error fetching Expo token:', error, "\nFor developers, ensure you are logged in with your Expo account in order for notif testing to work.");
     }
