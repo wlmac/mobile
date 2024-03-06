@@ -14,9 +14,9 @@ export default function About({ back }: { back: () => void }) {
             </Text>
             <View style={[styles.container, {backgroundColor: colorScheme.scheme === 'light' ? '#e0e0e0' : '#252525'}]}>
                 <Text>The Metropolis app is the mobile app for &nbsp;
-                    <TouchableOpacity onPress={() => { WebBrowser.openBrowserAsync(config.server) }}>
+                    <TouchableOpacity onPress={() => { WebBrowser.openBrowserAsync(config.site) }}>
                         <Text style={styles.link}>
-                            {config.server}
+                            {config.site}
                         </Text>
                     </TouchableOpacity>
                     {'\n'}{'\n'}
@@ -24,9 +24,9 @@ export default function About({ back }: { back: () => void }) {
                     However, we are planning to update the app with more features exclusive to the mobile experience. You can view updates in the changelog.
                     {'\n'}{'\n'}
                     By using this app, you consent to the {}
-                    <Text style={styles.link} onPress={() => { WebBrowser.openBrowserAsync(config.server + '/privacy') }}>
+                    <Text style={styles.link} onPress={() => { WebBrowser.openBrowserAsync(config.site + '/privacy') }}>
                         privacy policy
-                    </Text> and <Text style={styles.link} onPress={() => { WebBrowser.openBrowserAsync(config.server + '/terms') }}>
+                    </Text> and <Text style={styles.link} onPress={() => { WebBrowser.openBrowserAsync(config.site + '/terms') }}>
                         terms of service
                     </Text> as outlined on the site.
                 </Text>
@@ -36,9 +36,9 @@ export default function About({ back }: { back: () => void }) {
                 </Text>
                 <Text style={{ marginBottom: 12 }}>
                     <Text style={{ fontWeight: 'bold' }}>Lead Developers:</Text> Patrick Lin, Shane Chen {'\n'}
-                    <Text style={{ fontWeight: 'bold' }}>Other Developers:</Text> Aaron Zhu, Aava Sapkota, Vlad Surdu, Jeremy Liang, Max Sun, Colin Cai {'\n'}
-                    <Text style={{ fontWeight: 'bold' }}>Backend:</Text> Ken Shibata, Paul Lee {'\n'}
-                    <Text style={{ fontWeight: 'bold' }}>Graphics and Design:</Text> Chelsea Wong, Annie Wong, Justin Lu, Nicole Cui {'\n'}
+                    <Text style={{ fontWeight: 'bold' }}>Developers:</Text> Aaron Zhu, Aava Sapkota, Vlad Surdu, Jeremy Liang, Max Sun, Colin Cai {'\n'}
+                    <Text style={{ fontWeight: 'bold' }}>Backend:</Text> Ken Shibata, Paul Lee, Jason Cameron {'\n'}
+                    <Text style={{ fontWeight: 'bold' }}>Graphics and Design:</Text> Chelsea Wong, Annie Wong, Justin Lu, Nicole Cui, Zoe Fan-Chiang {'\n'}
                     <Text style={{ fontWeight: 'bold' }}>Support:</Text> Project Metropolis, SAC, WLMAC {'\n'}
                 </Text>
                 <Text style={styles.subtitle}>

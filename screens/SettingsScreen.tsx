@@ -29,6 +29,7 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
   const scheme = React.useContext(ThemeContext);
   const guestMode = React.useContext(GuestModeContext);
 
+  const [hasPressedLogout, setHasPressedLogout] = React.useState(false);
   const [curView, setView] = React.useState<ViewType>("settings");
   const userinfo: UserData | null = guestMode.guest ? null : session.get("@userinfo");
 
@@ -77,6 +78,8 @@ export default function SettingsScreen({ navigation }: { navigation: StackNaviga
   }
   
   function logout() {
+    if (hasPressedLogout) return;
+    setHasPressedLogout(true);
     if (guestMode.guest) {
       AsyncStorage.clear().then(() => {
         scheme.updateScheme(scheme.scheme);

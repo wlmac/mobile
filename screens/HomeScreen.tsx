@@ -207,6 +207,7 @@ export default function HomeScreen({ navigation }: { navigation: BottomTabNaviga
       "allow": {
         "event.all": {},
         "event.singleday": {},
+        "test": {},
         "blog": {},
         "ann.personal": {},
         "ann.public": {},

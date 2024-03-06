@@ -1,4 +1,5 @@
 {
+    "site": "https://maclyonsden.com",
     "server": "https://maclyonsden.com/api",
     "weatherserver": "https://weather.maclyonsden.com"
 }
