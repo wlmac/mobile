@@ -58,15 +58,19 @@ export function ChangeLogModal() {
 
     const [isModalVisible, setModalVisible] = React.useState(false);
     const modalOff = () => {
+        console.log("User updated, Version " + Constants.expoConfig?.version);
+        sessionContext.set('@changelogseenver', Constants.expoConfig?.version ?? '0.0.0');
         setModalVisible(false);
-        sessionContext.set('@changelogseenver', Constants.manifest?.version ?? '0.0.0');
     };
     React.useEffect(() => {
-        const val = sessionContext.get<string>('@changelogseenver');
+        let val = sessionContext.get<string>('@changelogseenver');
         console.log(val);
         console.log(Constants.expoConfig?.version ?? '0.0.0');
         console.log(changelog[0].version);
+
         // val = '1.0.0'; // testing modal
+        // sessionContext.set('@changelogseenver', '0.0.0');
+
         if ((!val || val !== Constants.expoConfig?.version) && changelog[0].version === Constants.expoConfig?.version) {
             setModalVisible(true);
         }
