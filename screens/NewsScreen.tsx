@@ -121,7 +121,7 @@ export default function NewsScreen() {
       icon: ann.iconUrl,
       author: ann.author,
       date: ann.date,
-      featured_image: undefined,
+      featured_image: feedType === "blog" ? ann.featured_image : undefined,
       body: ann.body,
     });
 
@@ -227,6 +227,7 @@ export default function NewsScreen() {
           date: ann.created_date,
           tags: ann.tags,
           body: ann.body,
+          featured_image: ann.featured_image,
         })
       }
 
@@ -355,7 +356,7 @@ export default function NewsScreen() {
           <FullAnnouncement
             {...fullAnn}
             backToScroll={setFullAnnId}
-            isBlog={false}
+            isBlog={feedType === "blog"}
           />
         </ScrollView>}
 
@@ -444,7 +445,8 @@ interface AnnouncementProps {
   date: Date,
   tags: TagDescriptor[],
   body: string,
-  children?: React.ReactNode
+  children?: React.ReactNode,
+  featured_image?: URLString | undefined
 }
 
 function AnnouncementsViewer({

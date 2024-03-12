@@ -8,6 +8,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { TagDescriptor, URLString } from '../api';
 import Tag from './Tag';
 import loadingImage from '../assets/images/blank.png';
+import FitImage from 'react-native-fit-image';
 
 
 const lightC = "#3a6a96";
@@ -115,6 +116,7 @@ const ImageResizeAfter = ({uri, desiredWidth}: {uri: string, desiredWidth: numbe
                 flex: 1,
                 display: 'flex',
                 resizeMode: 'contain',
+                top: 10,
                 // borderColor: 'black', 
                 // borderWidth: 5,
                 // alignItems: 'center',
@@ -129,6 +131,9 @@ const ImageResizeAfter = ({uri, desiredWidth}: {uri: string, desiredWidth: numbe
 const rules: RenderRules = {
   image: function(
     node,
+    children,
+    parent,
+    styles,
     allowedImageHandlers,
     defaultImageHandler,
   ){
@@ -144,10 +149,22 @@ const rules: RenderRules = {
       return null;
     }
 
-    const url = show === true ? `${src}?w=${width}&fmt=webp` : `${defaultImageHandler}${src}?w=${Math.round(width)}&fmt=webp`;
+    const desiredWidth = width-50;
+
+    // 2*desiredWidth used to get higher res
+    const url = show === true ? `${src}?w=${2*desiredWidth}&fmt=webp` : `${defaultImageHandler}${src}?w=${Math.round(2*desiredWidth)}&fmt=webp`;
+
+    const [desiredHeight, setDesiredHeight] = React.useState(0);
+
+    Image.getSize(url, (width, height) => {
+        setDesiredHeight(desiredWidth / width * height);
+    })
 
     return (
-        <ImageResizeAfter key={node.key} uri={url} desiredWidth={width - 60}/>
+        <FitImage indicator={true} key={node.key} style={{
+            width: desiredWidth,
+            height: desiredHeight === 0 ? desiredWidth : desiredHeight,
+        }} source={{uri: url}}/>
     );
   },
 }
@@ -175,6 +192,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         flexWrap: "wrap",
         marginHorizontal: 12,
+        marginTop: 15
     },
     tag: {
         overflow: "hidden",
@@ -190,6 +208,7 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         marginHorizontal: 15,
         marginBottom: 10,
+        minWidth: "90%",
     },
     details: {
         flex: 1,
