@@ -327,9 +327,9 @@ const styles = StyleSheet.create({
 });
 
 function handleRegisterPress() {
-  WebBrowser.openBrowserAsync(`${config.server}/accounts/signup/?next=/`).catch(err => console.error("Couldn't load page", err));
+  WebBrowser.openBrowserAsync(`${config.site}/accounts/signup/?next=/`).catch(err => console.error("Couldn't load page", err));
 }
 
 function handleForgotPasswordPress() {
-  WebBrowser.openBrowserAsync(`${config.server}/accounts/password/reset/`).catch(err => console.error("Couldn't load page", err));
+  WebBrowser.openBrowserAsync(`${config.site}/accounts/password/reset/`).catch(err => console.error("Couldn't load page", err));
 }
